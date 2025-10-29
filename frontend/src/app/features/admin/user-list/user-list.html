@@ -1,0 +1,106 @@
+<div class="container">
+  <div class="header">
+    <div class="header-content">
+      <h1>Gestión de Usuarios</h1>
+      <button class="btn btn-secondary" (click)="volver()">← Volver</button>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <h3>{{ getTotalUsuarios() }}</h3>
+        <p>Total Usuarios</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">👑</div>
+      <div class="stat-info">
+        <h3>{{ getTotalAdmins() }}</h3>
+        <p>Administradores</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">👤</div>
+      <div class="stat-info">
+        <h3>{{ getTotalClientes() }}</h3>
+        <p>Clientes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de acciones -->
+  <div class="action-bar">
+    <button class="btn btn-success" (click)="registrarNuevoUsuario()">
+      + Registrar Nuevo Usuario
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando usuarios...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error">
+    {{ error }}
+  </div>
+
+  <!-- Lista de usuarios -->
+  <div *ngIf="!loading && !error" class="users-container">
+    <div *ngIf="usuarios.length === 0" class="empty-state">
+      <h3>No hay usuarios registrados</h3>
+      <p>Comienza registrando el primer usuario.</p>
+      <button class="btn btn-primary" (click)="registrarNuevoUsuario()">
+        Registrar Usuario
+      </button>
+    </div>
+
+    <div *ngIf="usuarios.length > 0" class="users-grid">
+      <div *ngFor="let usuario of usuarios" class="user-card">
+        <div class="user-avatar">
+          {{ getRolIcon(usuario.rol) }}
+        </div>
+        
+        <div class="user-info">
+          <h3>{{ usuario.nombre }}</h3>
+          <p class="user-email">{{ usuario.email }}</p>
+          <div class="user-details">
+            <span class="badge" [class]="getRolBadgeClass(usuario.rol)">
+              {{ usuario.rol }}
+            </span>
+            <span class="user-id">ID: {{ usuario.id }}</span>
+          </div>
+        </div>
+
+        <div class="user-actions">
+          <div class="user-status">
+            <span class="status-dot active"></span>
+            Activo
+          </div>
+
+          <!-- Agregar botones de admin -->
+        <div class="action-buttons" *ngIf="authService.isAdmin()">
+            <button class="btn btn-warning btn-sm" (click)="editarUsuario(usuario)">
+            ✏️
+            </button>
+            <button 
+            class="btn btn-danger btn-sm" 
+            (click)="eliminarUsuario(usuario)"
+            [disabled]="usuario.id === authService.getCurrentUser()?.id">
+            🗑️
+            </button>
+        </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

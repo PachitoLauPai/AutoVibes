@@ -1,0 +1,186 @@
+<div class="auto-detail-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">
+    <p>Cargando información del auto...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button (click)="volverALista()" class="btn-back">← Volver a la Lista</button>
+  </div>
+
+  <!-- Auto Detail -->
+  <div *ngIf="auto && !loading" class="auto-detail">
+    <div class="auto-images">
+      
+      <!-- ✅ CARRUSEL DE IMÁGENES MEJORADO -->
+      <div class="image-carousel">
+        <!-- Imagen principal -->
+        <div class="main-image-container">
+          <img 
+            [src]="getCurrentImage()" 
+            [alt]="auto.marca + ' ' + auto.modelo" 
+            class="main-image"
+            (error)="handleImageError($event)">
+          
+          <!-- Controles de navegación -->
+          <button *ngIf="auto.imagenes.length > 1" 
+                  class="nav-btn prev" 
+                  (click)="prevImage()">
+            ‹
+          </button>
+          <button *ngIf="auto.imagenes.length > 1" 
+                  class="nav-btn next" 
+                  (click)="nextImage()">
+            ›
+          </button>
+
+          <!-- Contador de imágenes -->
+          <div *ngIf="auto.imagenes.length > 1" class="image-counter">
+            {{ currentImageIndex + 1 }} / {{ auto.imagenes.length }}
+          </div>
+        </div>
+
+        <!-- Miniaturas -->
+        <div *ngIf="auto.imagenes.length > 1" class="thumbnails">
+          <div *ngFor="let imagen of auto.imagenes; let i = index" 
+               class="thumbnail" 
+               [class.active]="i === currentImageIndex"
+               (click)="goToImage(i)">
+            <img [src]="imagen" [alt]="auto.marca + ' ' + auto.modelo + ' ' + (i + 1)">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="auto-info">
+      <h1>{{ auto.marca }} {{ auto.modelo }}</h1>
+      <p class="price">S/ {{ auto.precio | number:'1.2-2' }}</p>
+      
+      <div class="specs-grid">
+        <div class="spec-item">
+          <strong>Año:</strong> {{ auto.anio }}
+        </div>
+        <div class="spec-item">
+          <strong>Color:</strong> {{ auto.color }}
+        </div>
+        <div class="spec-item">
+          <strong>Combustible:</strong> {{ auto.combustible }}
+        </div>
+        <div class="spec-item">
+          <strong>Transmisión:</strong> {{ auto.transmision }}
+        </div>
+        <div class="spec-item">
+          <strong>Kilometraje:</strong> {{ auto.kilometraje | number }} km
+        </div>
+        <div class="spec-item">
+          <strong>Estado:</strong> 
+          <span [class]="auto.disponible ? 'available' : 'sold'">
+            {{ auto.disponible ? 'Disponible' : 'Vendido' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="description-section">
+        <h3>Descripción</h3>
+        <p class="description">{{ auto.descripcion }}</p>
+      </div>
+
+      <div class="actions">
+        <button 
+          *ngIf="auto.disponible"
+          class="contact-btn" 
+          (click)="openContactModal()">
+          Contactar Vendedor
+        </button>
+        
+        <button (click)="volverALista()" class="btn-back">
+          ← Volver a la Lista
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Contacto -->
+  <div *ngIf="showContactModal" class="modal-overlay" (click)="closeContactModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Contactar sobre {{ auto?.marca }} {{ auto?.modelo }}</h3>
+        <button class="close-btn" (click)="closeContactModal()">&times;</button>
+      </div>
+      
+      <form (ngSubmit)="contactarVendedor()" #contactForm="ngForm">
+        <div class="form-group">
+          <label for="nombres">Nombres *</label>
+          <input 
+            type="text" 
+            id="nombres"
+            [(ngModel)]="contactData.nombres" 
+            name="nombres" 
+            required
+            placeholder="Ingrese sus nombres">
+        </div>
+
+        <div class="form-group">
+          <label for="apellidos">Apellidos *</label>
+          <input 
+            type="text" 
+            id="apellidos"
+            [(ngModel)]="contactData.apellidos" 
+            name="apellidos" 
+            required
+            placeholder="Ingrese sus apellidos">
+        </div>
+
+        <div class="form-group">
+          <label for="dni">DNI *</label>
+          <input 
+            type="text" 
+            id="dni"
+            [(ngModel)]="contactData.dni" 
+            name="dni" 
+            required
+            maxlength="8"
+            pattern="[0-9]{8}"
+            placeholder="Ingrese su DNI (8 dígitos)">
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono *</label>
+          <input 
+            type="tel" 
+            id="telefono"
+            [(ngModel)]="contactData.telefono" 
+            name="telefono" 
+            required
+            placeholder="Ingrese su teléfono">
+        </div>
+
+        <div class="form-group">
+          <label for="direccion">Dirección *</label>
+          <textarea 
+            id="direccion"
+            [(ngModel)]="contactData.direccion" 
+            name="direccion" 
+            required
+            placeholder="Ingrese su dirección completa"
+            rows="3"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeContactModal()">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="btn-contact"
+            [disabled]="!contactForm.form.valid">
+            Enviar Solicitud
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

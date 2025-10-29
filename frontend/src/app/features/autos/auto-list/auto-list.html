@@ -1,0 +1,164 @@
+<div class="container">
+  <h1>Venta de Autos</h1>
+  
+  <nav class="nav">
+    <div class="user-info" *ngIf="authService.isLoggedIn()">
+      <span class="welcome">Hola, {{ authService.currentUser()?.nombre }}</span>
+      <span class="user-role admin" *ngIf="authService.isAdmin()">👑 Administrador</span>
+      <span class="user-role cliente" *ngIf="authService.isCliente()">👤 Cliente</span>
+    </div>
+    
+    <div class="nav-actions">
+      <div *ngIf="authService.isAdmin()" class="admin-actions">
+        <button class="btn btn-success" routerLink="/admin/autos/nuevo">
+          + Agregar Auto
+        </button>
+        <button class="btn btn-info" routerLink="/admin/usuarios">
+          👥 Gestionar Usuarios
+        </button>
+        <button class="btn btn-warning" routerLink="/admin/ventas">
+          🧾 Gestionar Ventas
+        </button>
+      </div>
+      
+      <button *ngIf="authService.isLoggedIn()" class="btn btn-warning" (click)="authService.logout()">
+        Cerrar Sesión
+      </button>
+      
+      <button *ngIf="!authService.isLoggedIn()" class="btn btn-primary" routerLink="/login">
+        Iniciar Sesión
+      </button>
+    </div>
+  </nav>
+
+  <div *ngIf="loading" class="loading">Cargando autos...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error" class="autos-grid">
+    
+    <!-- ADMIN: VE TODOS LOS AUTOS -->
+    <ng-container *ngIf="authService.isAdmin()">
+      <div *ngFor="let auto of autos" class="auto-card">
+        
+        <!-- CONTENIDO DEL AUTO - AGREGA AQUÍ LA INFORMACIÓN DEL AUTO -->
+        <div class="auto-image">
+          <img 
+            [src]="getCurrentImage(auto)" 
+            [alt]="auto.marca + ' ' + auto.modelo"
+            (error)="onImageError($event, auto)"
+            class="auto-img"
+          >
+          <div class="image-controls">
+            <button (click)="prevImage(auto)" class="img-btn">‹</button>
+            <button (click)="nextImage(auto)" class="img-btn">›</button>
+          </div>
+          <div class="image-indicator">
+            {{ getCurrentImageIndex(auto) + 1 }}/{{ auto.imagenes?.length || 1 }}
+          </div>
+        </div>
+        
+        <div class="auto-info">
+          <h3>{{ auto.marca }} {{ auto.modelo }}</h3>
+          <p><strong>Año:</strong> {{ auto.anio }}</p>
+          <p><strong>Precio:</strong> ${{ auto.precio?.toLocaleString() }}</p>
+          <p><strong>Kilometraje:</strong> {{ auto.kilometraje?.toLocaleString() }} km</p>
+          <p><strong>Color:</strong> {{ auto.color }}</p>
+          <p><strong>Descripción:</strong> {{ auto.descripcion }}</p>
+          
+          <div class="estado" [class]="getEstadoClass(auto)">
+            {{ getEstadoTexto(auto) }}
+          </div>
+
+          <!-- BOTONES PARA ADMIN -->
+          <div class="admin-actions">
+            <button class="btn btn-warning btn-sm" (click)="editarAuto(auto)">
+              ✏️ Editar
+            </button>
+            <button class="btn btn-danger btn-sm" (click)="eliminarAuto(auto)">
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- CLIENTE: SOLO VE AUTOS DISPONIBLES -->
+    <ng-container *ngIf="authService.isCliente()">
+      <div *ngFor="let auto of autos" class="auto-card">
+        
+        <!-- CONTENIDO DEL AUTO -->
+        <div class="auto-image">
+          <img 
+            [src]="getCurrentImage(auto)" 
+            [alt]="auto.marca + ' ' + auto.modelo"
+            (error)="onImageError($event, auto)"
+            class="auto-img"
+          >
+          <div class="image-controls">
+            <button (click)="prevImage(auto)" class="img-btn">‹</button>
+            <button (click)="nextImage(auto)" class="img-btn">›</button>
+          </div>
+        </div>
+        
+        <div class="auto-info">
+          <h3>{{ auto.marca }} {{ auto.modelo }}</h3>
+          <p><strong>Año:</strong> {{ auto.anio }}</p>
+          <p><strong>Precio:</strong> ${{ auto.precio?.toLocaleString() }}</p>
+          <p><strong>Kilometraje:</strong> {{ auto.kilometraje?.toLocaleString() }} km</p>
+          <p><strong>Color:</strong> {{ auto.color }}</p>
+          
+          <div class="estado estado-disponible">
+            ✅ Disponible
+          </div>
+
+          <!-- BOTÓN PARA CLIENTE -->
+          <div class="client-actions">
+            <a [routerLink]="['/autos', auto.id]" class="btn btn-primary btn-details">
+              🔍 Ver Detalles y Contactar
+            </a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- USUARIO NO LOGEADO -->
+    <ng-container *ngIf="!authService.isLoggedIn()">
+      <div *ngFor="let auto of autos" class="auto-card">
+        
+        <!-- CONTENIDO DEL AUTO -->
+        <div class="auto-image">
+          <img 
+            [src]="getCurrentImage(auto)" 
+            [alt]="auto.marca + ' ' + auto.modelo"
+            (error)="onImageError($event, auto)"
+            class="auto-img"
+          >
+        </div>
+        
+        <div class="auto-info">
+          <h3>{{ auto.marca }} {{ auto.modelo }}</h3>
+          <p><strong>Año:</strong> {{ auto.anio }}</p>
+          <p><strong>Precio:</strong> ${{ auto.precio?.toLocaleString() }}</p>
+          <p><strong>Kilometraje:</strong> {{ auto.kilometraje?.toLocaleString() }} km</p>
+          
+          <div class="estado estado-disponible">
+            ✅ Disponible
+          </div>
+
+          <!-- BOTÓN PARA NO LOGEADO -->
+          <div class="client-actions">
+            <button class="btn btn-secondary btn-details" (click)="irALogin()">
+              🔐 Iniciar Sesión para Contactar
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- MENSAJE SI NO HAY AUTOS -->
+    <div *ngIf="autos.length === 0" class="empty-state">
+      <p>No hay autos disponibles en este momento.</p>
+    </div>
+
+  </div>
+</div>

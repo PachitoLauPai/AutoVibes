@@ -1,0 +1,103 @@
+<div class="container">
+  <div class="header">
+    <h1>🧾 Gestión de Ventas</h1>
+    <p>Administra las solicitudes de contacto de los clientes</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <label>Filtrar por estado:</label>
+    <select [(ngModel)]="filtroEstado" (change)="filtrarVentas()">
+      <option value="TODAS">Todas las ventas</option>
+      <option value="PENDIENTE">Pendientes</option>
+      <option value="FINALIZADO">Finalizadas</option>
+      <option value="CANCELADO">Canceladas</option>
+    </select>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <p>Cargando ventas...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button (click)="cargarVentas()" class="btn-retry">Reintentar</button>
+  </div>
+
+  <!-- Ventas -->
+  <div *ngIf="!loading && !error">
+    <div *ngIf="ventasFiltradas.length === 0" class="empty-state">
+      <p>No hay ventas {{filtroEstado === 'TODAS' ? '' : 'con estado ' + filtroEstado}}.</p>
+    </div>
+
+    <div *ngIf="ventasFiltradas.length > 0" class="ventas-grid">
+      <div *ngFor="let venta of ventasFiltradas" class="venta-card">
+        <div class="venta-header">
+          <h3>{{ venta.autoMarca }} {{ venta.autoModelo }}</h3>
+          <span class="estado" [class]="getEstadoClass(venta.estado)">
+            {{ getEstadoTexto(venta.estado) }}
+          </span>
+        </div>
+
+        <div class="venta-info">
+          <div class="info-section">
+            <h4>📋 Información del Auto</h4>
+            <p><strong>ID:</strong> {{ venta.autoId }}</p>
+            <p><strong>Año:</strong> {{ venta.autoAnio }}</p>
+            <p><strong>Precio:</strong> ${{ venta.autoPrecio | number }}</p>
+          </div>
+
+          <div class="info-section">
+            <h4>👤 Datos del Cliente</h4>
+            <p><strong>Nombre:</strong> {{ venta.clienteNombre }} {{ venta.clienteApellidos }}</p>
+            <p><strong>DNI:</strong> {{ venta.clienteDni }}</p>
+            <p><strong>Teléfono:</strong> {{ venta.clienteTelefono }}</p>
+            <p><strong>Dirección:</strong> {{ venta.clienteDireccion }}</p>
+          </div>
+
+          <div class="info-section">
+            <h4>📅 Información de la Venta</h4>
+            <p><strong>Solicitud:</strong> {{ venta.fechaSolicitud | date:'medium' }}</p>
+            <p><strong>Actualización:</strong> {{ venta.fechaActualizacion | date:'medium' }}</p>
+          </div>
+        </div>
+
+        <!-- Acciones según estado -->
+        <div class="venta-actions">
+          <div *ngIf="venta.estado === 'PENDIENTE'" class="actions-pendiente">
+            <button class="btn btn-success" (click)="cambiarEstadoVenta(venta, 'FINALIZADO')">
+              ✅ Marcar como Finalizado
+            </button>
+            <button class="btn btn-danger" (click)="cambiarEstadoVenta(venta, 'CANCELADO')">
+              ❌ Cancelar Venta
+            </button>
+          </div>
+
+          <div *ngIf="venta.estado === 'FINALIZADO'" class="actions-finalizado">
+            <span class="badge-success">Venta completada ✅</span>
+            <button class="btn btn-warning" (click)="cambiarEstadoVenta(venta, 'PENDIENTE')">
+              ↩️ Reabrir
+            </button>
+          </div>
+
+          <div *ngIf="venta.estado === 'CANCELADO'" class="actions-cancelado">
+            <span class="badge-danger">Venta cancelada ❌</span>
+            <button class="btn btn-warning" (click)="cambiarEstadoVenta(venta, 'PENDIENTE')">
+              ↩️ Reactivar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+    <!-- ✅ BOTÓN PARA REGRESAR AL FINAL TAMBIÉN -->
+    <div class="footer-actions">
+      <button routerLink="/autos" class="btn btn-back">
+        ← Volver
+      </button>
+    </div>
+</div>

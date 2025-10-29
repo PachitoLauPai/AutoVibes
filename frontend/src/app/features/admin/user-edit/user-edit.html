@@ -1,0 +1,103 @@
+<div class="container">
+  <div class="form-header">
+    <h1>Editar Usuario: {{ usuario?.nombre }}</h1>
+    <button class="btn btn-secondary" (click)="volver()">← Volver</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando usuario...</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+  <form *ngIf="!loading && usuario" (ngSubmit)="onSubmit()" #userForm="ngForm" class="user-form">
+    
+    <!-- Información Personal -->
+    <div class="form-section">
+      <h3>Información Personal</h3>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nombre">Nombre Completo *</label>
+          <input 
+            type="text" 
+            id="nombre" 
+            name="nombre" 
+            [(ngModel)]="usuarioEditado.nombre" 
+            required
+            placeholder="Ingresa el nombre completo">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            [(ngModel)]="usuarioEditado.email" 
+            required
+            placeholder="usuario@ejemplo.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tipo de Usuario -->
+    <div class="form-section">
+      <h3>Tipo de Usuario</h3>
+      
+      <div class="form-group">
+        <label for="rol">Rol del Usuario *</label>
+        <select id="rol" name="rol" [(ngModel)]="usuarioEditado.rol" required>
+          <option *ngFor="let role of roles" [value]="role.value">
+            {{ role.label }}
+          </option>
+        </select>
+        
+        <div class="help-text" *ngIf="esUsuarioActual()">
+          ⚠️ <strong>Estás editando tu propio usuario.</strong> Ten cuidado al cambiar tu rol.
+        </div>
+        
+        <div class="help-text" *ngIf="!esUsuarioActual()">
+          ℹ️ Los administradores tienen acceso completo al sistema
+        </div>
+      </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="form-section">
+      <h3>Información Adicional</h3>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <label>ID del Usuario:</label>
+          <span class="info-value">{{ usuario.id }}</span>
+        </div>
+        
+        <div class="info-item">
+          <label>Estado:</label>
+          <span class="info-value status-active">🟢 Activo</span>
+        </div>
+        
+        <div class="info-item">
+          <label>Fecha de Registro:</label>
+          <span class="info-value">No disponible</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="volver()">
+        Cancelar
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="saving || !usuarioEditado.nombre || !usuarioEditado.email || !usuarioEditado.rol">
+        {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </form>
+</div>
