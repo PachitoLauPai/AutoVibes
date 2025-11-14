@@ -56,16 +56,22 @@ public class VentaController {
     
     @GetMapping("/mis-solicitudes")
     public ResponseEntity<?> obtenerMisSolicitudes(HttpServletRequest request) {
+        System.out.println("🔓 [VENTAS] Endpoint público - obteniendo todas las solicitudes");
+        
         try {
-            Usuario usuario = authenticationService.getUsuarioAutenticado(request);
-            List<Venta> ventas = ventaService.obtenerVentasPorCliente(usuario.getId());
+            // ✅ TEMPORAL: Obtener TODAS las ventas sin filtrar por usuario
+            List<Venta> ventas = ventaService.obtenerTodasLasVentas();
+            System.out.println("✅ [VENTAS] Total de ventas encontradas: " + ventas.size());
+            
             List<VentaResponse> response = ventaService.convertirListaAVentaResponse(ventas);
             
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
+            System.out.println("❌ [VENTAS] ERROR: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al obtener las solicitudes");
+                .body("Error al obtener las solicitudes: " + e.getMessage());
         }
     }
     

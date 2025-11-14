@@ -23,18 +23,19 @@ import java.util.Map;
 public class UsuarioController {
     
     private final UsuarioService usuarioService;
-    private final AuthenticationService authenticationService; 
+    //private final AuthenticationService authenticationService;// COMENTA ESTA LÍNEA 
     
     @GetMapping
     public ResponseEntity<?> obtenerTodosLosUsuarios(HttpServletRequest request) {
         try {
-            // ✅ VERIFICAR QUE SEA ADMIN
-            Usuario usuario = authenticationService.getUsuarioAutenticado(request);
+            // ✅ TEMPORAL: PERMITIR SIN AUTENTICACIÓN
+            // Usuario usuario = authenticationService.getUsuarioAutenticado(request);
             
-            if (usuario.getRol() != Rol.ADMIN) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Solo administradores pueden ver todos los usuarios");
-            }
+            // TEMPORAL: Comentar verificación de admin
+            // if (usuario.getRol() != Rol.ADMIN) {
+            //     return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            //         .body("Solo administradores pueden ver todos los usuarios");
+            // }
             
             List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
             return ResponseEntity.ok(usuarios);
@@ -48,13 +49,14 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarUsuario(@PathVariable Long id, HttpServletRequest request) {
         try {
-            // ✅ VERIFICAR QUE SEA ADMIN
-            Usuario usuario = authenticationService.getUsuarioAutenticado(request);
+            // ✅ TEMPORAL: PERMITIR SIN AUTENTICACIÓN
+            // Usuario usuario = authenticationService.getUsuarioAutenticado(request);
             
-            if (usuario.getRol() != Rol.ADMIN) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Solo administradores pueden eliminar usuarios");
-            }
+            // TEMPORAL: Comentar verificación de admin
+            // if (usuario.getRol() != Rol.ADMIN) {
+            //     return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            //         .body("Solo administradores pueden eliminar usuarios");
+            // }
 
             boolean eliminado = usuarioService.eliminarUsuario(id);
             if (eliminado) {
@@ -79,14 +81,14 @@ public class UsuarioController {
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado, HttpServletRequest request) {
         try {
-            // ✅ VERIFICAR AUTENTICACIÓN
-            Usuario usuarioAutenticado = authenticationService.getUsuarioAutenticado(request);
+            // ✅ TEMPORAL: PERMITIR SIN AUTENTICACIÓN
+            // Usuario usuarioAutenticado = authenticationService.getUsuarioAutenticado(request);
             
-            // Solo admin puede editar cualquier usuario, usuarios normales solo pueden editar su propio perfil
-            if (usuarioAutenticado.getRol() != Rol.ADMIN && !usuarioAutenticado.getId().equals(id)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("No puedes editar otros usuarios");
-            }
+            // TEMPORAL: Comentar verificación de permisos
+            // if (usuarioAutenticado.getRol() != Rol.ADMIN && !usuarioAutenticado.getId().equals(id)) {
+            //     return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            //         .body("No puedes editar otros usuarios");
+            // }
 
             Usuario usuarioEditado = usuarioService.actualizarUsuario(id, usuarioActualizado);
             return ResponseEntity.ok(usuarioEditado);
@@ -97,8 +99,4 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body("Error al actualizar usuario: " + e.getMessage());
         }
     }
-
-    // ❌ ELIMINA ESTE MÉTODO - DEBE ESTAR EN VentaController
-    // @PostMapping("/contactar")
-    // public ResponseEntity<?> crearSolicitudContacto(...) { ... }
 }

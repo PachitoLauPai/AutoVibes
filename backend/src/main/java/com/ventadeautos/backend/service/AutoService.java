@@ -16,17 +16,36 @@ public class AutoService {
     
     private final AutoRepository autoRepository;
     
+    // ✅ Para ADMIN - TODOS los autos
     public List<Auto> obtenerTodos() {
         return autoRepository.findAll();
     }
     
+    // ✅ Para CLIENTES - Solo autos disponibles SIN ventas pendientes
     public List<Auto> obtenerAutosDisponibles() {
-        // ✅ SOLUCIÓN SIMPLIFICADA - Solo autos marcados como disponibles
-        return autoRepository.findByDisponibleTrue();
+        return autoRepository.findAutosDisponiblesSinVentasPendientes();
+    }
+    
+    // ✅ Para ADMIN - Autos con ventas pendientes
+    public List<Auto> obtenerAutosConVentasPendientes() {
+        return autoRepository.findAutosConVentasPendientes();
     }
     
     public Optional<Auto> obtenerPorId(Long id) {
         return autoRepository.findById(id);
+    }
+    
+    // ✅ Verificar si un auto es visible para clientes
+    public boolean esAutoVisibleParaClientes(Long autoId) {
+        Optional<Auto> auto = autoRepository.findById(autoId);
+        if (auto.isEmpty() || !auto.get().getDisponible()) { // ✅ CORREGIDO: usar getDisponible()
+            return false;
+        }
+        
+        // Verificar si tiene ventas pendientes
+        List<Auto> autosConVentasPendientes = autoRepository.findAutosConVentasPendientes();
+        return autosConVentasPendientes.stream()
+                .noneMatch(a -> a.getId().equals(autoId));
     }
     
     public Auto crearAuto(AutoRequest request) {
@@ -38,13 +57,12 @@ public class AutoService {
         auto.setColor(request.getColor());
         auto.setKilometraje(request.getKilometraje());
         auto.setDescripcion(request.getDescripcion());
+        auto.setDisponible(true); // ✅ Por defecto disponible
         
-        // ✅ NUEVO: Asignar imágenes si vienen en el request
         if (request.getImagenes() != null) {
             auto.setImagenes(request.getImagenes());
         }
         
-        // Convertir strings a enums
         if (request.getCombustible() != null) {
             auto.setCombustible(Combustible.valueOf(request.getCombustible().toUpperCase()));
         }
@@ -65,7 +83,6 @@ public class AutoService {
             auto.setKilometraje(request.getKilometraje());
             auto.setDescripcion(request.getDescripcion());
             
-            // ✅ NUEVO: Actualizar imágenes
             if (request.getImagenes() != null) {
                 auto.setImagenes(request.getImagenes());
             }

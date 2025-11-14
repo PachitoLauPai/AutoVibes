@@ -38,6 +38,11 @@ public class VentaService {
                 });
             System.out.println("✅ Auto encontrado: " + auto.getMarca() + " " + auto.getModelo());
             
+            // ✅ Verificar que el auto esté disponible
+            if (!auto.getDisponible()) {
+                throw new RuntimeException("El auto no está disponible para venta");
+            }
+            
             // 2. Verificar cliente
             System.out.println("🔍 Procesando cliente...");
             Cliente cliente = clienteService.crearOActualizarCliente(contactRequest, usuario);
@@ -61,14 +66,18 @@ public class VentaService {
             Venta ventaGuardada = ventaRepository.save(venta);
             System.out.println("✅ Venta creada exitosamente: " + ventaGuardada.getId());
             
+            // 5. ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO AUTOMÁTICAMENTE
+            actualizarDisponibilidadAuto(auto.getId());
+            
             return ventaGuardada;
             
         } catch (Exception e) {
             System.out.println("❌ ERROR CRÍTICO: " + e.getMessage());
-            e.printStackTrace(); // 🔥 ESTO ES CLAVE - muestra la línea exacta del error
+            e.printStackTrace();
             throw e;
         }
     }
+    
     public List<Venta> obtenerVentasPorCliente(Long usuarioId) {
         return ventaRepository.findByClienteUsuarioId(usuarioId);
     }
@@ -88,34 +97,36 @@ public class VentaService {
         EstadoVenta estadoAnterior = venta.getEstado();
         venta.setEstado(nuevoEstado);
         
-        // ✅ GESTIÓN AUTOMÁTICA DE DISPONIBILIDAD DEL AUTO
-        gestionarDisponibilidadAuto(venta, estadoAnterior, nuevoEstado);
+        Venta ventaActualizada = ventaRepository.save(venta);
         
-        return ventaRepository.save(venta);
+        // ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO DESPUÉS DE CAMBIAR ESTADO
+        actualizarDisponibilidadAuto(venta.getAuto().getId());
+        
+        return ventaActualizada;
     }
     
-    // ✅ NUEVO MÉTODO PARA GESTIONAR DISPONIBILIDAD
-    private void gestionarDisponibilidadAuto(Venta venta, EstadoVenta estadoAnterior, EstadoVenta nuevoEstado) {
-        Auto auto = venta.getAuto();
+    // ✅ NUEVO MÉTODO PARA ACTUALIZAR DISPONIBILIDAD DEL AUTO
+    private void actualizarDisponibilidadAuto(Long autoId) {
+        Auto auto = autoRepository.findById(autoId)
+            .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
         
-        // Si la venta se FINALIZA o CANCELA, LIBERAR el auto
-        if ((nuevoEstado == EstadoVenta.FINALIZADO || nuevoEstado == EstadoVenta.CANCELADO) 
-            && estadoAnterior == EstadoVenta.PENDIENTE) {
-            auto.setDisponible(true);
+        // Verificar si el auto tiene ventas pendientes
+        List<Venta> ventasDelAuto = ventaRepository.findByAutoId(autoId);
+        boolean tieneVentasPendientes = ventasDelAuto.stream()
+                .anyMatch(v -> v.getEstado() == EstadoVenta.PENDIENTE);
+        
+        // Si tiene ventas pendientes, el auto NO debe estar disponible
+        // Si no tiene ventas pendientes, el auto SÍ debe estar disponible
+        boolean nuevaDisponibilidad = !tieneVentasPendientes;
+        
+        // Solo actualizar si cambió la disponibilidad
+        if (auto.getDisponible() != nuevaDisponibilidad) {
+            auto.setDisponible(nuevaDisponibilidad);
             autoRepository.save(auto);
-        }
-        
-        // Si se REACTIVA una venta (vuelve a PENDIENTE), BLOQUEAR el auto
-        if (nuevoEstado == EstadoVenta.PENDIENTE && estadoAnterior != EstadoVenta.PENDIENTE) {
-            // Verificar que el auto no esté ya bloqueado por otra venta pendiente
-            boolean existeOtraVentaPendiente = ventaRepository.findByAutoId(auto.getId())
-                .stream()
-                .anyMatch(v -> v.getEstado() == EstadoVenta.PENDIENTE && !v.getId().equals(venta.getId()));
             
-            if (!existeOtraVentaPendiente) {
-                auto.setDisponible(false);
-                autoRepository.save(auto);
-            }
+            System.out.println("🔄 Auto ID: " + auto.getId() + 
+                              " - Nueva disponibilidad: " + auto.getDisponible() + 
+                              " - Ventas pendientes: " + tieneVentasPendientes);
         }
     }
     
@@ -145,9 +156,7 @@ public class VentaService {
             .collect(Collectors.toList());
     }
 
-
-
-     // ✅ NUEVO MÉTODO: Verificar si un usuario tiene ventas activas
+    // ✅ MÉTODO: Verificar si un usuario tiene ventas activas
     public boolean tieneVentasActivas(Long usuarioId) {
         // Buscar cliente asociado al usuario
         Optional<Cliente> cliente = clienteService.obtenerClientePorUsuarioId(usuarioId);
@@ -161,6 +170,4 @@ public class VentaService {
         
         return false;
     }
-
-
 }

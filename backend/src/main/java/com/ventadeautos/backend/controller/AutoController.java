@@ -1,4 +1,3 @@
-// AutoController.java
 package com.ventadeautos.backend.controller;
 
 import com.ventadeautos.backend.dto.AutoRequest;
@@ -17,14 +16,46 @@ public class AutoController {
     
     private final AutoService autoService;
     
+    // ✅ ENDPOINT ÚNICO INTELIGENTE
     @GetMapping
-    public List<Auto> obtenerAutos(@RequestParam(required = false) Boolean disponibles) {
+    public List<Auto> obtenerAutos(@RequestParam(required = false) Boolean disponibles,
+                                   @RequestParam(required = false) Boolean admin) {
+        // Si es admin, mostrar TODOS los autos
+        if (admin != null && admin) {
+            return autoService.obtenerTodos();
+        }
+        
+        // Si se piden disponibles, mostrar solo autos visibles para clientes
         if (disponibles != null && disponibles) {
             return autoService.obtenerAutosDisponibles();
         }
+        
+        // Por defecto, mostrar todos (pero en el frontend diferenciaremos)
         return autoService.obtenerTodos();
     }
     
+    // ✅ ENDPOINT ESPECÍFICO PARA CLIENTES
+    @GetMapping("/disponibles")
+    public ResponseEntity<List<Auto>> obtenerAutosDisponibles() {
+        List<Auto> autosDisponibles = autoService.obtenerAutosDisponibles();
+        return ResponseEntity.ok(autosDisponibles);
+    }
+    
+    // ✅ ENDPOINT PARA ADMIN - AUTOS CON VENTAS PENDIENTES
+    @GetMapping("/con-ventas-pendientes")
+    public ResponseEntity<List<Auto>> obtenerAutosConVentasPendientes() {
+        List<Auto> autos = autoService.obtenerAutosConVentasPendientes();
+        return ResponseEntity.ok(autos);
+    }
+    
+    // ✅ VERIFICAR SI UN AUTO ES VISIBLE
+    @GetMapping("/{id}/visible")
+    public ResponseEntity<Boolean> esAutoVisible(@PathVariable Long id) {
+        boolean esVisible = autoService.esAutoVisibleParaClientes(id);
+        return ResponseEntity.ok(esVisible);
+    }
+    
+    // Los demás métodos se mantienen igual...
     @GetMapping("/{id}")
     public ResponseEntity<Auto> obtenerAuto(@PathVariable Long id) {
         Optional<Auto> auto = autoService.obtenerPorId(id);
@@ -48,11 +79,5 @@ public class AutoController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
-    }
-
-    @GetMapping("/disponibles")
-    public ResponseEntity<List<Auto>> obtenerAutosDisponibles() {
-        List<Auto> autosDisponibles = autoService.obtenerAutosDisponibles();
-        return ResponseEntity.ok(autosDisponibles);
     }
 }
