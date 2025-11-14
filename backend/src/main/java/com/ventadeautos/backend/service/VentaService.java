@@ -21,6 +21,7 @@ public class VentaService {
     private final VentaRepository ventaRepository;
     private final ClienteService clienteService;
     private final AutoRepository autoRepository;
+    private final EstadoVentaService estadoVentaService;
     
     public Venta crearSolicitudContacto(ContactRequest contactRequest, Usuario usuario) {
         System.out.println("=== 🚨 DEBUG INICIANDO ===");
@@ -56,18 +57,23 @@ public class VentaService {
                 throw new RuntimeException("Ya existe una solicitud de contacto pendiente para este auto");
             }
             
-            // 4. Crear venta
+            // 4. Obtener estado PENDIENTE de la base de datos
+            System.out.println("🔍 Buscando estado PENDIENTE...");
+            EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
+                    .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado en la base de datos"));
+            
+            // 5. Crear venta
             System.out.println("🔍 Creando nueva venta...");
             Venta venta = new Venta();
             venta.setCliente(cliente);
             venta.setAuto(auto);
-            venta.setEstado(EstadoVenta.PENDIENTE);
+            venta.setEstado(estadoPendiente);
             
             Venta ventaGuardada = ventaRepository.save(venta);
             System.out.println("✅ Venta creada exitosamente: " + ventaGuardada.getId());
             
-            // 5. ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO AUTOMÁTICAMENTE
-            actualizarDisponibilidadAuto(auto.getId());
+            // 6. ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO AUTOMÁTICAMENTE
+            actualizarDisponibilidadAuto(auto.getId()); // ✅ LLAMADA CORRECTA AL MÉTODO
             
             return ventaGuardada;
             
@@ -105,18 +111,29 @@ public class VentaService {
         return ventaActualizada;
     }
     
-    // ✅ NUEVO MÉTODO PARA ACTUALIZAR DISPONIBILIDAD DEL AUTO
+    // ✅ MÉTODO MODIFICADO: Solo actualiza disponibilidad para ventas PENDIENTES
     private void actualizarDisponibilidadAuto(Long autoId) {
         Auto auto = autoRepository.findById(autoId)
             .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
         
-        // Verificar si el auto tiene ventas pendientes
+        // Obtener estado PENDIENTE de la base de datos
+        EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
+                .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado"));
+
+
+        EstadoVenta estadoFinalizado = estadoVentaService.obtenerPorNombre("FINALIZADO")
+            .orElseThrow(() -> new RuntimeException("Estado FINALIZADO no encontrado"));
+        
+        // Verificar solo si el auto tiene ventas PENDIENTES
         List<Venta> ventasDelAuto = ventaRepository.findByAutoId(autoId);
         boolean tieneVentasPendientes = ventasDelAuto.stream()
-                .anyMatch(v -> v.getEstado() == EstadoVenta.PENDIENTE);
+                .anyMatch(v -> v.getEstado().getId().equals(estadoPendiente.getId()) || 
+                          v.getEstado().getId().equals(estadoFinalizado.getId()));
         
-        // Si tiene ventas pendientes, el auto NO debe estar disponible
-        // Si no tiene ventas pendientes, el auto SÍ debe estar disponible
+        // Lógica modificada:
+        // - Si tiene ventas PENDIENTES → Auto NO disponible (automático)
+        // - Si la venta es FINALIZADA → Auto sigue NO disponible (hasta que admin lo cambie manualmente)
+        // - Si la venta es CANCELADA → Auto SÍ disponible (automático)
         boolean nuevaDisponibilidad = !tieneVentasPendientes;
         
         // Solo actualizar si cambió la disponibilidad
@@ -125,25 +142,69 @@ public class VentaService {
             autoRepository.save(auto);
             
             System.out.println("🔄 Auto ID: " + auto.getId() + 
-                              " - Nueva disponibilidad: " + auto.getDisponible() + 
-                              " - Ventas pendientes: " + tieneVentasPendientes);
+                            " - Nueva disponibilidad: " + auto.getDisponible() + 
+                            " - Ventas pendientes: " + tieneVentasPendientes);
         }
     }
     
     public VentaResponse convertirAVentaResponse(Venta venta) {
         VentaResponse dto = new VentaResponse();
         dto.setId(venta.getId());
-        dto.setClienteNombre(venta.getCliente().getNombres());
-        dto.setClienteApellidos(venta.getCliente().getApellidos());
-        dto.setClienteDni(venta.getCliente().getDni());
-        dto.setClienteTelefono(venta.getCliente().getTelefono());
-        dto.setClienteDireccion(venta.getCliente().getDireccion());
-        dto.setAutoId(venta.getAuto().getId());
-        dto.setAutoMarca(venta.getAuto().getMarca());
-        dto.setAutoModelo(venta.getAuto().getModelo());
-        dto.setAutoAnio(venta.getAuto().getAnio());
-        dto.setAutoPrecio(venta.getAuto().getPrecio());
-        dto.setEstado(venta.getEstado().name());
+        
+        // Información del cliente
+        if (venta.getCliente() != null) {
+            dto.setClienteNombre(venta.getCliente().getNombres());
+            dto.setClienteApellidos(venta.getCliente().getApellidos());
+            dto.setClienteDni(venta.getCliente().getDni());
+            dto.setClienteTelefono(venta.getCliente().getTelefono());
+            dto.setClienteDireccion(venta.getCliente().getDireccion());
+        }
+        
+        // Información del auto
+        if (venta.getAuto() != null) {
+            dto.setAutoId(venta.getAuto().getId());
+            
+            // ✅ Información de la marca
+            if (venta.getAuto().getMarca() != null) {
+                dto.setAutoMarca(venta.getAuto().getMarca().getNombre());
+                dto.setMarcaId(venta.getAuto().getMarca().getId());
+            } else {
+                dto.setAutoMarca("Sin marca");
+                dto.setMarcaId(null);
+            }
+            
+            dto.setAutoModelo(venta.getAuto().getModelo());
+            dto.setAutoAnio(venta.getAuto().getAnio());
+            dto.setAutoPrecio(venta.getAuto().getPrecio());
+            
+            // ✅ Información adicional del auto
+            dto.setAutoColor(venta.getAuto().getColor());
+            dto.setAutoKilometraje(venta.getAuto().getKilometraje());
+            
+            if (venta.getAuto().getCombustible() != null) {
+                dto.setAutoCombustible(venta.getAuto().getCombustible().getNombre());
+            }
+            
+            if (venta.getAuto().getTransmision() != null) {
+                dto.setAutoTransmision(venta.getAuto().getTransmision().getNombre());
+            }
+            
+            if (venta.getAuto().getCategoria() != null) {
+                dto.setAutoCategoria(venta.getAuto().getCategoria().getNombre());
+            }
+            
+            if (venta.getAuto().getCondicion() != null) {
+                dto.setAutoCondicion(venta.getAuto().getCondicion().getNombre());
+            }
+        }
+        
+        // Información de la venta
+        if (venta.getEstado() != null) {
+            dto.setEstado(venta.getEstado().getNombre());
+        } else {
+            dto.setEstado("SIN ESTADO");
+        }
+        
         dto.setFechaSolicitud(venta.getFechaSolicitud());
         dto.setFechaActualizacion(venta.getFechaActualizacion());
         
@@ -162,9 +223,13 @@ public class VentaService {
         Optional<Cliente> cliente = clienteService.obtenerClientePorUsuarioId(usuarioId);
         
         if (cliente.isPresent()) {
+            // Obtener estado PENDIENTE de la base de datos
+            EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
+                    .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado"));
+            
             // Verificar si el cliente tiene ventas pendientes
             List<Venta> ventasPendientes = ventaRepository.findByClienteIdAndEstado(
-                cliente.get().getId(), EstadoVenta.PENDIENTE);
+                cliente.get().getId(), estadoPendiente);
             return !ventasPendientes.isEmpty();
         }
         

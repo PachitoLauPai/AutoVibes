@@ -20,9 +20,10 @@ public class Venta {
     @JoinColumn(name = "auto_id", nullable = false)
     private Auto auto;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoVenta estado = EstadoVenta.PENDIENTE;
+    // ✅ CAMBIADO: Ahora es relación ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "estado_id", nullable = false)
+    private EstadoVenta estado;
     
     @Column(name = "fecha_solicitud")
     private LocalDateTime fechaSolicitud = LocalDateTime.now();

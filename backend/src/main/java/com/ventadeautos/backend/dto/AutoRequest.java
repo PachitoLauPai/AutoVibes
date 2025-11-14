@@ -6,16 +6,19 @@ import java.util.List;
 
 @Data
 public class AutoRequest {
-    private String marca;
+    private Long marcaId;
     private String modelo;
     private Integer anio;
     private BigDecimal precio;
     private String color;
     private Integer kilometraje;
-    private String combustible;
-    private String transmision;
-    private String descripcion;
     
-    // ✅ NUEVO: Lista de URLs de imágenes
+    // ✅ CAMBIADO: Ahora son IDs
+    private Long combustibleId;
+    private Long transmisionId;
+    private Long categoriaId;
+    private Long condicionId;
+    
+    private String descripcion;
     private List<String> imagenes;
 }

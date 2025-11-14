@@ -7,6 +7,7 @@ import com.ventadeautos.backend.model.EstadoVenta;
 import com.ventadeautos.backend.model.Usuario;
 import com.ventadeautos.backend.model.Venta;
 import com.ventadeautos.backend.service.AuthenticationService;
+import com.ventadeautos.backend.service.EstadoVentaService;
 import com.ventadeautos.backend.service.VentaService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +24,10 @@ import java.util.List;
 public class VentaController {
     
     private final VentaService ventaService;
-    private final AuthenticationService authenticationService; // ✅ Servicio real
+    private final EstadoVentaService estadoVentaService;
+    private final AuthenticationService authenticationService;
     
-  @PostMapping("/contactar")
+    @PostMapping("/contactar")
     public ResponseEntity<?> crearSolicitudContacto(@RequestBody ContactRequest contactRequest, 
                                                 HttpServletRequest request) {
         System.out.println("=== 🚨 BACKEND DEBUG INICIADO ===");
@@ -49,7 +51,7 @@ public class VentaController {
             
         } catch (Exception e) {
             System.out.println("❌ ERROR EN BACKEND: " + e.getMessage());
-            e.printStackTrace(); // 🔥 ESTO ES CLAVE
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -59,7 +61,6 @@ public class VentaController {
         System.out.println("🔓 [VENTAS] Endpoint público - obteniendo todas las solicitudes");
         
         try {
-            // ✅ TEMPORAL: Obtener TODAS las ventas sin filtrar por usuario
             List<Venta> ventas = ventaService.obtenerTodasLasVentas();
             System.out.println("✅ [VENTAS] Total de ventas encontradas: " + ventas.size());
             
@@ -75,7 +76,7 @@ public class VentaController {
         }
     }
     
-    // Endpoints para ADMIN
+    // Endpoints para ADMIN - CORREGIDOS
     
     @GetMapping("/admin/todas")
     public ResponseEntity<?> obtenerTodasLasVentas() {
@@ -91,17 +92,20 @@ public class VentaController {
         }
     }
     
-    @GetMapping("/admin/estado/{estado}")
-    public ResponseEntity<?> obtenerVentasPorEstado(@PathVariable String estado) {
+    @GetMapping("/admin/estado/{estadoNombre}")
+    public ResponseEntity<?> obtenerVentasPorEstado(@PathVariable String estadoNombre) {
         try {
-            EstadoVenta estadoVenta = EstadoVenta.valueOf(estado.toUpperCase());
+            // CORREGIDO: Buscar por nombre en la base de datos
+            EstadoVenta estadoVenta = estadoVentaService.obtenerPorNombre(estadoNombre)
+                    .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + estadoNombre));
+            
             List<Venta> ventas = ventaService.obtenerVentasPorEstado(estadoVenta);
             List<VentaResponse> response = ventaService.convertirListaAVentaResponse(ventas);
             
             return ResponseEntity.ok(response);
             
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Estado no válido: " + estado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error al obtener las ventas");
@@ -112,14 +116,21 @@ public class VentaController {
     public ResponseEntity<?> actualizarEstadoVenta(@PathVariable Long id, 
                                                   @RequestBody EstadoVentaUpdate update) {
         try {
-            EstadoVenta nuevoEstado = EstadoVenta.valueOf(update.getEstado().toUpperCase());
+            // CORREGIDO: Buscar por nombre en la base de datos
+            EstadoVenta nuevoEstado = estadoVentaService.obtenerPorNombre(update.getEstado())
+                    .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + update.getEstado()));
+            
+            // Verificar que el estado esté activo
+            if (!nuevoEstado.getActiva()) {
+                return ResponseEntity.badRequest()
+                        .body("El estado '" + update.getEstado() + "' no está activo");
+            }
+            
             Venta venta = ventaService.actualizarEstadoVenta(id, nuevoEstado);
             VentaResponse response = ventaService.convertirAVentaResponse(venta);
             
             return ResponseEntity.ok(response);
             
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Estado no válido: " + update.getEstado());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {

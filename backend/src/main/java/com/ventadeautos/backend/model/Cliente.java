@@ -1,5 +1,7 @@
 package com.ventadeautos.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -28,5 +30,6 @@ public class Cliente {
     
     @OneToOne
     @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+    @JsonIgnore
     private Usuario usuario;
 }

@@ -20,7 +20,8 @@ public class Usuario {
     @Column(nullable = false)
     private String nombre;
     
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Rol rol = Rol.CLIENTE;
+    // ✅ CAMBIADO: Ahora es relación ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "rol_id", nullable = false)
+    private Rol rol;
 }

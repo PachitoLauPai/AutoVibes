@@ -9,6 +9,8 @@ import com.ventadeautos.backend.model.Cliente;
 import com.ventadeautos.backend.model.Rol;
 import com.ventadeautos.backend.repository.UsuarioRepository;
 import com.ventadeautos.backend.repository.ClienteRepository;
+import com.ventadeautos.backend.repository.RolRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class UsuarioService {
     
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
+    private final RolRepository rolRepository;
     
     public LoginResponse login(LoginRequest request) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(request.getEmail());
@@ -50,17 +53,21 @@ public class UsuarioService {
             response.setMensaje("El email ya está registrado");
             return response;
         }
+
+        // ✅ Obtener el rol CLIENTE de la base de datos
+        Rol rolCliente = rolRepository.findByNombre("CLIENTE")
+                .orElseThrow(() -> new RuntimeException("Rol CLIENTE no encontrado en la base de datos"));
         
         Usuario usuario = new Usuario();
         usuario.setEmail(request.getEmail());
         usuario.setPassword(request.getPassword());
         usuario.setNombre(request.getNombre()); // Este es el "nickname"
-        usuario.setRol(request.getRol());
+        usuario.setRol(rolCliente);
         
         usuarioRepository.save(usuario);
         
         // ✅ CREAR CLIENTE AUTOMÁTICAMENTE SI ES CLIENTE
-        if (request.getRol() == Rol.CLIENTE) {
+        if (rolCliente.getNombre().equals("CLIENTE")) {
             Cliente cliente = new Cliente();
             cliente.setNombres(""); // Se completará al hacer la primera compra
             cliente.setApellidos(""); // Se completará al hacer la primera compra

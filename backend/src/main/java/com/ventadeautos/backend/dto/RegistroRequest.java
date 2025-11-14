@@ -8,5 +8,5 @@ public class RegistroRequest {
     private String email;
     private String password;
     private String nombre;
-    private Rol rol = Rol.CLIENTE;
+    private Rol rolId;
 }

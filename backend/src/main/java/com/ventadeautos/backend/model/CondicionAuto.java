@@ -8,9 +8,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "transmisiones")
+@Table(name = "condiciones_auto")
 @Data
-public class Transmision {
+public class CondicionAuto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,7 +21,7 @@ public class Transmision {
     private String descripcion;
     private Boolean activa = true;
     
-    @OneToMany(mappedBy = "transmision", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "condicion", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Auto> autos = new ArrayList<>();
 }

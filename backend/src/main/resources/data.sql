@@ -1,30 +1,99 @@
--- Limpiar tablas
+-- Limpiar todas las tablas (en orden correcto)
 DELETE FROM auto_imagenes;
+DELETE FROM ventas;
 DELETE FROM autos;
+DELETE FROM marcas;
+DELETE FROM categorias_auto;
+DELETE FROM combustibles;
+DELETE FROM condiciones_auto;
+DELETE FROM estados_venta;
+DELETE FROM roles;
+DELETE FROM transmisiones;
 DELETE FROM usuarios;
 
--- Insertar usuarios
-INSERT INTO usuarios (id, email, password, nombre, rol) VALUES 
-(1, 'admin@test.com', 'admin123', 'Administrador Principal', 'ADMIN'),
-(2, 'cliente@test.com', 'cliente123', 'Cliente Ejemplo', 'CLIENTE');
+-- Insertar Roles
+INSERT INTO roles (id, nombre, descripcion, activa) VALUES 
+(1, 'ADMIN', 'Administrador del sistema', true),
+(2, 'CLIENTE', 'Cliente de la concesionaria', true);
 
+-- Insertar Estados de Venta
+INSERT INTO estados_venta (id, nombre, descripcion, activa) VALUES 
+(1, 'PENDIENTE', 'Solicitud de contacto pendiente', true),
+(2, 'FINALIZADO', 'Venta finalizada', true),
+(3, 'CANCELADO', 'Venta cancelada', true);
 
+-- Insertar Categorías de Auto
+INSERT INTO categorias_auto (id, nombre, descripcion, activa) VALUES 
+(1, 'SEDAN', 'Automóvil de turismo', true),
+(2, 'CAMIONETA', 'Vehículo utilitario deportivo', true),
+(3, 'HATCHBACK', 'Automóvil compacto', true),
+(4, 'PICKUP', 'Vehículo de carga', true),
+(5, 'VAN', 'Vehículo familiar', true),
+(6, 'DEPORTIVO', 'Automóvil de alto rendimiento', true);
 
--- Insertar 10 autos adicionales
-INSERT INTO autos (id, marca, modelo, anio, precio, color, kilometraje, combustible, transmision, descripcion, disponible) VALUES 
-(1, 'Toyota', 'Corolla', 2023, 25500.00, 'Blanco', 0, 'GASOLINA', 'AUTOMATICA', 'Auto nuevo full equipo, perfecto estado', true),
-(2, 'Honda', 'Civic', 2023, 23000.00, 'Gris', 0, 'GASOLINA', 'AUTOMATICA', 'Deportivo y económico, bajo consumo', true),
-(3, 'Ford', 'Mustang', 2024, 45000.00, 'Rojo', 0, 'GASOLINA', 'AUTOMATICA', 'Deportivo americano iconico, motor V8', true),
-(4, 'Volkswagen', 'Golf', 2023, 28000.00, 'Azul', 1500, 'GASOLINA', 'MANUAL', 'Hatchback versátil y divertido de conducir', true),
-(5, 'BMW', 'Serie 3', 2024, 52000.00, 'Negro', 0, 'GASOLINA', 'AUTOMATICA', 'Sedán de lujo con excelente manejo', true),
-(6, 'Mercedes-Benz', 'Clase C', 2023, 55000.00, 'Plateado', 5000, 'GASOLINA', 'AUTOMATICA', 'Elegancia y tecnología alemana', true),
-(7, 'Audi', 'A4', 2024, 48000.00, 'Blanco', 0, 'GASOLINA', 'AUTOMATICA', 'Calidad premium y tracción integral', true),
-(8, 'Nissan', 'Sentra', 2023, 22000.00, 'Gris', 8000, 'GASOLINA', 'MANUAL', 'Económico y confiable para el día a día', true),
-(9, 'Hyundai', 'Tucson', 2024, 32000.00, 'Verde', 0, 'HIBRIDO', 'AUTOMATICA', 'SUV familiar con tecnología híbrida', true),
-(10, 'Kia', 'Sportage', 2023, 31000.00, 'Blanco', 12000, 'GASOLINA', 'AUTOMATICA', 'SUV espacioso y bien equipado', true),
-(11, 'Mazda', 'CX-5', 2024, 34000.00, 'Rojo', 0, 'GASOLINA', 'AUTOMATICA', 'Diseño premium y eficiente', true),
-(12, 'Subaru', 'Outback', 2023, 36000.00, 'Azul', 7000, 'GASOLINA', 'MANUAL', 'Todo terreno con tracción integral', true);
+-- Insertar Combustibles
+INSERT INTO combustibles (id, nombre, descripcion, activa) VALUES 
+(1, 'GASOLINA', 'Combustible tradicional', true),
+(2, 'DIESEL', 'Combustible diésel', true),
+(3, 'HIBRIDO', 'Motor híbrido', true),
+(4, 'ELECTRICO', 'Vehículo eléctrico', true);
 
+-- Insertar Condiciones de Auto
+INSERT INTO condiciones_auto (id, nombre, descripcion, activa) VALUES 
+(1, 'NUEVO', 'Vehículo nuevo (0 km)', true),
+(2, 'USADO', 'Vehículo usado', true);
+
+-- Insertar Transmisiones
+INSERT INTO transmisiones (id, nombre, descripcion, activa) VALUES 
+(1, 'MANUAL', 'Transmisión manual', true),
+(2, 'AUTOMATICA', 'Transmisión automática', true);
+
+-- Insertar Marcas
+INSERT INTO marcas (id, nombre, descripcion, activa) VALUES 
+(1, 'Toyota', 'Fabricante japonés de automóviles', true),
+(2, 'Honda', 'Fabricante japonés de automóviles y motocicletas', true),
+(3, 'Ford', 'Fabricante americano de automóviles', true),
+(4, 'Volkswagen', 'Fabricante alemán de automóviles', true),
+(5, 'BMW', 'Fabricante alemán de automóviles de lujo', true),
+(6, 'Mercedes-Benz', 'Fabricante alemán de automóviles de lujo', true),
+(7, 'Audi', 'Fabricante alemán de automóviles de lujo', true),
+(8, 'Nissan', 'Fabricante japonés de automóviles', true),
+(9, 'Hyundai', 'Fabricante coreano de automóviles', true),
+(10, 'Kia', 'Fabricante coreano de automóviles', true),
+(11, 'Mazda', 'Fabricante japonés de automóviles', true),
+(12, 'Subaru', 'Fabricante japonés de automóviles', true);
+
+-- Insertar Usuarios
+INSERT INTO usuarios (id, email, password, nombre, rol_id) VALUES 
+(1, 'admin@test.com', 'admin123', 'Administrador Principal', 1),
+(2, 'cliente@test.com', 'cliente123', 'Cliente Ejemplo', 2);
+
+-- Insertar Autos (con las nuevas relaciones)
+INSERT INTO autos (id, marca_id, modelo, anio, precio, color, kilometraje, combustible_id, transmision_id, categoria_id, condicion_id, descripcion, disponible) VALUES 
+-- Toyota Corolla - Sedán Nuevo
+(1, 1, 'Corolla', 2023, 25500.00, 'Blanco', 0, 1, 2, 1, 1, 'Auto nuevo full equipo, perfecto estado', true),
+-- Honda Civic - Sedán Nuevo
+(2, 2, 'Civic', 2023, 23000.00, 'Gris', 0, 1, 2, 1, 1, 'Deportivo y económico, bajo consumo', true),
+-- Ford Mustang - Deportivo Nuevo
+(3, 3, 'Mustang', 2024, 45000.00, 'Rojo', 0, 1, 2, 6, 1, 'Deportivo americano iconico, motor V8', true),
+-- Volkswagen Golf - Hatchback Usado
+(4, 4, 'Golf', 2023, 28000.00, 'Azul', 1500, 1, 1, 3, 2, 'Hatchback versátil y divertido de conducir', true),
+-- BMW Serie 3 - Sedán Nuevo
+(5, 5, 'Serie 3', 2024, 52000.00, 'Negro', 0, 1, 2, 1, 1, 'Sedán de lujo con excelente manejo', true),
+-- Mercedes-Benz Clase C - Sedán Usado
+(6, 6, 'Clase C', 2023, 55000.00, 'Plateado', 5000, 1, 2, 1, 2, 'Elegancia y tecnología alemana', true),
+-- Audi A4 - Sedán Nuevo
+(7, 7, 'A4', 2024, 48000.00, 'Blanco', 0, 1, 2, 1, 1, 'Calidad premium y tracción integral', true),
+-- Nissan Sentra - Sedán Usado
+(8, 8, 'Sentra', 2023, 22000.00, 'Gris', 8000, 1, 1, 1, 2, 'Económico y confiable para el día a día', true),
+-- Hyundai Tucson - Camioneta Nueva Híbrida
+(9, 9, 'Tucson', 2024, 32000.00, 'Verde', 0, 3, 2, 2, 1, 'SUV familiar con tecnología híbrida', true),
+-- Kia Sportage - Camioneta Usada
+(10, 10, 'Sportage', 2023, 31000.00, 'Blanco', 12000, 1, 2, 2, 2, 'SUV espacioso y bien equipado', true),
+-- Mazda CX-5 - Camioneta Nueva
+(11, 11, 'CX-5', 2024, 34000.00, 'Rojo', 0, 1, 2, 2, 1, 'Diseño premium y eficiente', true),
+-- Subaru Outback - Camioneta Usada
+(12, 12, 'Outback', 2023, 36000.00, 'Azul', 7000, 1, 1, 2, 2, 'Todo terreno con tracción integral', true);
 
 -- Insertar imágenes para Toyota Corolla (5 imágenes)
 INSERT INTO auto_imagenes (auto_id, url_imagen) VALUES 
