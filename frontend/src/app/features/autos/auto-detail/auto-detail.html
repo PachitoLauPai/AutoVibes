@@ -1,186 +1,293 @@
-<div class="auto-detail-container">
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading">
-    <p>Cargando información del auto...</p>
+<div class="container py-5">
+  
+  <!-- LOADING -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-3 text-muted">Cargando información del auto...</p>
   </div>
 
-  <!-- Error State -->
-  <div *ngIf="error && !loading" class="error">
-    <p>{{ error }}</p>
-    <button (click)="volverALista()" class="btn-back">← Volver a la Lista</button>
+  <!-- ERROR -->
+  <div *ngIf="error && !loading" class="alert alert-danger alert-dismissible fade show" role="alert">
+    ❌ {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''; volverALista()"></button>
   </div>
 
-  <!-- Auto Detail -->
-  <div *ngIf="auto && !loading" class="auto-detail">
-    <div class="auto-images">
-      
-      <!-- ✅ CARRUSEL DE IMÁGENES MEJORADO -->
-      <div class="image-carousel">
-        <!-- Imagen principal -->
-        <div class="main-image-container">
-          <img 
-            [src]="getCurrentImage()" 
-            [alt]="auto.marca + ' ' + auto.modelo" 
-            class="main-image"
-            (error)="handleImageError($event)">
-          
-          <!-- Controles de navegación -->
-          <button *ngIf="auto.imagenes.length > 1" 
-                  class="nav-btn prev" 
-                  (click)="prevImage()">
-            ‹
-          </button>
-          <button *ngIf="auto.imagenes.length > 1" 
-                  class="nav-btn next" 
-                  (click)="nextImage()">
-            ›
-          </button>
-
-          <!-- Contador de imágenes -->
-          <div *ngIf="auto.imagenes.length > 1" class="image-counter">
-            {{ currentImageIndex + 1 }} / {{ auto.imagenes.length }}
-          </div>
-        </div>
-
-        <!-- Miniaturas -->
-        <div *ngIf="auto.imagenes.length > 1" class="thumbnails">
-          <div *ngFor="let imagen of auto.imagenes; let i = index" 
-               class="thumbnail" 
-               [class.active]="i === currentImageIndex"
-               (click)="goToImage(i)">
-            <img [src]="imagen" [alt]="auto.marca + ' ' + auto.modelo + ' ' + (i + 1)">
-          </div>
-        </div>
-      </div>
-
+  <!-- AUTO DETAIL CONTENT -->
+  <div *ngIf="auto && !loading" class="row">
+    
+    <!-- BREADCRUMB -->
+    <div class="col-12 mb-4">
+      <button class="btn btn-outline-secondary" (click)="volverALista()">
+        ← Volver a la lista
+      </button>
     </div>
 
-    <div class="auto-info">
-      <h1>{{ auto.marca }} {{ auto.modelo }}</h1>
-      <p class="price">S/ {{ auto.precio | number:'1.2-2' }}</p>
-      
-      <div class="specs-grid">
-        <div class="spec-item">
-          <strong>Año:</strong> {{ auto.anio }}
-        </div>
-        <div class="spec-item">
-          <strong>Color:</strong> {{ auto.color }}
-        </div>
-        <div class="spec-item">
-          <strong>Combustible:</strong> {{ auto.combustible }}
-        </div>
-        <div class="spec-item">
-          <strong>Transmisión:</strong> {{ auto.transmision }}
-        </div>
-        <div class="spec-item">
-          <strong>Kilometraje:</strong> {{ auto.kilometraje | number }} km
-        </div>
-        <div class="spec-item">
-          <strong>Estado:</strong> 
-          <span [class]="auto.disponible ? 'available' : 'sold'">
-            {{ auto.disponible ? 'Disponible' : 'Vendido' }}
-          </span>
-        </div>
-      </div>
-
-      <div class="description-section">
-        <h3>Descripción</h3>
-        <p class="description">{{ auto.descripcion }}</p>
-      </div>
-
-      <div class="actions">
-        <button 
-          *ngIf="auto.disponible"
-          class="contact-btn" 
-          (click)="openContactModal()">
-          Contactar Vendedor
-        </button>
+    <!-- IMAGE GALLERY (LEFT) -->
+    <div class="col-lg-6 mb-4">
+      <div class="card border-0 shadow-sm">
         
-        <button (click)="volverALista()" class="btn-back">
-          ← Volver a la Lista
-        </button>
+        <!-- MAIN IMAGE WITH CAROUSEL -->
+        <div id="carouselAuto" class="carousel slide" data-bs-ride="carousel" *ngIf="auto.imagenes && auto.imagenes.length > 0">
+          <div class="carousel-inner">
+            <div *ngFor="let imagen of auto.imagenes; let i = index" 
+                 class="carousel-item" 
+                 [class.active]="i === 0">
+              <img [src]="imagen" 
+                   [alt]="auto.modelo"
+                   (error)="handleImageError($event)"
+                   class="d-block w-100" 
+                   style="height: 400px; object-fit: cover;">
+            </div>
+          </div>
+
+          <!-- CAROUSEL CONTROLS -->
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselAuto" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselAuto" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+          </button>
+
+          <!-- IMAGE COUNTER -->
+          <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3">
+            <span class="badge bg-dark">{{ currentImageIndex + 1 }} / {{ auto.imagenes.length }}</span>
+          </div>
+        </div>
+
+        <!-- SINGLE IMAGE IF NO CAROUSEL -->
+        <img *ngIf="!auto.imagenes || auto.imagenes.length === 0"
+             [src]="getPlaceholderImage()"
+             [alt]="auto.modelo"
+             class="card-img-top"
+             style="height: 400px; object-fit: cover;">
+
+        <!-- THUMBNAILS -->
+        <div *ngIf="auto.imagenes && auto.imagenes.length > 1" class="card-footer bg-light">
+          <div class="d-flex gap-2 overflow-auto">
+            <img *ngFor="let img of auto.imagenes; let i = index"
+                 [src]="img"
+                 [alt]="'Miniatura ' + (i + 1)"
+                 (click)="goToImage(i)"
+                 (error)="handleImageError($event)"
+                 class="img-thumbnail"
+                 style="width: 60px; height: 45px; cursor: pointer; object-fit: cover;"
+                 [class.border-primary]="i === currentImageIndex"
+                 [class.border-3]="i === currentImageIndex">
+            >
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal de Contacto -->
-  <div *ngIf="showContactModal" class="modal-overlay" (click)="closeContactModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Contactar sobre {{ auto?.marca }} {{ auto?.modelo }}</h3>
-        <button class="close-btn" (click)="closeContactModal()">&times;</button>
+    <!-- AUTO INFORMATION (RIGHT) -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+          <!-- TITLE -->
+          <h1 class="card-title fw-bold mb-2">
+            {{ auto.marca?.nombre }} {{ auto.modelo }}
+          </h1>
+
+          <!-- PRICE AND STATUS -->
+          <div class="mb-4">
+            <h2 class="text-danger fw-bold" style="font-size: 2.5rem;">
+              S/ {{ auto.precio | number:'1.2-2' }}
+            </h2>
+            <span [class]="'badge ' + (auto.disponible ? 'bg-success' : 'bg-danger')"
+                  style="font-size: 1rem; padding: 0.5rem 1rem;">
+              {{ auto.disponible ? '✅ Disponible' : '💰 Vendido' }}
+            </span>
+          </div>
+
+          <!-- SPECIFICATIONS -->
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">📅 Año</small>
+                <strong>{{ auto.anio }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">🛣️ Kilometraje</small>
+                <strong>{{ auto.kilometraje | number }} km</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">🎨 Color</small>
+                <strong>{{ auto.color }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">⛽ Combustible</small>
+                <strong>{{ auto.combustible?.nombre }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">🔧 Transmisión</small>
+                <strong>{{ auto.transmision?.nombre }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">📂 Categoría</small>
+                <strong>{{ auto.categoria?.nombre }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">📊 Condición</small>
+                <strong>{{ auto.condicion?.nombre }}</strong>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 bg-light rounded">
+                <small class="text-muted d-block">✔️ Estado</small>
+                <strong class="text-success" *ngIf="auto.disponible">Disponible</strong>
+                <strong class="text-danger" *ngIf="!auto.disponible">No Disponible</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- DESCRIPTION -->
+          <div class="mb-4">
+            <h5 class="fw-bold mb-2">Descripción</h5>
+            <p class="text-muted">{{ auto.descripcion }}</p>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="d-grid gap-2">
+            <button *ngIf="auto.disponible"
+                    class="btn btn-primary btn-lg"
+                    (click)="openContactModal()">
+              📞 Contactar al Vendedor
+            </button>
+            <button *ngIf="!auto.disponible"
+                    class="btn btn-secondary btn-lg"
+                    disabled>
+              ⏳ Auto No Disponible
+            </button>
+            <button class="btn btn-outline-secondary"
+                    (click)="volverALista()">
+              ← Volver a la lista
+            </button>
+          </div>
+        </div>
       </div>
-      
-      <form (ngSubmit)="contactarVendedor()" #contactForm="ngForm">
-        <div class="form-group">
-          <label for="nombres">Nombres *</label>
-          <input 
-            type="text" 
-            id="nombres"
-            [(ngModel)]="contactData.nombres" 
-            name="nombres" 
-            required
-            placeholder="Ingrese sus nombres">
-        </div>
-
-        <div class="form-group">
-          <label for="apellidos">Apellidos *</label>
-          <input 
-            type="text" 
-            id="apellidos"
-            [(ngModel)]="contactData.apellidos" 
-            name="apellidos" 
-            required
-            placeholder="Ingrese sus apellidos">
-        </div>
-
-        <div class="form-group">
-          <label for="dni">DNI *</label>
-          <input 
-            type="text" 
-            id="dni"
-            [(ngModel)]="contactData.dni" 
-            name="dni" 
-            required
-            maxlength="8"
-            pattern="[0-9]{8}"
-            placeholder="Ingrese su DNI (8 dígitos)">
-        </div>
-
-        <div class="form-group">
-          <label for="telefono">Teléfono *</label>
-          <input 
-            type="tel" 
-            id="telefono"
-            [(ngModel)]="contactData.telefono" 
-            name="telefono" 
-            required
-            placeholder="Ingrese su teléfono">
-        </div>
-
-        <div class="form-group">
-          <label for="direccion">Dirección *</label>
-          <textarea 
-            id="direccion"
-            [(ngModel)]="contactData.direccion" 
-            name="direccion" 
-            required
-            placeholder="Ingrese su dirección completa"
-            rows="3"></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="btn-cancel" (click)="closeContactModal()">
-            Cancelar
-          </button>
-          <button 
-            type="submit" 
-            class="btn-contact"
-            [disabled]="!contactForm.form.valid">
-            Enviar Solicitud
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 </div>
+
+<!-- CONTACT MODAL -->
+<div class="modal fade" 
+     id="contactModal" 
+     tabindex="-1" 
+     [class.show]="showContactModal"
+     [style.display]="showContactModal ? 'block' : 'none'"
+     role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      
+      <!-- MODAL HEADER -->
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Contactar sobre: {{ auto?.marca?.nombre }} {{ auto?.modelo }}
+        </h5>
+        <button type="button" 
+                class="btn-close" 
+                (click)="closeContactModal()"></button>
+      </div>
+
+      <!-- MODAL BODY -->
+      <div class="modal-body">
+        <form (ngSubmit)="contactarVendedor()">
+          
+          <!-- NOMBRES -->
+          <div class="mb-3">
+            <label for="nombres" class="form-label fw-bold">Nombres *</label>
+            <input type="text" 
+                   class="form-control" 
+                   id="nombres"
+                   [(ngModel)]="contactData.nombres"
+                   name="nombres"
+                   placeholder="Juan"
+                   required>
+          </div>
+
+          <!-- APELLIDOS -->
+          <div class="mb-3">
+            <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
+            <input type="text" 
+                   class="form-control" 
+                   id="apellidos"
+                   [(ngModel)]="contactData.apellidos"
+                   name="apellidos"
+                   placeholder="Pérez García"
+                   required>
+          </div>
+
+          <!-- DNI -->
+          <div class="mb-3">
+            <label for="dni" class="form-label fw-bold">DNI *</label>
+            <input type="text" 
+                   class="form-control" 
+                   id="dni"
+                   [(ngModel)]="contactData.dni"
+                   name="dni"
+                   placeholder="12345678"
+                   required>
+          </div>
+
+          <!-- TELÉFONO -->
+          <div class="mb-3">
+            <label for="telefono" class="form-label fw-bold">Teléfono *</label>
+            <input type="tel" 
+                   class="form-control" 
+                   id="telefono"
+                   [(ngModel)]="contactData.telefono"
+                   name="telefono"
+                   placeholder="+51 987654321"
+                   required>
+          </div>
+
+          <!-- DIRECCIÓN -->
+          <div class="mb-3">
+            <label for="direccion" class="form-label fw-bold">Dirección *</label>
+            <textarea class="form-control" 
+                      id="direccion"
+                      [(ngModel)]="contactData.direccion"
+                      name="direccion"
+                      rows="3"
+                      placeholder="Calle Principal 123, Apt 4..."
+                      required></textarea>
+          </div>
+
+          <!-- MODAL FOOTER -->
+          <div class="d-flex gap-2 mt-4">
+            <button type="button" 
+                    class="btn btn-secondary flex-grow-1"
+                    (click)="closeContactModal()">
+              Cancelar
+            </button>
+            <button type="submit" 
+                    class="btn btn-primary flex-grow-1">
+              ✅ Enviar Solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BACKDROP -->
+<div class="modal-backdrop fade" 
+     [class.show]="showContactModal"
+     *ngIf="showContactModal"
+     (click)="closeContactModal()"></div>

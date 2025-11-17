@@ -1,164 +1,264 @@
-<div class="container">
-  <h1>Venta de Autos</h1>
-  
-  <nav class="nav">
-    <div class="user-info" *ngIf="authService.isLoggedIn()">
-      <span class="welcome">Hola, {{ authService.currentUser()?.nombre }}</span>
-      <span class="user-role admin" *ngIf="authService.isAdmin()">👑 Administrador</span>
-      <span class="user-role cliente" *ngIf="authService.isCliente()">👤 Cliente</span>
+<div class="container-fluid py-4">
+  <div class="container">
+    
+    <!-- ENCABEZADO -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1 class="h2 fw-bold">🚗 Gestión de Autos</h1>
+      </div>
     </div>
     
-    <div class="nav-actions">
-      <div *ngIf="authService.isAdmin()" class="admin-actions">
-        <button class="btn btn-success" routerLink="/admin/autos/nuevo">
-          + Agregar Auto
-        </button>
-        <button class="btn btn-info" routerLink="/admin/usuarios">
-          👥 Gestionar Usuarios
-        </button>
-        <button class="btn btn-warning" routerLink="/admin/ventas">
-          🧾 Gestionar Ventas
-        </button>
-      </div>
-      
-      <button *ngIf="authService.isLoggedIn()" class="btn btn-warning" (click)="authService.logout()">
-        Cerrar Sesión
+    <!-- VISTAS (Solo Admin) -->
+    <div class="btn-group mb-4" role="group" *ngIf="authService.isAdmin()">
+      <button type="button" 
+              class="btn btn-outline-primary" 
+              [class.active]="vistaActual === 'disponibles'"
+              (click)="cambiarVista('disponibles')">
+        ✅ Disponibles ({{ contadores.disponibles }})
       </button>
-      
-      <button *ngIf="!authService.isLoggedIn()" class="btn btn-primary" routerLink="/login">
-        Iniciar Sesión
+      <button type="button" 
+              class="btn btn-outline-primary" 
+              [class.active]="vistaActual === 'vendidos'"
+              (click)="cambiarVista('vendidos')">
+        💰 Vendidos ({{ contadores.vendidos }})
+      </button>
+      <button type="button" 
+              class="btn btn-outline-primary" 
+              [class.active]="vistaActual === 'todos'"
+              (click)="cambiarVista('todos')">
+        📊 Todos ({{ contadores.todos }})
       </button>
     </div>
-  </nav>
 
-  <div *ngIf="loading" class="loading">Cargando autos...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-
-  <div *ngIf="!loading && !error" class="autos-grid">
-    
-    <!-- ADMIN: VE TODOS LOS AUTOS -->
-    <ng-container *ngIf="authService.isAdmin()">
-      <div *ngFor="let auto of autos" class="auto-card">
-        
-        <!-- CONTENIDO DEL AUTO - AGREGA AQUÍ LA INFORMACIÓN DEL AUTO -->
-        <div class="auto-image">
-          <img 
-            [src]="getCurrentImage(auto)" 
-            [alt]="auto.marca + ' ' + auto.modelo"
-            (error)="onImageError($event, auto)"
-            class="auto-img"
-          >
-          <div class="image-controls">
-            <button (click)="prevImage(auto)" class="img-btn">‹</button>
-            <button (click)="nextImage(auto)" class="img-btn">›</button>
-          </div>
-          <div class="image-indicator">
-            {{ getCurrentImageIndex(auto) + 1 }}/{{ auto.imagenes?.length || 1 }}
-          </div>
-        </div>
-        
-        <div class="auto-info">
-          <h3>{{ auto.marca }} {{ auto.modelo }}</h3>
-          <p><strong>Año:</strong> {{ auto.anio }}</p>
-          <p><strong>Precio:</strong> ${{ auto.precio?.toLocaleString() }}</p>
-          <p><strong>Kilometraje:</strong> {{ auto.kilometraje?.toLocaleString() }} km</p>
-          <p><strong>Color:</strong> {{ auto.color }}</p>
-          <p><strong>Descripción:</strong> {{ auto.descripcion }}</p>
-          
-          <div class="estado" [class]="getEstadoClass(auto)">
-            {{ getEstadoTexto(auto) }}
-          </div>
-
-          <!-- BOTONES PARA ADMIN -->
-          <div class="admin-actions">
-            <button class="btn btn-warning btn-sm" (click)="editarAuto(auto)">
-              ✏️ Editar
-            </button>
-            <button class="btn btn-danger btn-sm" (click)="eliminarAuto(auto)">
-              🗑️ Eliminar
-            </button>
-          </div>
-        </div>
+    <!-- LOADING -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
       </div>
-    </ng-container>
-
-    <!-- CLIENTE: SOLO VE AUTOS DISPONIBLES -->
-    <ng-container *ngIf="authService.isCliente()">
-      <div *ngFor="let auto of autos" class="auto-card">
-        
-        <!-- CONTENIDO DEL AUTO -->
-        <div class="auto-image">
-          <img 
-            [src]="getCurrentImage(auto)" 
-            [alt]="auto.marca + ' ' + auto.modelo"
-            (error)="onImageError($event, auto)"
-            class="auto-img"
-          >
-          <div class="image-controls">
-            <button (click)="prevImage(auto)" class="img-btn">‹</button>
-            <button (click)="nextImage(auto)" class="img-btn">›</button>
-          </div>
-        </div>
-        
-        <div class="auto-info">
-          <h3>{{ auto.marca }} {{ auto.modelo }}</h3>
-          <p><strong>Año:</strong> {{ auto.anio }}</p>
-          <p><strong>Precio:</strong> ${{ auto.precio?.toLocaleString() }}</p>
-          <p><strong>Kilometraje:</strong> {{ auto.kilometraje?.toLocaleString() }} km</p>
-          <p><strong>Color:</strong> {{ auto.color }}</p>
-          
-          <div class="estado estado-disponible">
-            ✅ Disponible
-          </div>
-
-          <!-- BOTÓN PARA CLIENTE -->
-          <div class="client-actions">
-            <a [routerLink]="['/autos', auto.id]" class="btn btn-primary btn-details">
-              🔍 Ver Detalles y Contactar
-            </a>
-          </div>
-        </div>
-      </div>
-    </ng-container>
-
-    <!-- USUARIO NO LOGEADO -->
-    <ng-container *ngIf="!authService.isLoggedIn()">
-      <div *ngFor="let auto of autos" class="auto-card">
-        
-        <!-- CONTENIDO DEL AUTO -->
-        <div class="auto-image">
-          <img 
-            [src]="getCurrentImage(auto)" 
-            [alt]="auto.marca + ' ' + auto.modelo"
-            (error)="onImageError($event, auto)"
-            class="auto-img"
-          >
-        </div>
-        
-        <div class="auto-info">
-          <h3>{{ auto.marca }} {{ auto.modelo }}</h3>
-          <p><strong>Año:</strong> {{ auto.anio }}</p>
-          <p><strong>Precio:</strong> ${{ auto.precio?.toLocaleString() }}</p>
-          <p><strong>Kilometraje:</strong> {{ auto.kilometraje?.toLocaleString() }} km</p>
-          
-          <div class="estado estado-disponible">
-            ✅ Disponible
-          </div>
-
-          <!-- BOTÓN PARA NO LOGEADO -->
-          <div class="client-actions">
-            <button class="btn btn-secondary btn-details" (click)="irALogin()">
-              🔐 Iniciar Sesión para Contactar
-            </button>
-          </div>
-        </div>
-      </div>
-    </ng-container>
-
-    <!-- MENSAJE SI NO HAY AUTOS -->
-    <div *ngIf="autos.length === 0" class="empty-state">
-      <p>No hay autos disponibles en este momento.</p>
+      <p class="mt-3 text-muted">Cargando autos...</p>
     </div>
 
+    <!-- ERROR -->
+    <div *ngIf="error && !loading" class="alert alert-danger alert-dismissible fade show" role="alert">
+      ❌ {{ error }}
+      <button type="button" class="btn-close" (click)="error = ''"></button>
+    </div>
+
+    <!-- GRID DE AUTOS -->
+    <div class="row g-4" *ngIf="!loading && !error">
+      
+      <!-- ADMIN: VE TODOS LOS AUTOS -->
+      <ng-container *ngIf="authService.isAdmin()">
+        <div *ngFor="let auto of autos" class="col-lg-4 col-md-6">
+          <div class="card h-100 shadow-sm" [class.opacity-75]="!auto.disponible">
+            
+            <!-- CARRUSEL DE IMÁGENES -->
+            <div id="carousel-{{ auto.id }}" class="carousel slide" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                <div *ngFor="let img of auto.imagenes; let i = index" 
+                     class="carousel-item" 
+                     [class.active]="i === 0">
+                  <img [src]="img" 
+                       [alt]="auto.modelo"
+                       (error)="onImageError($event, auto)"
+                       class="d-block w-100" 
+                       style="height: 250px; object-fit: cover;">
+                </div>
+              </div>
+
+              <!-- CONTROLES CARRUSEL -->
+              <button class="carousel-control-prev" 
+                      type="button" 
+                      [attr.data-bs-target]="'#carousel-' + auto.id" 
+                      data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+              </button>
+              <button class="carousel-control-next" 
+                      type="button" 
+                      [attr.data-bs-target]="'#carousel-' + auto.id" 
+                      data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+              </button>
+
+              <!-- BADGE VENDIDO -->
+              <div *ngIf="!auto.disponible" class="position-absolute top-0 end-0 m-2">
+                <span class="badge bg-danger">💰 VENDIDO</span>
+              </div>
+            </div>
+
+            <!-- INFORMACIÓN DEL AUTO -->
+            <div class="card-body">
+              <h5 class="card-title fw-bold">
+                {{ auto.marca?.nombre }} {{ auto.modelo }}
+              </h5>
+              
+              <div class="mb-3">
+                <span class="badge bg-info">📅 {{ auto.anio }}</span>
+                <span class="badge bg-secondary">🛣️ {{ auto.kilometraje | number }} km</span>
+              </div>
+
+              <p class="card-text text-muted small">
+                <strong>Color:</strong> {{ auto.color }}<br>
+                <strong>⛽ Combustible:</strong> {{ auto.combustible?.nombre }}<br>
+                <strong>🔧 Transmisión:</strong> {{ auto.transmision?.nombre }}<br>
+                <strong>📂 Categoría:</strong> {{ auto.categoria?.nombre }}<br>
+                <strong>Estado:</strong> {{ auto.condicion?.nombre }}
+              </p>
+
+              <p class="card-text text-truncate">{{ auto.descripcion }}</p>
+
+              <!-- PRECIO -->
+              <h4 class="text-danger fw-bold mb-3">
+                S/ {{ auto.precio | number:'1.2-2' }}
+              </h4>
+
+              <!-- ESTADO VENTA -->
+              <div class="mb-3">
+                <span [class]="'badge ' + (auto.disponible ? 'bg-success' : 'bg-warning text-dark')">
+                  {{ getEstadoTexto(auto) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="card-footer bg-white">
+              <div class="btn-group w-100 d-flex gap-2 flex-wrap" role="group">
+                <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1" 
+                        (click)="editarAuto(auto)">
+                  ✏️ Editar
+                </button>
+
+                <button *ngIf="!auto.disponible && tieneVentaFinalizada(auto)" 
+                        type="button" class="btn btn-sm btn-success flex-grow-1"
+                        (click)="reactivarAuto(auto)">
+                  🔄 Activar
+                </button>
+
+                <button *ngIf="auto.disponible" 
+                        type="button" class="btn btn-sm btn-warning flex-grow-1"
+                        (click)="marcarComoVendido(auto)">
+                  📦 Vendido
+                </button>
+
+                <button *ngIf="!auto.disponible && !tieneVentaFinalizada(auto)" 
+                        type="button" class="btn btn-sm btn-info flex-grow-1"
+                        (click)="cambiarDisponibilidad(auto, true)">
+                  📈 Disponible
+                </button>
+
+                <button type="button" class="btn btn-sm btn-danger flex-grow-1"
+                        (click)="eliminarAuto(auto)">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- CLIENTE: SOLO AUTOS DISPONIBLES -->
+      <ng-container *ngIf="authService.isCliente()">
+        <div *ngFor="let auto of autos" class="col-lg-4 col-md-6">
+          <div class="card h-100 shadow-sm">
+            
+            <!-- IMAGEN -->
+            <img [src]="auto.imagenes?.[0] || getDefaultImage(auto)" 
+                 [alt]="auto.modelo"
+                 (error)="onImageError($event, auto)"
+                 class="card-img-top" 
+                 style="height: 250px; object-fit: cover;">
+
+            <!-- INFORMACIÓN -->
+            <div class="card-body">
+              <h5 class="card-title fw-bold">
+                {{ auto.marca?.nombre }} {{ auto.modelo }}
+              </h5>
+              
+              <div class="mb-2">
+                <span class="badge bg-info">📅 {{ auto.anio }}</span>
+                <span class="badge bg-secondary">🛣️ {{ auto.kilometraje | number }} km</span>
+              </div>
+
+              <p class="card-text small text-muted">
+                🎨 {{ auto.color }}<br>
+                ⛽ {{ auto.combustible?.nombre }}<br>
+                🔧 {{ auto.transmision?.nombre }}
+              </p>
+
+              <h4 class="text-danger fw-bold mb-3">
+                S/ {{ auto.precio | number:'1.2-2' }}
+              </h4>
+
+              <span class="badge bg-success w-100 mb-3 d-block">✅ Disponible</span>
+            </div>
+
+            <!-- BOTÓN -->
+            <div class="card-footer bg-white">
+              <a [routerLink]="['/autos', auto.id]" class="btn btn-primary w-100">
+                👁️ Ver Detalles y Contactar
+              </a>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- USUARIO NO LOGEADO -->
+      <ng-container *ngIf="!authService.isLoggedIn()">
+        <div *ngFor="let auto of autos" class="col-lg-4 col-md-6">
+          <div class="card h-100 shadow-sm">
+            
+            <img [src]="auto.imagenes?.[0] || getDefaultImage(auto)" 
+                 [alt]="auto.modelo"
+                 (error)="onImageError($event, auto)"
+                 class="card-img-top" 
+                 style="height: 250px; object-fit: cover;">
+
+            <div class="card-body">
+              <h5 class="card-title fw-bold">
+                {{ auto.marca?.nombre }} {{ auto.modelo }}
+              </h5>
+              
+              <div class="mb-2">
+                <span class="badge bg-info">📅 {{ auto.anio }}</span>
+                <span class="badge bg-secondary">{{ auto.kilometraje | number }} km</span>
+              </div>
+
+              <p class="card-text small text-muted">
+                🎨 {{ auto.color }}<br>
+                ⛽ {{ auto.combustible?.nombre }}
+              </p>
+
+              <h4 class="text-danger fw-bold mb-3">
+                S/ {{ auto.precio | number:'1.2-2' }}
+              </h4>
+
+              <span class="badge bg-success w-100 mb-3 d-block">✅ Disponible</span>
+            </div>
+
+            <div class="card-footer bg-white">
+              <button (click)="irALogin()" class="btn btn-primary w-100">
+                🔐 Iniciar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- SIN RESULTADOS -->
+      <div class="col-12" *ngIf="autos.length === 0">
+        <div class="alert alert-info text-center py-5" role="alert">
+          <h5 class="mb-3">😞 No hay autos disponibles</h5>
+          <p class="mb-3" *ngIf="authService.isAdmin()">
+            Comienza agregando el primer auto a tu inventario
+          </p>
+          <button *ngIf="authService.isAdmin()" 
+                  class="btn btn-success" 
+                  routerLink="/admin/autos/nuevo">
+            ➕ Agregar Auto
+          </button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>

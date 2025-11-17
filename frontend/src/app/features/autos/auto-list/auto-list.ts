@@ -1,25 +1,37 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { AutoService, Auto } from '../../../../core/services/auto.service';
+import { AutoService } from '../../../../core/services/auto.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { VentaService } from '../../../../core/services/venta.service';
+import { Auto } from '../../../../core/models/auto.model';
+import { Venta } from '../../../../core/models/venta.model';
 
 @Component({
   selector: 'app-auto-list',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './auto-list.html',
-  styleUrl: './auto-list.css'
+  styleUrls: ['./auto-list.css']
 })
 export class AutoListComponent implements OnInit {
   autos: Auto[] = [];
+  ventasPorAuto: Map<number, Venta[]> = new Map();
   loading: boolean = true;
   error: string = '';
+  
+  vistaActual: 'disponibles' | 'vendidos' | 'todos' = 'disponibles';
+  contadores = {
+    todos: 0,
+    disponibles: 0,
+    vendidos: 0
+  };
 
   currentImageIndex: Map<number, number> = new Map();
 
   constructor(
     private autoService: AutoService,
+    private ventaService: VentaService,
     public authService: AuthService,
     private router: Router
   ) {}
@@ -28,35 +40,165 @@ export class AutoListComponent implements OnInit {
     this.cargarAutos();
   }
 
+  // ...existing code...
   cargarAutos(): void {
     this.loading = true;
+    this.error = '';
+
+    // Pedimos todos los autos si es admin; si no, sólo disponibles
+    let observable = this.authService.isAdmin()
+      ? this.autoService.getTodosLosAutos()
+      : this.autoService.getAutosDisponibles();
+
+    observable.subscribe({
+      next: (autos: Auto[]) => {
+        // Si es admin aplicamos filtro local según la vista seleccionada
+        if (this.authService.isAdmin()) {
+          switch (this.vistaActual) {
+            case 'disponibles':
+              autos = autos.filter(a => a.disponible);
+              break;
+            case 'vendidos':
+              autos = autos.filter(a => !a.disponible);
+              break;
+            case 'todos':
+            default:
+              break;
+          }
+        }
+
+        this.autos = autos;
+        if (this.authService.isAdmin() && this.vistaActual === 'todos') {
+          this.actualizarContadores();
+        }
+        this.inicializarIndices();
+        this.loading = false;
+
+        if (this.authService.isAdmin()) {
+          this.cargarVentasParaAutos(autos);
+        }
+      },
+      error: (error: any) => {
+        this.error = 'Error al cargar los autos';
+        this.loading = false;
+        console.error('Error:', error);
+      }
+    });
+  }
+
+  cargarVentasParaAutos(autos: Auto[]): void {
+    // El backend no tiene /ventas/auto/{id}, por eso obtenemos todas y las agrupamos
+    this.ventaService.getVentasAdmin().subscribe({
+      next: (ventas: Venta[]) => {
+        this.ventasPorAuto.clear();
+        ventas.forEach(v => {
+          // intenta obtener id desde v.auto (si el backend devuelve el objeto) o v.autoId
+          const autoId = (v as any).auto?.id ?? (v as any).autoId ?? null;
+          if (autoId == null) return;
+          const arr = this.ventasPorAuto.get(autoId) || [];
+          arr.push(v);
+          this.ventasPorAuto.set(autoId, arr);
+        });
+      },
+      error: (err) => {
+        console.error('Error cargando ventas admin:', err);
+      }
+    });
+  }
+
+  getEstadoTexto(auto: Auto): string {
+    if (auto.disponible) {
+      return '✅ Disponible';
+    }
     
-    if (this.authService.isAdmin()) {
-      // ✅ ADMIN: Ve todos los autos
-      this.autoService.getAutos().subscribe({
-        next: (autos: Auto[]) => {
-          this.autos = autos;
-          this.inicializarIndices();
-          this.loading = false;
+    const ultimaVenta = this.getUltimaVenta(auto);
+    if (ultimaVenta) {
+      return ultimaVenta.estado.nombre === 'FINALIZADO' ? 
+        '💰 Venta Finalizada' : 
+        '⏳ Venta Pendiente';
+    }
+    
+    return '❓ Estado Desconocido';
+  }
+
+  getUltimaVenta(auto: Auto): Venta | null {
+    const ventas = this.ventasPorAuto.get(auto.id);
+    if (!ventas || ventas.length === 0) return null;
+    
+    return ventas.sort((a, b) => 
+      new Date(b.fechaSolicitud).getTime() - new Date(a.fechaSolicitud).getTime()
+    )[0];
+  }
+
+  tieneVentaFinalizada(auto: Auto): boolean {
+    const ultimaVenta = this.getUltimaVenta(auto);
+    return ultimaVenta ? ultimaVenta.estado.nombre === 'FINALIZADO' : false;
+  }
+
+  tieneVentaPendiente(auto: Auto): boolean {
+    const ultimaVenta = this.getUltimaVenta(auto);
+    return ultimaVenta ? ultimaVenta.estado.nombre === 'PENDIENTE' : false;
+  }
+
+  cambiarVista(vista: 'disponibles' | 'vendidos' | 'todos'): void {
+    if (!this.authService.isAdmin()) return;
+    
+    this.vistaActual = vista;
+    this.cargarAutos();
+  }
+
+  actualizarContadores(): void {
+    if (this.authService.isAdmin() && this.vistaActual === 'todos') {
+      this.contadores.todos = this.autos.length;
+      this.contadores.disponibles = this.autos.filter(a => a.disponible).length;
+      this.contadores.vendidos = this.autos.filter(a => !a.disponible).length;
+    }
+  }
+
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
+  reactivarAuto(auto: Auto): void {
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+    if (confirm(`¿Re-activar el auto para nueva venta?\n\n${marcaNombre} ${auto.modelo} (${auto.anio})\n\nEl auto volverá a estar disponible para los clientes.`)) {
+      this.autoService.reactivarAuto(auto.id).subscribe({
+        next: (autoReactivated) => {
+          const index = this.autos.findIndex(a => a.id === auto.id);
+          if (index !== -1) {
+            this.autos[index] = autoReactivated;
+          }
+          this.actualizarContadores();
+          alert(`✅ Auto re-activado correctamente\n\n${marcaNombre} ${auto.modelo} ahora está disponible para nueva venta.`);
         },
-        error: (error: any) => {
-          this.error = 'Error al cargar los autos';
-          this.loading = false;
-          console.error('Error:', error);
+        error: (error) => {
+          alert('❌ Error al re-activar el auto: ' + (error.error?.message || error.message));
+          console.error('Error reactivando auto:', error);
         }
       });
-    } else {
-      // ✅ CLIENTE: Solo ve autos disponibles
-      this.autoService.getAutosDisponibles().subscribe({
-        next: (autos: Auto[]) => {
-          this.autos = autos;
-          this.inicializarIndices();
-          this.loading = false;
+    }
+  }
+
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
+  cambiarDisponibilidad(auto: Auto, disponible: boolean): void {
+    const accion = disponible ? 'disponible' : 'no disponible';
+    const mensaje = disponible ? 
+      '¿Hacer disponible el auto para venta?' : 
+      '¿Marcar el auto como no disponible?';
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+
+    if (confirm(`${mensaje}\n\n${marcaNombre} ${auto.modelo} (${auto.anio})`)) {
+      this.autoService.cambiarDisponibilidadAuto(auto.id, disponible).subscribe({
+        next: (autoActualizado) => {
+          const index = this.autos.findIndex(a => a.id === auto.id);
+          if (index !== -1) {
+            this.autos[index] = autoActualizado;
+          }
+          this.actualizarContadores();
+          
+          const nuevoEstado = disponible ? 'disponible' : 'no disponible';
+          alert(`✅ Auto marcado como ${nuevoEstado} correctamente`);
         },
-        error: (error: any) => {
-          this.error = 'Error al cargar los autos';
-          this.loading = false;
-          console.error('Error:', error);
+        error: (error) => {
+          alert('❌ Error al cambiar disponibilidad: ' + (error.error?.message || error.message));
+          console.error('Error cambiando disponibilidad:', error);
         }
       });
     }
@@ -68,76 +210,95 @@ export class AutoListComponent implements OnInit {
     });
   }
 
-  // ✅ MÉTODO: Verificar si un auto está disponible para mostrar
   estaDisponibleParaCliente(auto: Auto): boolean {
     if (this.authService.isAdmin()) {
-      return true; // Admin ve todo
+      return true;
     }
-    return auto.disponible; // Cliente solo ve disponibles
+    return auto.disponible;
   }
 
-  // ✅ MÉTODO: Obtener texto del estado para admin
-  getEstadoTexto(auto: Auto): string {
-    if (!auto.disponible) {
-      return '⏳ Venta Pendiente';
-    }
-    return '✅ Disponible';
-  }
-
-  // ✅ MÉTODO: Obtener clase CSS del estado
   getEstadoClass(auto: Auto): string {
-    if (!auto.disponible) {
-      return 'estado-pendiente';
+    if (auto.disponible) {
+      return 'estado-disponible';
     }
-    return 'estado-disponible';
+    
+    const ultimaVenta = this.getUltimaVenta(auto);
+    if (ultimaVenta) {
+      return ultimaVenta.estado.nombre === 'FINALIZADO' ? 
+        'estado-finalizado' : 
+        'estado-pendiente';
+    }
+    
+    return 'estado-pendiente';
   }
 
-  // ========== MÉTODO GESTIONAR AUTO (NUEVO) ==========
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
   gestionarAuto(auto: Auto): void {
+    const marcaNombre = auto.marca?.nombre || 'Auto';
     const opciones = [
       'Cambiar estado disponible/no disponible',
+      'Re-activar auto vendido',
       'Ver detalles completos',
       'Gestionar imágenes',
       'Marcar como vendido',
-      'Ver historial'
+      'Editar información',
+      'Eliminar auto'
     ];
 
+    const opcionesFiltradas = opciones.filter((op, index) => {
+      if (index === 1 && auto.disponible) return false;
+      if (index === 4 && !auto.disponible) return false;
+      return true;
+    });
+
     const opcionSeleccionada = prompt(
-      `Gestión: ${auto.marca} ${auto.modelo}\n\n` +
-      `Opciones:\n${opciones.map((op, index) => `${index + 1}. ${op}`).join('\n')}\n\n` +
+      `Gestión: ${marcaNombre} ${auto.modelo}\n\n` +
+      `Opciones:\n${opcionesFiltradas.map((op, index) => `${index + 1}. ${op}`).join('\n')}\n\n` +
       `Ingresa el número de opción:`
     );
 
     switch (opcionSeleccionada) {
       case '1':
-        this.cambiarEstadoAuto(auto);
+        this.cambiarDisponibilidad(auto, !auto.disponible);
         break;
       case '2':
-        this.verDetallesCompletos(auto);
+        if (!auto.disponible) {
+          this.reactivarAuto(auto);
+        }
         break;
       case '3':
-        this.gestionarImagenes(auto);
+        this.verDetallesCompletos(auto);
         break;
       case '4':
-        this.marcarComoVendido(auto);
+        this.gestionarImagenes(auto);
         break;
       case '5':
-        this.verHistorial(auto);
+        if (auto.disponible) {
+          this.marcarComoVendido(auto);
+        }
+        break;
+      case '6':
+        this.editarAuto(auto);
+        break;
+      case '7':
+        this.eliminarAuto(auto);
         break;
       default:
         console.log('Opción no válida o cancelada');
     }
   }
 
-  // ✅ MÉTODO: Cambiar estado del auto
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
   cambiarEstadoAuto(auto: Auto): void {
     const nuevoEstado = !auto.disponible;
     const textoEstado = nuevoEstado ? 'Disponible' : 'No Disponible';
+    const marcaNombre = auto.marca?.nombre || 'Auto';
     
-    if (confirm(`¿Cambiar estado de "${auto.marca} ${auto.modelo}" a ${textoEstado}?`)) {
-      this.autoService.actualizarAuto(auto.id, { disponible: nuevoEstado }).subscribe({
+    if (confirm(`¿Cambiar estado de "${marcaNombre} ${auto.modelo}" a ${textoEstado}?`)) {
+      this.autoService.cambiarDisponibilidadAuto(auto.id, nuevoEstado).subscribe({
         next: (autoActualizado) => {
           auto.disponible = nuevoEstado;
+          this.actualizarContadores();
           alert(`✅ Estado actualizado correctamente a: ${textoEstado}`);
         },
         error: (error) => {
@@ -148,38 +309,15 @@ export class AutoListComponent implements OnInit {
     }
   }
 
-  // ✅ MÉTODO: Ver detalles completos
-  verDetallesCompletos(auto: Auto): void {
-    const detalles = `
-      📋 DETALLES COMPLETOS:
-      
-      🚗 Vehículo: ${auto.marca} ${auto.modelo}
-      📅 Año: ${auto.anio}
-      💰 Precio: $${auto.precio?.toLocaleString()}
-      🛣️ Kilometraje: ${auto.kilometraje?.toLocaleString()} km
-      🎨 Color: ${auto.color}
-      📝 Descripción: ${auto.descripcion}
-      ✅ Estado: ${auto.disponible ? 'Disponible' : 'No Disponible'}
-      🆔 ID: ${auto.id}
-    `;
-    
-    alert(detalles);
-  }
-
-  // ✅ MÉTODO: Gestionar imágenes (placeholder)
-  gestionarImagenes(auto: Auto): void {
-    alert(`🖼️ Gestión de imágenes para: ${auto.marca} ${auto.modelo}\n\nEsta funcionalidad estará disponible pronto.`);
-    // Aquí puedes implementar la navegación a un editor de imágenes
-    // this.router.navigate(['/admin/autos/imagenes', auto.id]);
-  }
-
-  // ✅ MÉTODO: Marcar como vendido
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
   marcarComoVendido(auto: Auto): void {
-    if (confirm(`¿Marcar "${auto.marca} ${auto.modelo}" como VENDIDO?\n\nEsta acción cambiará el estado a "No Disponible".`)) {
-      this.autoService.actualizarAuto(auto.id, { disponible: false }).subscribe({
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+    if (confirm(`¿Marcar "${marcaNombre} ${auto.modelo}" como VENDIDO?\n\nEsta acción cambiará el estado a "No Disponible".`)) {
+      this.autoService.cambiarDisponibilidadAuto(auto.id, false).subscribe({
         next: (autoActualizado) => {
           auto.disponible = false;
-          alert(`✅ ${auto.marca} ${auto.modelo} marcado como VENDIDO`);
+          this.actualizarContadores();
+          alert(`✅ ${marcaNombre} ${auto.modelo} marcado como VENDIDO`);
         },
         error: (error) => {
           console.error('Error al marcar como vendido:', error);
@@ -189,14 +327,6 @@ export class AutoListComponent implements OnInit {
     }
   }
 
-  // ✅ MÉTODO: Ver historial (placeholder)
-  verHistorial(auto: Auto): void {
-    alert(`📊 Historial para: ${auto.marca} ${auto.modelo}\n\nEsta funcionalidad estará disponible en la próxima actualización.`);
-  }
-
-  // ========== MÉTODOS EXISTENTES DEL CARRUSEL ==========
-
-  // Obtener imagen actual de un auto
   getCurrentImage(auto: Auto): string {
     if (!auto.imagenes || auto.imagenes.length === 0) {
       return this.getDefaultImage(auto);
@@ -205,17 +335,14 @@ export class AutoListComponent implements OnInit {
     return auto.imagenes[index];
   }
 
-  // Obtener índice de imagen actual
   getCurrentImageIndex(auto: Auto): number {
     return this.currentImageIndex.get(auto.id) || 0;
   }
 
-  // Cambiar a imagen específica
   setCurrentImage(auto: Auto, index: number): void {
     this.currentImageIndex.set(auto.id, index);
   }
 
-  // Siguiente imagen
   nextImage(auto: Auto): void {
     if (!auto.imagenes || auto.imagenes.length === 0) return;
     
@@ -224,7 +351,6 @@ export class AutoListComponent implements OnInit {
     this.currentImageIndex.set(auto.id, nextIndex);
   }
 
-  // Imagen anterior
   prevImage(auto: Auto): void {
     if (!auto.imagenes || auto.imagenes.length === 0) return;
     
@@ -233,12 +359,12 @@ export class AutoListComponent implements OnInit {
     this.currentImageIndex.set(auto.id, prevIndex);
   }
 
-  // Imagen por defecto si no hay imágenes
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
   getDefaultImage(auto: Auto): string {
-    return `https://via.placeholder.com/400x300/cccccc/666666?text=${auto.marca}+${auto.modelo}`;
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+    return `https://via.placeholder.com/400x300/cccccc/666666?text=${marcaNombre}+${auto.modelo}`;
   }
 
-  // Manejar error de imagen
   onImageError(event: any, auto: Auto): void {
     event.target.src = this.getDefaultImage(auto);
   }
@@ -252,11 +378,13 @@ export class AutoListComponent implements OnInit {
     this.router.navigate(['/admin/autos/editar', auto.id]);
   }
 
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
   eliminarAuto(auto: Auto): void {
-    if (confirm(`¿Estás seguro de eliminar el ${auto.marca} ${auto.modelo}?\n\nEsta acción no se puede deshacer.`)) {
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+    if (confirm(`¿Estás seguro de eliminar el ${marcaNombre} ${auto.modelo}?\n\nEsta acción no se puede deshacer.`)) {
       this.autoService.eliminarAuto(auto.id).subscribe({
         next: () => {
-          alert(`✅ ${auto.marca} ${auto.modelo} eliminado correctamente`);
+          alert(`✅ ${marcaNombre} ${auto.modelo} eliminado correctamente`);
           this.cargarAutos();
         },
         error: (error) => {
@@ -268,7 +396,59 @@ export class AutoListComponent implements OnInit {
     }
   }
 
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
+  verDetallesCompletos(auto: Auto): void {
+    const marcaNombre = auto.marca?.nombre || 'Sin marca';
+    const combustibleNombre = auto.combustible?.nombre || 'Sin combustible';
+    const transmisionNombre = auto.transmision?.nombre || 'Sin transmisión';
+    
+    const detalles = `
+      📋 DETALLES COMPLETOS:
+      
+      🚗 Vehículo: ${marcaNombre} ${auto.modelo}
+      📅 Año: ${auto.anio}
+      💰 Precio: $${auto.precio?.toLocaleString()}
+      🛣️ Kilometraje: ${auto.kilometraje?.toLocaleString()} km
+      🎨 Color: ${auto.color}
+      ⛽ Combustible: ${combustibleNombre}
+      🚦 Transmisión: ${transmisionNombre}
+      📝 Descripción: ${auto.descripcion}
+      ✅ Estado: ${auto.disponible ? 'Disponible' : 'Vendido'}
+      🖼️ Imágenes: ${auto.imagenes?.length || 0}
+      🆔 ID: ${auto.id}
+    `;
+    
+    alert(detalles);
+  }
+
+  // ✅ CORREGIDO: Usar propiedades seguras con ?.
+  gestionarImagenes(auto: Auto): void {
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+    alert(`🖼️ Gestión de imágenes para: ${marcaNombre} ${auto.modelo}\n\nImágenes disponibles: ${auto.imagenes?.length || 0}\n\nEsta funcionalidad estará disponible pronto.`);
+  }
+
   irALogin(): void {
     this.router.navigate(['/login']);
   }
+
+  // ✅ MÉTODO PARA DEBUG MEJORADO
+  debugAuto(auto: Auto): void {
+    console.log('🐛 DEBUG AUTO:', {
+      id: auto.id,
+      marca: auto.marca,
+      marcaNombre: auto.marca?.nombre,
+      tipoMarca: typeof auto.marca,
+      modelo: auto.modelo,
+      combustible: auto.combustible,
+      combustibleNombre: auto.combustible?.nombre,
+      transmision: auto.transmision,
+      transmisionNombre: auto.transmision?.nombre,
+      categoria: auto.categoria,
+      categoriaNombre: auto.categoria?.nombre,
+      condicion: auto.condicion,
+      condicionNombre: auto.condicion?.nombre
+    });
+  }
+
+  
 }

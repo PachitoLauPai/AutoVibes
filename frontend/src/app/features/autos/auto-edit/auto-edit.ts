@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AutoService, Auto } from '../../../../core/services/auto.service';
+import { AutoService } from '../../../../core/services/auto.service';
+import { Auto } from '../../../../core/models/auto.model';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({

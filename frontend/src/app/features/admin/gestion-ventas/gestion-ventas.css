@@ -1,275 +1,170 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.header h1 {
-  color: #2c5530;
-  margin-bottom: 0.5rem;
-}
-
-.filters {
+.filtros {
   display: flex;
+  gap: 15px;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
+  margin-bottom: 20px;
+  padding: 15px;
   background: #f8f9fa;
   border-radius: 8px;
+  flex-wrap: wrap;
 }
 
-.filters label {
-  font-weight: bold;
-  color: #495057;
+.filtros label {
+  font-weight: 600;
+  margin-bottom: 0;
 }
 
-.filters select {
-  padding: 0.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background: white;
-}
-
-.loading, .error, .empty-state {
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.1rem;
-}
-
-.error {
-  color: #dc3545;
-}
-
-.btn-retry {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 1rem;
-}
-
-.ventas-grid {
-  display: grid;
-  gap: 1.5rem;
+.form-select {
+  max-width: 300px;
 }
 
 .venta-card {
+  transition: transform 0.3s, box-shadow 0.3s;
   border: 1px solid #dee2e6;
-  border-radius: 8px;
+}
+
+.venta-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.card-header h5 {
+  color: #333;
+}
+
+.badge-pending {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.badge-success {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.badge-danger {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.card-body {
   padding: 1.5rem;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.venta-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card-body h6 {
+  color: #333;
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.venta-header h3 {
-  margin: 0;
-  color: #2c5530;
-}
-
-.estado {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: bold;
-}
-
-.estado-pendiente {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
-}
-
-.estado-finalizado {
-  background: #d1edff;
-  color: #0c5460;
-  border: 1px solid #bee5eb;
-}
-
-.estado-cancelado {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.venta-info {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.info-section {
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.info-section h4 {
-  margin: 0 0 1rem 0;
-  color: #495057;
   border-bottom: 1px solid #dee2e6;
   padding-bottom: 0.5rem;
 }
 
-.info-section p {
-  margin: 0.5rem 0;
-  color: #6c757d;
+.card-body p {
+  margin-bottom: 0.75rem;
+  color: #666;
 }
 
-.info-section strong {
-  color: #495057;
+.card-body strong {
+  color: #333;
 }
 
-.venta-actions {
-  padding-top: 1rem;
-  border-top: 1px solid #e9ecef;
+.card-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1rem;
 }
 
-.actions-pendiente, .actions-finalizado, .actions-cancelado {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.card-footer .btn {
   font-size: 0.875rem;
-  transition: all 0.3s ease;
+  font-weight: 600;
 }
 
 .btn-success {
-  background: #28a745;
-  color: white;
+  background-color: #28a745;
+  border-color: #28a745;
 }
 
 .btn-success:hover {
-  background: #218838;
-}
-
-.btn-danger {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #c82333;
+  background-color: #218838;
+  border-color: #218838;
 }
 
 .btn-warning {
-  background: #ffc107;
-  color: #212529;
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
 }
 
 .btn-warning:hover {
-  background: #e0a800;
+  background-color: #e0a800;
+  border-color: #d39e00;
+  color: #000;
 }
 
-.badge-success, .badge-danger {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: bold;
+.btn-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
 }
 
-.badge-success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+.btn-info:hover {
+  background-color: #138496;
+  border-color: #117a8b;
 }
 
-.badge-danger {
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.loading,
+.error,
+.empty-state {
+  text-align: center;
+  padding: 40px;
+}
+
+.error {
   background: #f8d7da;
-  color: #721c24;
   border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  color: #721c24;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-  
-  .venta-info {
-    grid-template-columns: 1fr;
-  }
-  
-  .venta-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .actions-pendiente, .actions-finalizado, .actions-cancelado {
+  .filtros {
     flex-direction: column;
     align-items: stretch;
   }
-  
-  .btn {
-    width: 100%;
+
+  .form-select {
+    max-width: 100%;
   }
-}
 
-/* Botones de navegación */
-.header-actions {
-  margin-bottom: 1rem;
-}
-
-.footer-actions {
-  margin-top: 2rem;
-  text-align: center;
-  padding-top: 2rem;
-  border-top: 1px solid #dee2e6;
-}
-
-.btn-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
-}
-
-.btn-back:hover {
-  background: #545b62;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-}
-
-/* Asegurar que los botones se vean bien en móvil */
-@media (max-width: 768px) {
-  .header-actions, .footer-actions {
-    text-align: center;
+  .card-body .row > div {
+    margin-bottom: 1rem;
   }
-  
-  .btn-back {
+
+  .card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-footer .btn {
     width: 100%;
-    justify-content: center;
   }
 }

@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, User } from '../../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { User } from '../../../../core/models/user.model';
+import { Rol } from '../../../../core/models/shared.model'; // <-- agregar
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './user-list.html',
-  styleUrl: './user-list.css'
+  styleUrls: ['./user-list.css']
 })
 export class UserListComponent implements OnInit {
   usuarios: User[] = [];
@@ -47,24 +49,32 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  getRolBadgeClass(rol: string): string {
-    return rol === 'ADMIN' ? 'badge-admin' : 'badge-cliente';
+   // ✅ CORREGIDO: Los métodos ahora reciben el objeto Rol tipado
+  getRolBadgeClass(rol: Rol | undefined): string {
+    const rolNombre = rol?.nombre || 'CLIENTE';
+    return rolNombre === 'ADMIN' ? 'badge-admin' : 'badge-cliente';
   }
 
-  getRolIcon(rol: string): string {
-    return rol === 'ADMIN' ? '👑' : '👤';
+  getRolIcon(rol: Rol | undefined): string {
+    const rolNombre = rol?.nombre || 'CLIENTE';
+    return rolNombre === 'ADMIN' ? '👑' : '👤';
   }
+
+  getRolNombre(rol: Rol | undefined): string {
+    return rol?.nombre || 'CLIENTE';
+  }
+
 
   getTotalUsuarios(): number {
     return this.usuarios.length;
   }
 
   getTotalAdmins(): number {
-    return this.usuarios.filter(user => user.rol === 'ADMIN').length;
+    return this.usuarios.filter(user => user.rol?.nombre === 'ADMIN').length;
   }
 
   getTotalClientes(): number {
-    return this.usuarios.filter(user => user.rol === 'CLIENTE').length;
+    return this.usuarios.filter(user => user.rol?.nombre === 'CLIENTE').length;
   }
 
   volver(): void {
@@ -121,5 +131,27 @@ export class UserListComponent implements OnInit {
     }
   }
 
+  // ✅ NUEVO: Método para cambiar estado activo/inactivo
+  cambiarEstadoUsuario(usuario: User): void {
+    const nuevoEstado = !usuario.activo;
+    const accion = nuevoEstado ? 'activar' : 'desactivar';
+    
+    if (confirm(`¿${accion.toUpperCase()} al usuario ${usuario.nombre}?`)) {
+      this.authService.cambiarEstadoUsuario(usuario.id, nuevoEstado).subscribe({
+        next: (userActualizado) => {
+          usuario.activo = nuevoEstado;
+          alert(`✅ Usuario ${accion}do correctamente`);
+        },
+        error: (error) => {
+          console.error('Error:', error);
+          alert(`❌ Error al ${accion} el usuario`);
+        }
+      });
+    }
+  }
 
+  // ✅ NUEVO: Método para verificar si es el usuario actual
+  esUsuarioActual(usuario: User): boolean {
+    return usuario.id === this.authService.getCurrentUser()?.id;
+  }
 }

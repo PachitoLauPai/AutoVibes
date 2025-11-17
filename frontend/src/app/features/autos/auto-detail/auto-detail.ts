@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AutoService, Auto } from '../../../../core/services/auto.service';
-import { VentaService, ContactRequest } from '../../../../core/services/venta.service';
+import { AutoService } from '../../../../core/services/auto.service';
+import { Auto } from '../../../../core/models/auto.model';
+import { VentaService} from '../../../../core/services/venta.service';
+import { ContactRequest } from '../../../../core/models/venta.model'; // ✅ IMPORTAR ContactRequest
 import { AuthService } from '../../../../core/services/auth.service'; // ✅ IMPORTAR AuthService
 
 
@@ -187,6 +189,15 @@ export class AutoDetailComponent implements OnInit {
     event.target.src = this.getPlaceholderImage();
   }
 
+  // ✅ Método para ir al login
+  irALogin(): void {
+    this.router.navigate(['/login']);
+  }
 
+  // ✅ Método para obtener imagen por defecto
+  getDefaultImage(auto: Auto): string {
+    const marcaNombre = auto.marca?.nombre || 'Auto';
+    return `https://via.placeholder.com/600x400/cccccc/969696?text=${marcaNombre}+${auto.modelo}`;
+  }
   
 }
