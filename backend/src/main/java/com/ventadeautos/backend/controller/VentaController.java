@@ -114,28 +114,36 @@ public class VentaController {
     
     @PutMapping("/admin/{id}/estado")
     public ResponseEntity<?> actualizarEstadoVenta(@PathVariable Long id, 
-                                                  @RequestBody EstadoVentaUpdate update) {
+                                                    @RequestBody EstadoVentaUpdate update) {
         try {
-            // CORREGIDO: Buscar por nombre en la base de datos
+            System.out.println("🔄 [VENTAS] Actualizando venta #" + id + " a estado: " + update.getEstado());
+            
+            // ✅ VERIFICAR que el estado existe y está activo
             EstadoVenta nuevoEstado = estadoVentaService.obtenerPorNombre(update.getEstado())
                     .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + update.getEstado()));
             
-            // Verificar que el estado esté activo
             if (!nuevoEstado.getActiva()) {
                 return ResponseEntity.badRequest()
                         .body("El estado '" + update.getEstado() + "' no está activo");
             }
             
-            Venta venta = ventaService.actualizarEstadoVenta(id, nuevoEstado);
+            // ✅ Pasar el STRING del nombre
+            System.out.println("📢 Llamando a VentaService.actualizarEstadoVenta()");
+            Venta venta = ventaService.actualizarEstadoVenta(id, update.getEstado());
+            
             VentaResponse response = ventaService.convertirAVentaResponse(venta);
+            System.out.println("✅ Venta actualizada correctamente");
             
             return ResponseEntity.ok(response);
             
         } catch (RuntimeException e) {
+            System.out.println("❌ [VENTAS] RuntimeException: " + e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
+            System.out.println("❌ [VENTAS] Exception: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al actualizar el estado");
+                .body("Error al actualizar el estado: " + e.getMessage());
         }
     }
 }

@@ -1,12 +1,7 @@
 package com.ventadeautos.backend.controller;
 
 import com.ventadeautos.backend.dto.AutoRequest;
-import com.ventadeautos.backend.model.Auto;
-import com.ventadeautos.backend.model.CategoriaAuto;
-import com.ventadeautos.backend.model.Combustible;
-import com.ventadeautos.backend.model.CondicionAuto;
-import com.ventadeautos.backend.model.Marca;
-import com.ventadeautos.backend.model.Transmision;
+import com.ventadeautos.backend.model.*;
 import com.ventadeautos.backend.service.AutoService;
 import com.ventadeautos.backend.service.CategoriaAutoService;
 import com.ventadeautos.backend.service.CombustibleService;
@@ -34,6 +29,10 @@ public class AutoController {
     private final CondicionAutoService condicionAutoService;
     private final CombustibleService combustibleService;
     private final TransmisionService transmisionService;
+    
+    // =============================================
+    // ENDPOINTS PRINCIPALES Y CRUD
+    // =============================================
     
     @GetMapping
     public List<Auto> obtenerAutos(@RequestParam(required = false) Boolean disponibles,
@@ -76,14 +75,36 @@ public class AutoController {
         }
         return ResponseEntity.notFound().build();
     }
-
+    
+    // =============================================
+    // ENDPOINTS DE DISPONIBILIDAD
+    // =============================================
+    
     @GetMapping("/disponibles")
     public ResponseEntity<List<Auto>> obtenerAutosDisponibles() {
         List<Auto> autosDisponibles = autoService.obtenerAutosDisponibles();
         return ResponseEntity.ok(autosDisponibles);
     }
     
-    // ✅ ACTUALIZADO: Ahora recibe ID
+    @GetMapping("/{id}/disponibilidad")
+    public ResponseEntity<Boolean> verificarDisponibilidad(@PathVariable Long id) {
+        Optional<Auto> auto = autoService.obtenerPorIdBasico(id);
+        if (auto.isPresent()) {
+            return ResponseEntity.ok(auto.get().getDisponible());
+        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    @GetMapping("/{id}/visible")
+    public ResponseEntity<Boolean> esAutoVisible(@PathVariable Long id) {
+        boolean esVisible = autoService.esAutoVisibleParaClientes(id);
+        return ResponseEntity.ok(esVisible);
+    }
+    
+    // =============================================
+    // ENDPOINTS DE FILTRADO INDIVIDUAL
+    // =============================================
+    
     @GetMapping("/categoria/{categoriaId}")
     public ResponseEntity<List<Auto>> obtenerAutosPorCategoria(@PathVariable Long categoriaId) {
         try {
@@ -94,7 +115,6 @@ public class AutoController {
         }
     }
     
-    // ✅ ACTUALIZADO: Ahora recibe ID
     @GetMapping("/condicion/{condicionId}")
     public ResponseEntity<List<Auto>> obtenerAutosPorCondicion(@PathVariable Long condicionId) {
         try {
@@ -105,7 +125,40 @@ public class AutoController {
         }
     }
     
-    // ✅ ACTUALIZADO: Ahora reciben IDs
+    @GetMapping("/marca/{marcaId}")
+    public ResponseEntity<List<Auto>> obtenerAutosPorMarca(@PathVariable Long marcaId) {
+        try {
+            List<Auto> autos = autoService.obtenerAutosPorMarca(marcaId);
+            return ResponseEntity.ok(autos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @GetMapping("/combustible/{combustibleId}")
+    public ResponseEntity<List<Auto>> obtenerAutosPorCombustible(@PathVariable Long combustibleId) {
+        try {
+            List<Auto> autos = autoService.obtenerAutosPorCombustible(combustibleId);
+            return ResponseEntity.ok(autos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @GetMapping("/transmision/{transmisionId}")
+    public ResponseEntity<List<Auto>> obtenerAutosPorTransmision(@PathVariable Long transmisionId) {
+        try {
+            List<Auto> autos = autoService.obtenerAutosPorTransmision(transmisionId);
+            return ResponseEntity.ok(autos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // =============================================
+    // ENDPOINTS DE FILTRADO COMBINADO
+    // =============================================
+    
     @GetMapping("/categoria/{categoriaId}/condicion/{condicionId}")
     public ResponseEntity<List<Auto>> obtenerAutosPorCategoriaYCondicion(
             @PathVariable Long categoriaId, 
@@ -118,18 +171,6 @@ public class AutoController {
         }
     }
     
-    // ✅ NUEVO: Obtener autos por marca
-    @GetMapping("/marca/{marcaId}")
-    public ResponseEntity<List<Auto>> obtenerAutosPorMarca(@PathVariable Long marcaId) {
-        try {
-            List<Auto> autos = autoService.obtenerAutosPorMarca(marcaId);
-            return ResponseEntity.ok(autos);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-    
-    // ✅ ACTUALIZADO: Ahora recibe ID
     @GetMapping("/marca/{marcaId}/categoria/{categoriaId}")
     public ResponseEntity<List<Auto>> obtenerAutosPorMarcaYCategoria(
             @PathVariable Long marcaId, 
@@ -141,8 +182,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    // ✅ NUEVO: Obtener autos por marca y condición
+    
     @GetMapping("/marca/{marcaId}/condicion/{condicionId}")
     public ResponseEntity<List<Auto>> obtenerAutosPorMarcaYCondicion(
             @PathVariable Long marcaId, 
@@ -154,20 +194,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-
-    // ✅ NUEVO: Obtener autos por combustible
-    @GetMapping("/combustible/{combustibleId}")
-    public ResponseEntity<List<Auto>> obtenerAutosPorCombustible(@PathVariable Long combustibleId) {
-        try {
-            List<Auto> autos = autoService.obtenerAutosPorCombustible(combustibleId);
-            return ResponseEntity.ok(autos);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // ✅ NUEVO: Obtener autos por categoría y combustible
+    
     @GetMapping("/categoria/{categoriaId}/combustible/{combustibleId}")
     public ResponseEntity<List<Auto>> obtenerAutosPorCategoriaYCombustible(
             @PathVariable Long categoriaId, 
@@ -179,20 +206,11 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-
-    // ✅ NUEVO: Obtener autos por transmisión
-    @GetMapping("/transmision/{transmisionId}")
-    public ResponseEntity<List<Auto>> obtenerAutosPorTransmision(@PathVariable Long transmisionId) {
-        try {
-            List<Auto> autos = autoService.obtenerAutosPorTransmision(transmisionId);
-            return ResponseEntity.ok(autos);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
     
-    // ✅ ACTUALIZADO: Ahora consulta la base de datos
+    // =============================================
+    // ENDPOINTS DE METADATOS Y OPCIONES
+    // =============================================
+    
     @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaAuto>> obtenerTodasLasCategorias() {
         try {
@@ -202,8 +220,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    // ✅ ACTUALIZADO: Ahora consulta la base de datos
+    
     @GetMapping("/condiciones")
     public ResponseEntity<List<CondicionAuto>> obtenerTodasLasCondiciones() {
         try {
@@ -213,8 +230,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    // ✅ NUEVO: Obtener todos los combustibles disponibles
+    
     @GetMapping("/combustibles")
     public ResponseEntity<List<Combustible>> obtenerTodosLosCombustibles() {
         try {
@@ -224,8 +240,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    // ✅ NUEVO: Obtener todas las transmisiones disponibles
+    
     @GetMapping("/transmisiones")
     public ResponseEntity<List<Transmision>> obtenerTodasLasTransmisiones() {
         try {
@@ -235,8 +250,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    // ✅ NUEVO: Obtener todas las marcas disponibles
+    
     @GetMapping("/marcas")
     public ResponseEntity<List<Marca>> obtenerTodasLasMarcas() {
         try {
@@ -246,8 +260,7 @@ public class AutoController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-    // ✅ NUEVO: Obtener información completa de opciones para formularios
+    
     @GetMapping("/opciones")
     public ResponseEntity<Map<String, Object>> obtenerTodasLasOpciones() {
         try {
@@ -264,16 +277,16 @@ public class AutoController {
         }
     }
     
-    // ✅ NUEVO: Verificar si un auto es visible
-    @GetMapping("/{id}/visible")
-    public ResponseEntity<Boolean> esAutoVisible(@PathVariable Long id) {
-        boolean esVisible = autoService.esAutoVisibleParaClientes(id);
-        return ResponseEntity.ok(esVisible);
+    // =============================================
+    // ENDPOINTS ESPECÍFICOS PARA ADMIN
+    // =============================================
+    
+    @GetMapping("/admin/no-disponibles")
+    public ResponseEntity<List<Auto>> obtenerAutosNoDisponibles() {
+        List<Auto> autos = autoService.obtenerAutosNoDisponibles();
+        return ResponseEntity.ok(autos);
     }
-
-
-
-    // ✅ NUEVO: Endpoint para que admin cambie disponibilidad manualmente
+    
     @PutMapping("/admin/{id}/disponibilidad")
     public ResponseEntity<?> cambiarDisponibilidadAuto(
             @PathVariable Long id,
@@ -286,22 +299,5 @@ public class AutoController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-    }
-
-
-    // En AutoController - Endpoints adicionales
-    @GetMapping("/admin/no-disponibles")
-    public ResponseEntity<List<Auto>> obtenerAutosNoDisponibles() {
-        List<Auto> autos = autoService.obtenerAutosNoDisponibles();
-        return ResponseEntity.ok(autos);
-    }
-
-    @GetMapping("/{id}/disponibilidad")
-    public ResponseEntity<Boolean> verificarDisponibilidad(@PathVariable Long id) {
-        Optional<Auto> auto = autoService.obtenerPorIdBasico(id);
-        if (auto.isPresent()) {
-            return ResponseEntity.ok(auto.get().getDisponible());
-        }
-        return ResponseEntity.notFound().build();
     }
 }

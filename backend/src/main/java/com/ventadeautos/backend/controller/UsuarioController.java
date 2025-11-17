@@ -1,18 +1,17 @@
 package com.ventadeautos.backend.controller;
 
-import com.ventadeautos.backend.model.Rol;
-import com.ventadeautos.backend.model.Usuario;
-import com.ventadeautos.backend.service.AuthenticationService;
+import com.ventadeautos.backend.dto.UsuarioDTO;
+import com.ventadeautos.backend.dto.ActualizarEstadoUsuarioDTO;
+import com.ventadeautos.backend.dto.RegistroRequest;
+import com.ventadeautos.backend.dto.LoginResponse;
 import com.ventadeautos.backend.service.UsuarioService;
-import com.ventadeautos.backend.service.VentaService;
-
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,80 +22,191 @@ import java.util.Map;
 public class UsuarioController {
     
     private final UsuarioService usuarioService;
-    //private final AuthenticationService authenticationService;// COMENTA ESTA LÍNEA 
     
-    @GetMapping
-    public ResponseEntity<?> obtenerTodosLosUsuarios(HttpServletRequest request) {
+    // ✅ CREAR USUARIO - MÉTODO POST CORREGIDO
+    @PostMapping
+    public ResponseEntity<?> crearUsuario(@RequestBody Map<String, Object> usuarioData) {
         try {
-            // ✅ TEMPORAL: PERMITIR SIN AUTENTICACIÓN
-            // Usuario usuario = authenticationService.getUsuarioAutenticado(request);
+            System.out.println("🔍 Creando nuevo usuario: " + usuarioData.get("email"));
+            System.out.println("📝 Datos recibidos: " + usuarioData);
             
-            // TEMPORAL: Comentar verificación de admin
-            // if (usuario.getRol() != Rol.ADMIN) {
-            //     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            //         .body("Solo administradores pueden ver todos los usuarios");
-            // }
+            // Extraer datos del Map
+            String email = (String) usuarioData.get("email");
+            String password = (String) usuarioData.get("password");
+            String nombre = (String) usuarioData.get("nombre");
+            String apellidos = (String) usuarioData.get("apellidos");
+            String dni = (String) usuarioData.get("dni");
+            String telefono = (String) usuarioData.get("telefono");
+            String direccion = (String) usuarioData.get("direccion");
+            Boolean activo = usuarioData.get("activo") != null ? (Boolean) usuarioData.get("activo") : true;
             
-            List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
-            return ResponseEntity.ok(usuarios);
-            
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body("Error de autenticación: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarUsuario(@PathVariable Long id, HttpServletRequest request) {
-        try {
-            // ✅ TEMPORAL: PERMITIR SIN AUTENTICACIÓN
-            // Usuario usuario = authenticationService.getUsuarioAutenticado(request);
-            
-            // TEMPORAL: Comentar verificación de admin
-            // if (usuario.getRol() != Rol.ADMIN) {
-            //     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            //         .body("Solo administradores pueden eliminar usuarios");
-            // }
-
-            boolean eliminado = usuarioService.eliminarUsuario(id);
-            if (eliminado) {
-                return ResponseEntity.ok().body(Map.of(
-                    "mensaje", "Usuario eliminado correctamente",
-                    "eliminado", true
-                ));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "mensaje", "Usuario no encontrado",
-                    "eliminado", false
-                ));
+            // Validar campos obligatorios
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("mensaje", "El email es obligatorio"));
             }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "mensaje", "Error al eliminar usuario: " + e.getMessage(),
-                "eliminado", false
-            ));
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado, HttpServletRequest request) {
-        try {
-            // ✅ TEMPORAL: PERMITIR SIN AUTENTICACIÓN
-            // Usuario usuarioAutenticado = authenticationService.getUsuarioAutenticado(request);
+            if (nombre == null || nombre.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("mensaje", "El nombre es obligatorio"));
+            }
             
-            // TEMPORAL: Comentar verificación de permisos
-            // if (usuarioAutenticado.getRol() != Rol.ADMIN && !usuarioAutenticado.getId().equals(id)) {
-            //     return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            //         .body("No puedes editar otros usuarios");
-            // }
-
-            Usuario usuarioEditado = usuarioService.actualizarUsuario(id, usuarioActualizado);
-            return ResponseEntity.ok(usuarioEditado);
+            // Usar el método registrar existente
+            RegistroRequest registroRequest = new RegistroRequest();
+            registroRequest.setEmail(email);
+            registroRequest.setPassword(password != null ? password : "cliente123");
+            registroRequest.setNombre(nombre);
+            
+            LoginResponse response = usuarioService.registrar(registroRequest);
+            
+            if ("Usuario registrado exitosamente".equals(response.getMensaje())) {
+                // Si el usuario se creó exitosamente, actualizar los datos adicionales
+                if (apellidos != null || dni != null || telefono != null || direccion != null) {
+                    
+                    // Crear DTO para actualización
+                    UsuarioDTO updateDTO = new UsuarioDTO();
+                    updateDTO.setApellidos(apellidos);
+                    updateDTO.setDni(dni);
+                    updateDTO.setTelefono(telefono);
+                    updateDTO.setDireccion(direccion);
+                    
+                    // Actualizar el usuario con los datos adicionales
+                    usuarioService.actualizarUsuario(response.getId(), updateDTO);
+                }
+                
+                System.out.println("✅ Usuario creado exitosamente: " + response.getEmail());
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("mensaje", response.getMensaje()));
+            }
             
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            System.err.println("❌ Error al crear usuario: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error al actualizar usuario: " + e.getMessage());
+            System.err.println("❌ Error interno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al crear usuario"));
+        }
+    }
+    
+    // ✅ Obtener todos los usuarios
+    @GetMapping
+    public ResponseEntity<List<UsuarioDTO>> obtenerTodosLosUsuarios() {
+        try {
+            List<UsuarioDTO> usuarios = usuarioService.obtenerTodosLosUsuarios();
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            System.err.println("Error al obtener usuarios: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // ✅ Obtener usuario por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerUsuarioPorId(@PathVariable Long id) {
+        try {
+            UsuarioDTO usuario = usuarioService.obtenerUsuarioPorId(id);
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            System.err.println("Usuario no encontrado: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("Error interno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error interno del servidor"));
+        }
+    }
+    
+    // ✅ Eliminar usuario
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> eliminarUsuario(@PathVariable Long id) {
+        try {
+            System.out.println("🔍 Intentando eliminar usuario ID: " + id);
+            Map<String, Object> response = usuarioService.eliminarUsuario(id);
+            System.out.println("✅ Usuario eliminado: " + response);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            System.err.println("❌ Error al eliminar usuario: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put("eliminado", false);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        } catch (Exception e) {
+            System.err.println("❌ Error interno al eliminar: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("mensaje", "Error al eliminar usuario: " + e.getMessage());
+            errorResponse.put("eliminado", false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    // ✅ Cambiar estado activo/inactivo
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<?> cambiarEstadoUsuario(
+            @PathVariable Long id,
+            @RequestBody ActualizarEstadoUsuarioDTO estadoDTO) {
+        try {
+            System.out.println("🔍 Cambiando estado usuario ID: " + id + " a: " + estadoDTO.getActivo());
+            UsuarioDTO usuarioActualizado = usuarioService.cambiarEstadoUsuario(id, estadoDTO);
+            System.out.println("✅ Estado cambiado exitosamente");
+            return ResponseEntity.ok(usuarioActualizado);
+        } catch (RuntimeException e) {
+            System.err.println("❌ Usuario no encontrado: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("❌ Error interno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al cambiar estado del usuario"));
+        }
+    }
+    
+    // ✅ Actualizar información del usuario
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizarUsuario(
+            @PathVariable Long id,
+            @RequestBody UsuarioDTO usuarioDTO) {
+        try {
+            System.out.println("🔍 Actualizando usuario ID: " + id);
+            System.out.println("📝 Datos recibidos: " + usuarioDTO);
+            UsuarioDTO usuarioActualizado = usuarioService.actualizarUsuario(id, usuarioDTO);
+            System.out.println("✅ Usuario actualizado exitosamente");
+            return ResponseEntity.ok(usuarioActualizado);
+        } catch (RuntimeException e) {
+            System.err.println("❌ Error en datos: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("❌ Error interno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("mensaje", "Error al actualizar usuario"));
+        }
+    }
+    
+    // ✅ Endpoint para estadísticas
+    @GetMapping("/estadisticas")
+    public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
+        try {
+            System.out.println("📊 Obteniendo estadísticas de usuarios");
+            Map<String, Object> estadisticas = usuarioService.obtenerEstadisticas();
+            System.out.println("✅ Estadísticas: " + estadisticas);
+            return ResponseEntity.ok(estadisticas);
+        } catch (Exception e) {
+            System.err.println("❌ Error al obtener estadísticas: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("mensaje", "Error al obtener estadísticas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    // ✅ Endpoint para obtener usuarios en formato entidad (compatibilidad)
+    @GetMapping("/entidades")
+    public ResponseEntity<List<com.ventadeautos.backend.model.Usuario>> obtenerTodosLosUsuariosEntidad() {
+        try {
+            List<com.ventadeautos.backend.model.Usuario> usuarios = usuarioService.obtenerTodosLosUsuariosEntidad();
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            System.err.println("Error al obtener usuarios (entidades): " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

@@ -147,52 +147,69 @@ public class AutoService {
     }
     
     public Optional<Auto> actualizarAuto(Long id, AutoRequest request) {
-        return autoRepository.findById(id).map(auto -> {
-            if (request.getMarcaId() != null) {
-                Marca marca = marcaService.obtenerMarcaPorId(request.getMarcaId())
-                    .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
-                auto.setMarca(marca);
-            }
-            
-            // ✅ CORREGIDO: Usar IDs consistentemente en actualización también
-            if (request.getCategoriaId() != null) {
-                CategoriaAuto categoria = categoriaAutoService.obtenerPorId(request.getCategoriaId())
-                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-                auto.setCategoria(categoria);
-            }
-            
-            if (request.getCondicionId() != null) {
-                CondicionAuto condicion = condicionAutoService.obtenerPorId(request.getCondicionId())
-                    .orElseThrow(() -> new RuntimeException("Condición no encontrada"));
-                auto.setCondicion(condicion);
-            }
-            
-            if (request.getCombustibleId() != null) {
-                Combustible combustible = combustibleService.obtenerPorId(request.getCombustibleId())
-                    .orElseThrow(() -> new RuntimeException("Combustible no encontrado"));
-                auto.setCombustible(combustible);
-            }
-            
-            if (request.getTransmisionId() != null) {
-                Transmision transmision = transmisionService.obtenerPorId(request.getTransmisionId())
-                    .orElseThrow(() -> new RuntimeException("Transmisión no encontrada"));
-                auto.setTransmision(transmision);
-            }
-            
+    return autoRepository.findById(id).map(auto -> {
+        if (request.getMarcaId() != null) {
+            Marca marca = marcaService.obtenerMarcaPorId(request.getMarcaId())
+                .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+            auto.setMarca(marca);
+        }
+        
+        if (request.getCategoriaId() != null) {
+            CategoriaAuto categoria = categoriaAutoService.obtenerPorId(request.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            auto.setCategoria(categoria);
+        }
+        
+        if (request.getCondicionId() != null) {
+            CondicionAuto condicion = condicionAutoService.obtenerPorId(request.getCondicionId())
+                .orElseThrow(() -> new RuntimeException("Condición no encontrada"));
+            auto.setCondicion(condicion);
+        }
+        
+        if (request.getCombustibleId() != null) {
+            Combustible combustible = combustibleService.obtenerPorId(request.getCombustibleId())
+                .orElseThrow(() -> new RuntimeException("Combustible no encontrado"));
+            auto.setCombustible(combustible);
+        }
+        
+        if (request.getTransmisionId() != null) {
+            Transmision transmision = transmisionService.obtenerPorId(request.getTransmisionId())
+                .orElseThrow(() -> new RuntimeException("Transmisión no encontrada"));
+            auto.setTransmision(transmision);
+        }
+        
+        // ✅ VALIDACIONES AGREGADAS - Solo actualizar si no es null
+        if (request.getModelo() != null && !request.getModelo().isEmpty()) {
             auto.setModelo(request.getModelo());
+        }
+        
+        if (request.getAnio() != null) {  // ✅ ESTA ES LA CLAVE
             auto.setAnio(request.getAnio());
+        }
+        
+        if (request.getPrecio() != null) {
             auto.setPrecio(request.getPrecio());
+        }
+        
+        if (request.getColor() != null && !request.getColor().isEmpty()) {
             auto.setColor(request.getColor());
-            auto.setKilometraje(request.getKilometraje() != null ? request.getKilometraje() : auto.getKilometraje());
+        }
+        
+        if (request.getKilometraje() != null) {
+            auto.setKilometraje(request.getKilometraje());
+        }
+        
+        if (request.getDescripcion() != null && !request.getDescripcion().isEmpty()) {
             auto.setDescripcion(request.getDescripcion());
-            
-            if (request.getImagenes() != null) {
-                auto.setImagenes(request.getImagenes());
-            }
-            
-            return autoRepository.save(auto);
-        });
-    }
+        }
+        
+        if (request.getImagenes() != null) {
+            auto.setImagenes(request.getImagenes());
+        }
+        
+        return autoRepository.save(auto);
+    });
+}
     
     public boolean eliminarAuto(Long id) {
         if (autoRepository.existsById(id)) {

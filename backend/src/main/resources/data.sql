@@ -63,10 +63,10 @@ INSERT INTO marcas (id, nombre, descripcion, activa) VALUES
 (11, 'Mazda', 'Fabricante japonés de automóviles', true),
 (12, 'Subaru', 'Fabricante japonés de automóviles', true);
 
--- Insertar Usuarios
-INSERT INTO usuarios (id, email, password, nombre, rol_id) VALUES 
-(1, 'admin@test.com', 'admin123', 'Administrador Principal', 1),
-(2, 'cliente@test.com', 'cliente123', 'Cliente Ejemplo', 2);
+-- Insertar Usuarios (ACTUALIZADO con nuevas columnas)
+INSERT INTO usuarios (id, email, password, nombre, apellidos, dni, telefono, direccion, rol_id, activo, fecha_creacion, fecha_actualizacion) VALUES 
+(1, 'admin@test.com', 'admin123', 'Administrador', 'Principal', '12345678', '987654321', 'Av. Principal 123', 1, true, NOW(), NOW()),
+(2, 'cliente@test.com', 'cliente123', 'Juan', 'Pérez', '87654321', '123456789', 'Calle Secundaria 456', 2, true, NOW(), NOW());
 
 -- Insertar Autos (con las nuevas relaciones)
 INSERT INTO autos (id, marca_id, modelo, anio, precio, color, kilometraje, combustible_id, transmision_id, categoria_id, condicion_id, descripcion, disponible) VALUES 

@@ -96,54 +96,78 @@ public class VentaService {
         return ventaRepository.findByEstado(estado);
     }
     
-    public Venta actualizarEstadoVenta(Long ventaId, EstadoVenta nuevoEstado) {
+    // ✅ MEJORAR: Cambiar firma para recibir String (nombre del estado)
+    @Transactional
+    public Venta actualizarEstadoVenta(Long ventaId, String nuevoEstadoNombre) {
+        System.out.println("🔄 Actualizando venta #" + ventaId + " a estado: " + nuevoEstadoNombre);
+        
         Venta venta = ventaRepository.findById(ventaId)
             .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+        
+        // ✅ Buscar el estado por nombre
+        EstadoVenta nuevoEstado = estadoVentaService.obtenerPorNombre(nuevoEstadoNombre)
+            .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + nuevoEstadoNombre));
         
         EstadoVenta estadoAnterior = venta.getEstado();
         venta.setEstado(nuevoEstado);
         
         Venta ventaActualizada = ventaRepository.save(venta);
+        System.out.println("✅ Venta actualizada: " + estadoAnterior.getNombre() + " → " + nuevoEstadoNombre);
         
-        // ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO DESPUÉS DE CAMBIAR ESTADO
+        // ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO
         actualizarDisponibilidadAuto(venta.getAuto().getId());
         
         return ventaActualizada;
     }
-    
-    // ✅ MÉTODO MODIFICADO: Solo actualiza disponibilidad para ventas PENDIENTES
+        
+    // ✅ MÉTODO CORREGIDO
     private void actualizarDisponibilidadAuto(Long autoId) {
         Auto auto = autoRepository.findById(autoId)
             .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
         
-        // Obtener estado PENDIENTE de la base de datos
+        // Obtener estados
         EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
-                .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado"));
-
-
+            .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado"));
+        
         EstadoVenta estadoFinalizado = estadoVentaService.obtenerPorNombre("FINALIZADO")
             .orElseThrow(() -> new RuntimeException("Estado FINALIZADO no encontrado"));
         
-        // Verificar solo si el auto tiene ventas PENDIENTES
+        EstadoVenta estadoCancelado = estadoVentaService.obtenerPorNombre("CANCELADO")
+            .orElseThrow(() -> new RuntimeException("Estado CANCELADO no encontrado"));
+        
+        // Obtener TODAS las ventas del auto
         List<Venta> ventasDelAuto = ventaRepository.findByAutoId(autoId);
-        boolean tieneVentasPendientes = ventasDelAuto.stream()
-                .anyMatch(v -> v.getEstado().getId().equals(estadoPendiente.getId()) || 
-                          v.getEstado().getId().equals(estadoFinalizado.getId()));
         
-        // Lógica modificada:
-        // - Si tiene ventas PENDIENTES → Auto NO disponible (automático)
-        // - Si la venta es FINALIZADA → Auto sigue NO disponible (hasta que admin lo cambie manualmente)
-        // - Si la venta es CANCELADA → Auto SÍ disponible (automático)
-        boolean nuevaDisponibilidad = !tieneVentasPendientes;
+        boolean tieneVentaPendiente = ventasDelAuto.stream()
+            .anyMatch(v -> v.getEstado().getId().equals(estadoPendiente.getId()));
         
-        // Solo actualizar si cambió la disponibilidad
+        boolean tieneVentaFinalizado = ventasDelAuto.stream()
+            .anyMatch(v -> v.getEstado().getId().equals(estadoFinalizado.getId()));
+        
+        // ✅ Determinar nueva disponibilidad
+        boolean nuevaDisponibilidad;
+        
+        if (tieneVentaPendiente) {
+            // Si hay PENDIENTE → NO disponible
+            nuevaDisponibilidad = false;
+            System.out.println("🔒 Auto #" + autoId + " → NO DISPONIBLE (venta PENDIENTE)");
+        } 
+        else if (tieneVentaFinalizado) {
+            // Si hay FINALIZADO → NO disponible (vendido)
+            nuevaDisponibilidad = false;
+            System.out.println("🔒 Auto #" + autoId + " → NO DISPONIBLE (VENDIDO)");
+        } 
+        else {
+            // Si NO hay PENDIENTE ni FINALIZADO (todas canceladas o sin ventas) → SÍ disponible
+            nuevaDisponibilidad = true;
+            System.out.println("✅ Auto #" + autoId + " → DISPONIBLE (ventas canceladas)");
+        }
+        
+        // Solo actualizar si cambió
         if (auto.getDisponible() != nuevaDisponibilidad) {
             auto.setDisponible(nuevaDisponibilidad);
             autoRepository.save(auto);
-            
-            System.out.println("🔄 Auto ID: " + auto.getId() + 
-                            " - Nueva disponibilidad: " + auto.getDisponible() + 
-                            " - Ventas pendientes: " + tieneVentasPendientes);
+            System.out.println("💾 Auto #" + autoId + " guardado con disponibilidad: " + nuevaDisponibilidad);
         }
     }
     
@@ -234,5 +258,8 @@ public class VentaService {
         }
         
         return false;
+
     }
+    
+
 }
