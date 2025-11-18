@@ -67,7 +67,6 @@ export class HomeComponent implements OnInit {
         this.autos = autos;
         this.autosFilterrados = autos;  // ✅ CORRECTO
         this.loading = false;
-        console.log('✅ Autos cargados:', autos);
       },
       error: (err) => {
         this.error = 'Error al cargar los autos';

@@ -141,7 +141,6 @@ export class AutoDetailComponent implements OnInit {
   }
 
   contactarVendedor(): void {
-    console.log('🔍 [COMPONENTE] contactarVendedor llamado');
     console.log('📋 Datos del formulario:', this.contactData);
     
     if (!this.isFormValid()) {
@@ -151,14 +150,11 @@ export class AutoDetailComponent implements OnInit {
 
     this.ventaService.contactarVendedor(this.contactData).subscribe({
       next: (response) => {
-        console.log('✅ Éxito:', response);
         alert('¡Solicitud enviada correctamente! Te contactaremos pronto.');
         this.closeContactModal();
       },
       error: (error) => {
         console.error('❌ Error completo:', error);
-        console.log('📊 Status:', error.status);
-        console.log('📄 Mensaje error:', error.error);
         alert('Error al enviar solicitud: ' + (error.error || 'Error desconocido'));
       }
     });
