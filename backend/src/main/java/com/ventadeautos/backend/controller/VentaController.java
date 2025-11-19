@@ -58,10 +58,14 @@ public class VentaController {
     
     @GetMapping("/mis-solicitudes")
     public ResponseEntity<?> obtenerMisSolicitudes(HttpServletRequest request) {
-        System.out.println("🔓 [VENTAS] Endpoint público - obteniendo todas las solicitudes");
+        System.out.println("🔐 [VENTAS] Obteniendo solicitudes del cliente autenticado");
         
         try {
-            List<Venta> ventas = ventaService.obtenerTodasLasVentas();
+            System.out.println("🔍 Autenticando usuario...");
+            Usuario usuario = authenticationService.getUsuarioAutenticado(request);
+            System.out.println("✅ Usuario autenticado: " + usuario.getEmail() + " ID: " + usuario.getId());
+            
+            List<Venta> ventas = ventaService.obtenerVentasPorCliente(usuario.getId());
             System.out.println("✅ [VENTAS] Total de ventas encontradas: " + ventas.size());
             
             List<VentaResponse> response = ventaService.convertirListaAVentaResponse(ventas);
