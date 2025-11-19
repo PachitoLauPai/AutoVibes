@@ -23,6 +23,11 @@ export class GestionVentasComponent implements OnInit {
   error = '';
   filtroEstado: string = 'TODAS';
 
+  // ✅ PROPIEDADES PARA EL MODAL
+  mostrarModalDetalles = false;
+  ventaSeleccionada: VentaResponse | null = null;
+  currentImageIndex = 0;
+
   constructor(
     private ventaService: VentaService,
     public authService: AuthService,
@@ -119,13 +124,6 @@ export class GestionVentasComponent implements OnInit {
     });
   }
 
-  verDetalles(venta: VentaResponse): void {
-    alert(`Venta #${venta.id}\n\n` +
-          `${venta.clienteNombre} ${venta.clienteApellidos}\n` +
-          `${venta.autoMarca} ${venta.autoModelo} (${venta.autoAnio})\n\n` +
-          `S/ ${venta.autoPrecio}`);
-  }
-
   getEstadoClass(estado: string): string {
     switch (estado) {
       case 'PENDIENTE': return 'pending';
@@ -150,5 +148,52 @@ export class GestionVentasComponent implements OnInit {
 
   recargarVentas(): void {
     this.cargarVentas();
+  }
+
+  // ✅ NUEVOS MÉTODOS PARA EL MODAL
+  abrirModalDetalles(venta: VentaResponse): void {
+    this.ventaSeleccionada = venta;
+    this.currentImageIndex = 0; // Reiniciar índice de imágenes
+    this.mostrarModalDetalles = true;
+    document.body.style.overflow = 'hidden'; // Prevenir scroll
+  }
+
+  cerrarModalDetalles(event?: any): void {
+    if (event) {
+      event.preventDefault();
+    }
+    this.mostrarModalDetalles = false;
+    this.ventaSeleccionada = null;
+    this.currentImageIndex = 0;
+    document.body.style.overflow = 'auto'; // Restaurar scroll
+  }
+
+  // ✅ MÉTODOS PARA EL CARRUSEL DE IMÁGENES
+  obtenerImagenActual(): string {
+    if (!this.ventaSeleccionada?.autoImagenes || this.ventaSeleccionada.autoImagenes.length === 0) {
+      return 'https://via.placeholder.com/500x400/cccccc/969696?text=Sin+Imagen';
+    }
+    return this.ventaSeleccionada.autoImagenes[this.currentImageIndex];
+  }
+
+  siguienteImagen(): void {
+    if (!this.ventaSeleccionada?.autoImagenes || this.ventaSeleccionada.autoImagenes.length <= 1) return;
+    this.currentImageIndex = (this.currentImageIndex + 1) % this.ventaSeleccionada.autoImagenes.length;
+  }
+
+  imagenAnterior(): void {
+    if (!this.ventaSeleccionada?.autoImagenes || this.ventaSeleccionada.autoImagenes.length <= 1) return;
+    this.currentImageIndex = this.currentImageIndex === 0 
+      ? this.ventaSeleccionada.autoImagenes.length - 1 
+      : this.currentImageIndex - 1;
+  }
+
+  irAImagen(index: number): void {
+    if (!this.ventaSeleccionada?.autoImagenes || index < 0 || index >= this.ventaSeleccionada.autoImagenes.length) return;
+    this.currentImageIndex = index;
+  }
+
+  manejarErrorImagen(event: any): void {
+    event.target.src = 'https://via.placeholder.com/500x400/cccccc/969696?text=Error+Imagen';
   }
 }
