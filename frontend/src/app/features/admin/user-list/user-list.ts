@@ -154,4 +154,18 @@ export class UserListComponent implements OnInit {
   esUsuarioActual(usuario: User): boolean {
     return usuario.id === this.authService.getCurrentUser()?.id;
   }
+
+  // ✅ NUEVO: Método para formatear fechas
+  formatearFecha(fecha: string | undefined): string {
+    if (!fecha) {
+      return 'No disponible';
+    }
+    return new Date(fecha).toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 }
