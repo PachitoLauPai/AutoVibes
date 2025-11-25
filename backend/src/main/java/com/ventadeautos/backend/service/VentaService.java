@@ -2,10 +2,14 @@ package com.ventadeautos.backend.service;
 
 import com.ventadeautos.backend.dto.ContactRequest;
 import com.ventadeautos.backend.dto.VentaResponse;
+import com.ventadeautos.backend.exception.BadRequestException;
+import com.ventadeautos.backend.exception.ConflictException;
+import com.ventadeautos.backend.exception.ResourceNotFoundException;
 import com.ventadeautos.backend.model.*;
 import com.ventadeautos.backend.repository.AutoRepository;
 import com.ventadeautos.backend.repository.VentaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +17,7 @@ import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,72 +29,74 @@ public class VentaService {
     private final EstadoVentaService estadoVentaService;
     
     public Venta crearSolicitudContacto(ContactRequest contactRequest, Usuario usuario) {
-        System.out.println("=== 🚨 DEBUG INICIANDO ===");
-        System.out.println("📦 ContactRequest: " + contactRequest);
-        System.out.println("👤 Usuario ID: " + usuario.getId() + ", Email: " + usuario.getEmail());
-        System.out.println("🚗 Auto ID: " + contactRequest.getAutoId());
+        log.debug("Iniciando creación de solicitud de contacto - Usuario ID: {}, Email: {}, Auto ID: {}", 
+                usuario.getId(), usuario.getEmail(), contactRequest.getAutoId());
         
         try {
             // 1. Verificar auto
-            System.out.println("🔍 Buscando auto...");
+            log.debug("Buscando auto con ID: {}", contactRequest.getAutoId());
             Auto auto = autoRepository.findById(contactRequest.getAutoId())
                 .orElseThrow(() -> {
-                    System.out.println("❌ AUTO NO ENCONTRADO: " + contactRequest.getAutoId());
-                    return new RuntimeException("Auto no encontrado");
+                    log.error("Auto no encontrado con ID: {}", contactRequest.getAutoId());
+                    return new ResourceNotFoundException("Auto", contactRequest.getAutoId());
                 });
-            System.out.println("✅ Auto encontrado: " + auto.getMarca() + " " + auto.getModelo());
+            log.debug("Auto encontrado: {} {}", auto.getMarca().getNombre(), auto.getModelo());
             
             // ✅ Verificar que el auto esté disponible
             if (!auto.getDisponible()) {
-                throw new RuntimeException("El auto no está disponible para venta");
+                log.warn("Intento de contacto con auto no disponible - Auto ID: {}", auto.getId());
+                throw new BadRequestException("El auto no está disponible para venta");
             }
             
             // 2. Verificar cliente
-            System.out.println("🔍 Procesando cliente...");
+            log.debug("Procesando cliente para usuario ID: {}", usuario.getId());
             Cliente cliente = clienteService.crearOActualizarCliente(contactRequest, usuario);
-            System.out.println("✅ Cliente procesado: " + cliente.getNombres());
+            log.debug("Cliente procesado: {}", cliente.getNombres());
             
             // 3. Verificar venta existente
-            System.out.println("🔍 Verificando ventas existentes...");
+            log.debug("Verificando ventas existentes para cliente ID: {} y auto ID: {}", cliente.getId(), auto.getId());
             Optional<Venta> ventaExistente = ventaRepository.findByClienteIdAndAutoId(cliente.getId(), auto.getId());
             if (ventaExistente.isPresent()) {
-                System.out.println("❌ VENTA EXISTENTE: " + ventaExistente.get().getId());
-                throw new RuntimeException("Ya existe una solicitud de contacto pendiente para este auto");
+                log.warn("Ya existe una solicitud de contacto pendiente - Venta ID: {}", ventaExistente.get().getId());
+                throw new ConflictException("Ya existe una solicitud de contacto pendiente para este auto");
             }
             
             // 4. Obtener estado PENDIENTE de la base de datos
-            System.out.println("🔍 Buscando estado PENDIENTE...");
+            log.debug("Buscando estado PENDIENTE");
             EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
-                    .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado en la base de datos"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Estado", "PENDIENTE"));
             
             // 5. Crear venta
-            System.out.println("🔍 Creando nueva venta...");
+            log.debug("Creando nueva venta");
             Venta venta = new Venta();
             venta.setCliente(cliente);
             venta.setAuto(auto);
             venta.setEstado(estadoPendiente);
             
             Venta ventaGuardada = ventaRepository.save(venta);
-            System.out.println("✅ Venta creada exitosamente: " + ventaGuardada.getId());
+            log.info("Venta creada exitosamente - Venta ID: {}, Cliente: {}, Auto: {}", 
+                    ventaGuardada.getId(), cliente.getNombres(), auto.getModelo());
             
             // 6. ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO AUTOMÁTICAMENTE
-            actualizarDisponibilidadAuto(auto.getId()); // ✅ LLAMADA CORRECTA AL MÉTODO
+            actualizarDisponibilidadAuto(auto.getId());
             
             return ventaGuardada;
             
-        } catch (Exception e) {
-            System.out.println("❌ ERROR CRÍTICO: " + e.getMessage());
-            e.printStackTrace();
+        } catch (BadRequestException | ConflictException | ResourceNotFoundException e) {
+            log.error("Error al crear solicitud de contacto: {}", e.getMessage(), e);
             throw e;
+        } catch (Exception e) {
+            log.error("Error crítico al crear solicitud de contacto", e);
+            throw new BadRequestException("Error al procesar la solicitud de contacto: " + e.getMessage());
         }
     }
     
     public List<Venta> obtenerVentasPorCliente(Long usuarioId) {
-        return ventaRepository.findByClienteUsuarioId(usuarioId);
+        return ventaRepository.findByClienteUsuarioIdWithAutoAndMarca(usuarioId);
     }
     
     public List<Venta> obtenerTodasLasVentas() {
-        return ventaRepository.findAllByOrderByFechaSolicitudDesc();
+        return ventaRepository.findAllWithAutoAndMarca();
     }
     
     public List<Venta> obtenerVentasPorEstado(EstadoVenta estado) {
@@ -99,20 +106,27 @@ public class VentaService {
     // ✅ MEJORAR: Cambiar firma para recibir String (nombre del estado)
     @Transactional
     public Venta actualizarEstadoVenta(Long ventaId, String nuevoEstadoNombre) {
-        System.out.println("🔄 Actualizando venta #" + ventaId + " a estado: " + nuevoEstadoNombre);
+        log.info("Actualizando venta ID: {} a estado: {}", ventaId, nuevoEstadoNombre);
         
         Venta venta = ventaRepository.findById(ventaId)
-            .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+            .orElseThrow(() -> {
+                log.error("Venta no encontrada con ID: {}", ventaId);
+                return new ResourceNotFoundException("Venta", ventaId);
+            });
         
         // ✅ Buscar el estado por nombre
         EstadoVenta nuevoEstado = estadoVentaService.obtenerPorNombre(nuevoEstadoNombre)
-            .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + nuevoEstadoNombre));
+            .orElseThrow(() -> {
+                log.error("Estado no encontrado: {}", nuevoEstadoNombre);
+                return new ResourceNotFoundException("Estado", nuevoEstadoNombre);
+            });
         
         EstadoVenta estadoAnterior = venta.getEstado();
         venta.setEstado(nuevoEstado);
         
         Venta ventaActualizada = ventaRepository.save(venta);
-        System.out.println("✅ Venta actualizada: " + estadoAnterior.getNombre() + " → " + nuevoEstadoNombre);
+        log.info("Venta actualizada - ID: {}, Estado anterior: {} → Estado nuevo: {}", 
+                ventaId, estadoAnterior.getNombre(), nuevoEstadoNombre);
         
         // ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO
         actualizarDisponibilidadAuto(venta.getAuto().getId());
@@ -123,17 +137,17 @@ public class VentaService {
     // ✅ MÉTODO CORREGIDO
     private void actualizarDisponibilidadAuto(Long autoId) {
         Auto auto = autoRepository.findById(autoId)
-            .orElseThrow(() -> new RuntimeException("Auto no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Auto", autoId));
         
         // Obtener estados
         EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
-            .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Estado", "PENDIENTE"));
         
         EstadoVenta estadoFinalizado = estadoVentaService.obtenerPorNombre("FINALIZADO")
-            .orElseThrow(() -> new RuntimeException("Estado FINALIZADO no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Estado", "FINALIZADO"));
         
         EstadoVenta estadoCancelado = estadoVentaService.obtenerPorNombre("CANCELADO")
-            .orElseThrow(() -> new RuntimeException("Estado CANCELADO no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Estado", "CANCELADO"));
         
         // Obtener TODAS las ventas del auto
         List<Venta> ventasDelAuto = ventaRepository.findByAutoId(autoId);
@@ -150,24 +164,24 @@ public class VentaService {
         if (tieneVentaPendiente) {
             // Si hay PENDIENTE → NO disponible
             nuevaDisponibilidad = false;
-            System.out.println("🔒 Auto #" + autoId + " → NO DISPONIBLE (venta PENDIENTE)");
+            log.debug("Auto ID: {} → NO DISPONIBLE (venta PENDIENTE)", autoId);
         } 
         else if (tieneVentaFinalizado) {
             // Si hay FINALIZADO → NO disponible (vendido)
             nuevaDisponibilidad = false;
-            System.out.println("🔒 Auto #" + autoId + " → NO DISPONIBLE (VENDIDO)");
+            log.debug("Auto ID: {} → NO DISPONIBLE (VENDIDO)", autoId);
         } 
         else {
             // Si NO hay PENDIENTE ni FINALIZADO (todas canceladas o sin ventas) → SÍ disponible
             nuevaDisponibilidad = true;
-            System.out.println("✅ Auto #" + autoId + " → DISPONIBLE (ventas canceladas)");
+            log.debug("Auto ID: {} → DISPONIBLE (ventas canceladas o sin ventas)", autoId);
         }
         
         // Solo actualizar si cambió
         if (auto.getDisponible() != nuevaDisponibilidad) {
             auto.setDisponible(nuevaDisponibilidad);
             autoRepository.save(auto);
-            System.out.println("💾 Auto #" + autoId + " guardado con disponibilidad: " + nuevaDisponibilidad);
+            log.info("Auto ID: {} - Disponibilidad actualizada: {}", autoId, nuevaDisponibilidad);
         }
     }
     
@@ -254,7 +268,7 @@ public class VentaService {
         if (cliente.isPresent()) {
             // Obtener estado PENDIENTE de la base de datos
             EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
-                    .orElseThrow(() -> new RuntimeException("Estado PENDIENTE no encontrado"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Estado", "PENDIENTE"));
             
             // Verificar si el cliente tiene ventas pendientes
             List<Venta> ventasPendientes = ventaRepository.findByClienteIdAndEstado(
