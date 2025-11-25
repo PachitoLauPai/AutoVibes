@@ -4,17 +4,20 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, map, catchError, tap, throwError } from 'rxjs';
 import { User, RegisterData } from '../models/user.model';
 import { Rol } from '../models/shared.model';
+import { environment } from '../../environments/environment';
+import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   public currentUserSubject = new BehaviorSubject<User | null>(null);
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private logger: LoggerService
   ) {
     this.cargarUsuarioDesdeLocalStorage();
   }
@@ -26,12 +29,12 @@ export class AuthService {
         const user = JSON.parse(userData);
         // Verificar si el usuario antiguo tiene rol como string y convertirlo
         if (user && typeof user.rol === 'string') {
-          console.log('🔄 Convirtiendo rol de string a objeto...');
+          this.logger.debug('Convirtiendo rol de string a objeto');
           user.rol = { nombre: user.rol } as Rol;
         }
         this.currentUserSubject.next(user);
       } catch (error) {
-        console.error('Error cargando usuario desde localStorage:', error);
+        this.logger.error('Error cargando usuario desde localStorage', error);
         localStorage.removeItem('currentUser');
       }
     }
@@ -44,13 +47,13 @@ export class AuthService {
 
 
     login(credentials: { email: string; password: string }): Observable<User> {
-    console.log('🔐 [AUTH] Intentando login con:', credentials.email);
+    this.logger.debug('Intentando login', { email: credentials.email });
   
   return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap(response => {
-        console.log('✅ [AUTH] Login exitoso:', response);
+        this.logger.info('Login exitoso', { userId: response.id, email: response.email });
         
         const user: User = {
           id: response.id,
@@ -65,7 +68,7 @@ export class AuthService {
         localStorage.setItem('currentUser', JSON.stringify(user));
       }),
       catchError(error => {
-        console.error('❌ [AUTH] Error en login:', error);
+        this.logger.error('Error en login', error);
         return throwError(() => new Error('Credenciales incorrectas'));
       })
     );
@@ -78,14 +81,14 @@ export class AuthService {
   isCliente(): boolean {
     const user = this.currentUser();
     const esCliente = user?.rol?.nombre === 'CLIENTE';
-    console.log('🔍 isCliente() - Rol:', user?.rol?.nombre, 'Resultado:', esCliente);
+    this.logger.debug('isCliente()', { rol: user?.rol?.nombre, resultado: esCliente });
     return esCliente;
   }
 
   isAdmin(): boolean {
     const user = this.currentUser();
     const esAdmin = user?.rol?.nombre === 'ADMIN';
-    console.log('🔍 isAdmin() - Rol:', user?.rol?.nombre, 'Resultado:', esAdmin);
+    this.logger.debug('isAdmin()', { rol: user?.rol?.nombre, resultado: esAdmin });
     return esAdmin;
   }
 
@@ -118,13 +121,13 @@ export class AuthService {
 
   // ✅ ACTUALIZADO: Registro que maneja objeto Rol
   register(registerData: RegisterData): Observable<any> {
-    console.log('📝 [AUTH] Registrando usuario:', registerData);
+    this.logger.debug('Registrando usuario', { email: registerData.email });
     
     return this.http.post<any>(`${this.apiUrl}/auth/registro`, registerData, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap(response => {
-        console.log('✅ [AUTH] Registro exitoso:', response);
+        this.logger.info('Registro exitoso', { userId: response.id, email: response.email });
         
         // Si el registro incluye login automático
         if (response.id && response.email) {
@@ -137,14 +140,14 @@ export class AuthService {
             password: registerData.password
           };
           
-          console.log('👤 Usuario creado para login automático:', user);
+          this.logger.debug('Usuario creado para login automático', { userId: user.id });
           
           this.currentUserSubject.next(user);
           localStorage.setItem('currentUser', JSON.stringify(user));
         }
       }),
       catchError(error => {
-        console.error('❌ [AUTH] Error en registro:', error);
+        this.logger.error('Error en registro', error);
         return throwError(() => error);
       })
     );
@@ -173,7 +176,7 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('🚪 [AUTH] Logout...');
+    this.logger.info('Logout');
     this.currentUserSubject.next(null);  // ✅ Notificar logout
     localStorage.removeItem('currentUser');
     // ✅ NO navegar aquí - dejar que el componente lo haga
@@ -192,27 +195,13 @@ export class AuthService {
 
   // ✅ MEJORADO: Método de debug
   debugAuth(): void {
-    console.log('🐛 DEBUG AUTH SERVICE:');
-    console.log('📦 localStorage currentUser:', localStorage.getItem('currentUser'));
-    console.log('👤 currentUserSubject:', this.currentUserSubject.value);
-    console.log('🔍 isAdmin():', this.isAdmin());
-    console.log('🔍 isCliente():', this.isCliente());
-    
-    const user = this.currentUser();
-    if (user) {
-      console.log('👤 Usuario completo:', user);
-      console.log('👑 Rol completo:', user.rol);
-      console.log('📧 Email:', user.email);
-      
-      // Debug específico del rol
-      if (user.rol) {
-        console.log('🎯 Detalles del Rol:');
-        console.log('   - ID:', user.rol.id);
-        console.log('   - Nombre:', user.rol.nombre);
-        console.log('   - Descripción:', user.rol.descripcion);
-        console.log('   - Activa:', user.rol.activa);
-      }
-    }
+    this.logger.debug('DEBUG AUTH SERVICE', {
+      localStorage: localStorage.getItem('currentUser'),
+      currentUser: this.currentUserSubject.value,
+      isAdmin: this.isAdmin(),
+      isCliente: this.isCliente(),
+      user: this.currentUser()
+    });
   }
   
   // ✅ NUEVO: Cambiar estado de usuario (ADMIN)
@@ -223,10 +212,10 @@ export class AuthService {
       { headers: { 'Content-Type': 'application/json' } }
     ).pipe(
       tap(response => {
-        console.log('✅ Estado del usuario actualizado:', response);
+        this.logger.info('Estado del usuario actualizado', { userId: usuarioId, activo });
       }),
       catchError(error => {
-        console.error('❌ Error al cambiar estado:', error);
+        this.logger.error('Error al cambiar estado', error);
         return throwError(() => new Error('Error al cambiar estado del usuario'));
       })
     );
@@ -240,13 +229,13 @@ export class AuthService {
       { headers: { 'Content-Type': 'application/json' } }
     ).pipe(
       tap(response => {
-        console.log('✅ Perfil actualizado:', response);
+        this.logger.info('Perfil actualizado', { userId: usuarioId });
         // Actualizar el usuario en localStorage
         this.currentUserSubject.next(response as User);
         localStorage.setItem('currentUser', JSON.stringify(response));
       }),
       catchError(error => {
-        console.error('❌ Error al actualizar perfil:', error);
+        this.logger.error('Error al actualizar perfil', error);
         return throwError(() => new Error('Error al actualizar perfil'));
       })
     );
@@ -260,10 +249,10 @@ export class AuthService {
       { headers: { 'Content-Type': 'application/json' } }
     ).pipe(
       tap(response => {
-        console.log('✅ Contraseña cambiadaexitosamente:', response);
+        this.logger.info('Contraseña cambiada exitosamente', { userId });
       }),
       catchError(error => {
-        console.error('❌ Error al cambiar contraseña:', error);
+        this.logger.error('Error al cambiar contraseña', error);
         return throwError(() => new Error('Error al cambiar contraseña'));
       })
     );
