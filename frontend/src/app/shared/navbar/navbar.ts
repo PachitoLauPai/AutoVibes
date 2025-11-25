@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user.model';
+import { LoggerService } from '../../../core/services/logger.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -20,7 +21,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   constructor(
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
@@ -40,7 +42,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   actualizarUsuario(): void {
     this.currentUser = this.authService.currentUser();
-    console.log('👤 Usuario actual:', this.currentUser?.nombre);
+    this.logger.debug('Usuario actual actualizado', { nombre: this.currentUser?.nombre });
   }
 
   toggleMenu(): void {
@@ -49,13 +51,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   logout(): void {
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-      console.log('🚪 Cerrando sesión...');
+      this.logger.info('Cerrando sesión');
       this.authService.logout();
       this.currentUser = null;
       this.isMenuOpen = false;
       
       this.router.navigate(['/home']).then(() => {
-        console.log('✅ Sesión cerrada - Redirigido a HOME');
+        this.logger.debug('Sesión cerrada - Redirigido a HOME');
       });
     }
   }
