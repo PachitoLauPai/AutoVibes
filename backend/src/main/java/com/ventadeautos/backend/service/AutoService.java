@@ -1,13 +1,16 @@
 package com.ventadeautos.backend.service;
 
 import com.ventadeautos.backend.dto.AutoRequest;
+import com.ventadeautos.backend.exception.ResourceNotFoundException;
 import com.ventadeautos.backend.model.*;
 import com.ventadeautos.backend.repository.AutoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AutoService {
@@ -21,7 +24,7 @@ public class AutoService {
     
     // ✅ Mantener métodos simples para listas
     public List<Auto> obtenerTodos() {
-        return autoRepository.findAll();
+        return autoRepository.findAllWithRelations();
     }
     
     public List<Auto> obtenerAutosDisponibles() {
@@ -105,14 +108,14 @@ public class AutoService {
     
     public Auto crearAuto(AutoRequest request) {
         Marca marca = marcaService.obtenerMarcaPorId(request.getMarcaId())
-            .orElseThrow(() -> new RuntimeException("Marca no encontrada con ID: " + request.getMarcaId()));
+            .orElseThrow(() -> new ResourceNotFoundException("Marca", request.getMarcaId()));
         
         // ✅ CORREGIDO: Usar IDs consistentemente
         CategoriaAuto categoria = categoriaAutoService.obtenerPorId(request.getCategoriaId())
-            .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Categoría", request.getCategoriaId()));
     
         CondicionAuto condicion = condicionAutoService.obtenerPorId(request.getCondicionId())
-            .orElseThrow(() -> new RuntimeException("Condición no encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Condición", request.getCondicionId()));
 
         Auto auto = new Auto();
         auto.setMarca(marca);
@@ -129,13 +132,13 @@ public class AutoService {
         // Relaciones opcionales
         if (request.getCombustibleId() != null) {
             Combustible combustible = combustibleService.obtenerPorId(request.getCombustibleId())
-                .orElseThrow(() -> new RuntimeException("Combustible no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Combustible", request.getCombustibleId()));
             auto.setCombustible(combustible);
         }
         
         if (request.getTransmisionId() != null) {
             Transmision transmision = transmisionService.obtenerPorId(request.getTransmisionId())
-                .orElseThrow(() -> new RuntimeException("Transmisión no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transmisión", request.getTransmisionId()));
             auto.setTransmision(transmision);
         }
         
@@ -150,31 +153,31 @@ public class AutoService {
     return autoRepository.findById(id).map(auto -> {
         if (request.getMarcaId() != null) {
             Marca marca = marcaService.obtenerMarcaPorId(request.getMarcaId())
-                .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Marca", request.getMarcaId()));
             auto.setMarca(marca);
         }
         
         if (request.getCategoriaId() != null) {
             CategoriaAuto categoria = categoriaAutoService.obtenerPorId(request.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría", request.getCategoriaId()));
             auto.setCategoria(categoria);
         }
         
         if (request.getCondicionId() != null) {
             CondicionAuto condicion = condicionAutoService.obtenerPorId(request.getCondicionId())
-                .orElseThrow(() -> new RuntimeException("Condición no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Condición", request.getCondicionId()));
             auto.setCondicion(condicion);
         }
         
         if (request.getCombustibleId() != null) {
             Combustible combustible = combustibleService.obtenerPorId(request.getCombustibleId())
-                .orElseThrow(() -> new RuntimeException("Combustible no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Combustible", request.getCombustibleId()));
             auto.setCombustible(combustible);
         }
         
         if (request.getTransmisionId() != null) {
             Transmision transmision = transmisionService.obtenerPorId(request.getTransmisionId())
-                .orElseThrow(() -> new RuntimeException("Transmisión no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transmisión", request.getTransmisionId()));
             auto.setTransmision(transmision);
         }
         
@@ -222,14 +225,13 @@ public class AutoService {
     // ✅ NUEVO: Método para cambiar disponibilidad manualmente
     public Auto cambiarDisponibilidadAuto(Long autoId, Boolean disponible) {
         Auto auto = autoRepository.findById(autoId)
-                .orElseThrow(() -> new RuntimeException("Auto no encontrado con ID: " + autoId));
+                .orElseThrow(() -> new ResourceNotFoundException("Auto", autoId));
         
         auto.setDisponible(disponible);
         Auto autoActualizado = autoRepository.save(auto);
         
-        System.out.println("🔧 ADMIN: Cambio manual de disponibilidad - " +
-                        "Auto ID: " + autoId + 
-                        " - Nueva disponibilidad: " + disponible);
+        log.info("Cambio manual de disponibilidad - Auto ID: {}, Nueva disponibilidad: {}", 
+                autoId, disponible);
         
         return autoActualizado;
     }
