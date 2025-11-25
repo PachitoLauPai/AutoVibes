@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AutoService } from '../../../../core/services/auto.service';
 import { Auto } from '../../../../core/models/auto.model';
 import { VentaService} from '../../../../core/services/venta.service';
-import { ContactRequest } from '../../../../core/models/venta.model'; // ✅ IMPORTAR ContactRequest
-import { AuthService } from '../../../../core/services/auth.service'; // ✅ IMPORTAR AuthService
+import { ContactRequest } from '../../../../core/models/venta.model';
+import { AuthService } from '../../../../core/services/auth.service';
+import { LoggerService } from '../../../../core/services/logger.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 
 @Component({
@@ -16,7 +19,7 @@ import { AuthService } from '../../../../core/services/auth.service'; // ✅ IMP
   templateUrl: './auto-detail.html',
   styleUrls: ['./auto-detail.css']
 })
-export class AutoDetailComponent implements OnInit {
+export class AutoDetailComponent implements OnInit, OnDestroy {
   auto: Auto | null = null;
   loading = true;
   error = '';
@@ -33,14 +36,15 @@ export class AutoDetailComponent implements OnInit {
     direccion: '',
     autoId: 0
   };
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private autoService: AutoService,
     private ventaService: VentaService,
-    private authService: AuthService // ✅ INYECTAR AuthService
-
+    private authService: AuthService,
+    private logger: LoggerService
   ) {}
 
    ngOnInit(): void {
@@ -50,6 +54,11 @@ export class AutoDetailComponent implements OnInit {
       return;
     }
     this.loadAuto();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 
@@ -62,7 +71,7 @@ export class AutoDetailComponent implements OnInit {
       return;
     }
 
-    this.autoService.getAuto(parseInt(autoId)).subscribe({
+    this.autoService.getAuto(parseInt(autoId)).pipe(takeUntil(this.destroy$)).subscribe({
       next: (auto) => {
         this.auto = auto;
         this.contactData.autoId = auto.id;
@@ -71,7 +80,7 @@ export class AutoDetailComponent implements OnInit {
       error: (error) => {
         this.error = 'Error al cargar el auto';
         this.loading = false;
-        console.error('Error loading auto:', error);
+        this.logger.error('Error loading auto', error);
       }
     });
   }
@@ -147,7 +156,7 @@ export class AutoDetailComponent implements OnInit {
       this.contactData.telefono = user.telefono || '';
       this.contactData.direccion = user.direccion || '';
       
-      console.log('✅ Datos autocompletados del cliente:', this.contactData);
+      this.logger.debug('Datos autocompletados del cliente', { autoId: this.contactData.autoId });
     }
   }
 
@@ -157,25 +166,23 @@ export class AutoDetailComponent implements OnInit {
   }
 
   contactarVendedor(): void {
-    console.log('🔍 [COMPONENTE] contactarVendedor llamado');
-    console.log('📋 Datos del formulario:', this.contactData);
+    this.logger.debug('contactarVendedor llamado', { autoId: this.contactData.autoId });
     
     if (!this.isFormValid()) {
       alert('Por favor complete todos los campos obligatorios');
       return;
     }
 
-    this.ventaService.contactarVendedor(this.contactData).subscribe({
+    this.ventaService.contactarVendedor(this.contactData).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response) => {
-        console.log('✅ Éxito:', response);
+        this.logger.info('Solicitud de contacto enviada exitosamente', { autoId: this.contactData.autoId });
         alert('¡Solicitud enviada correctamente! Te contactaremos pronto.');
         this.closeContactModal();
       },
       error: (error) => {
-        console.error('❌ Error completo:', error);
-        console.log('📊 Status:', error.status);
-        console.log('📄 Mensaje error:', error.error);
-        alert('Error al enviar solicitud: ' + (error.error || 'Error desconocido'));
+        this.logger.error('Error al enviar solicitud de contacto', error);
+        const errorMessage = error.error?.mensaje || error.error || 'Error desconocido';
+        alert('Error al enviar solicitud: ' + errorMessage);
       }
     });
   }
