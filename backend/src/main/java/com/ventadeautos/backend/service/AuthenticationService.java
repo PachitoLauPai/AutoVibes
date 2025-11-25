@@ -6,10 +6,12 @@ import com.ventadeautos.backend.repository.UsuarioRepository;
 import com.ventadeautos.backend.repository.RolRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -18,26 +20,26 @@ public class AuthenticationService {
     private final RolRepository rolRepository; // ✅ Añadir RolRepository
     
     public Usuario getUsuarioAutenticado(HttpServletRequest request) {
-        System.out.println("🔓 [AUTH] Modo sin autenticación - Retornando usuario por defecto");
+        log.debug("Modo sin autenticación - Retornando usuario por defecto");
         
         // ✅ SIMPLEMENTE RETORNAMOS UN USUARIO SIN VERIFICAR NADA
         try {
             // Buscar el usuario admin primero
             Optional<Usuario> usuarioAdmin = usuarioRepository.findByEmail("admin@test.com");
             if (usuarioAdmin.isPresent()) {
-                System.out.println("✅ [AUTH] Retornando admin@test.com");
+                log.debug("Retornando usuario admin: admin@test.com");
                 return usuarioAdmin.get();
             }
             
             // Si no existe, buscar cualquier usuario
             Optional<Usuario> cualquierUsuario = usuarioRepository.findById(1L);
             if (cualquierUsuario.isPresent()) {
-                System.out.println("✅ [AUTH] Retornando usuario ID: 1");
+                log.debug("Retornando usuario ID: 1");
                 return cualquierUsuario.get();
             }
             
             // Si no hay usuarios en la BD, crear uno mock
-            System.out.println("⚠️ [AUTH] Creando usuario mock temporal");
+            log.warn("No se encontraron usuarios en BD, creando usuario mock temporal");
             
             // ✅ CORREGIDO: Obtener rol CLIENTE de la base de datos
             Rol rolCliente = rolRepository.findByNombre("CLIENTE")
@@ -58,7 +60,7 @@ public class AuthenticationService {
             return usuarioMock;
             
         } catch (Exception e) {
-            System.out.println("❌ [AUTH] Error: " + e.getMessage());
+            log.error("Error al obtener usuario autenticado: {}", e.getMessage(), e);
             
             // Fallback absoluto
             Rol rolFallback = new Rol();
