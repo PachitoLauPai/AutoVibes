@@ -1,0 +1,166 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    
+    <!-- Logo -->
+    <a class="navbar-brand fw-bold" href="#" (click)="irAlLogo(); $event.preventDefault()">
+      <img src="assets/logo.png" alt="AutoVibes Logo" height="40" class="me-2">
+      <span class="d-none d-sm-inline">AutoVibes</span>
+    </a>
+
+    <!-- Toggle Button (Mobile) -->
+    <button class="navbar-toggler" type="button" (click)="toggleMenu()" 
+            [attr.aria-expanded]="isMenuOpen">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Menu -->
+    <div class="collapse navbar-collapse" [class.show]="isMenuOpen">
+      <ul class="navbar-nav ms-auto">
+        
+        <!-- ========== NAVEGACIÓN CLIENTE (NO LOGUEADO) ========== -->
+        <ng-container *ngIf="!authService.isLoggedIn()">
+          <!-- 🏠 Inicio -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAHome(); $event.preventDefault()">
+              🏠 Inicio
+            </a>
+          </li>
+
+          <!-- 🚗 Autos -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAAutos(); $event.preventDefault()">
+              🚗 Autos
+            </a>
+          </li>
+
+          <!-- Separador visual -->
+          <li class="nav-item">
+            <span class="navbar-text mx-3">|</span>
+          </li>
+
+          <!-- 🔐 Iniciar Sesión -->
+          <li class="nav-item">
+            <button class="btn btn-primary btn-sm" (click)="irALogin()">
+              🔐 Iniciar Sesión
+            </button>
+          </li>
+        </ng-container>
+
+        <!-- ========== NAVEGACIÓN CLIENTE LOGUEADO ========== -->
+        <ng-container *ngIf="authService.isLoggedIn() && authService.isCliente()">
+          <!-- 🏠 Inicio -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAHome(); $event.preventDefault()">
+              🏠 Inicio
+            </a>
+          </li>
+
+          <!-- 🚗 Autos -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAAutos(); $event.preventDefault()">
+              🚗 Autos
+            </a>
+          </li>
+
+          <!-- Separador visual -->
+          <li class="nav-item">
+            <span class="navbar-text mx-3">|</span>
+          </li>
+
+          <!-- 👤 Usuario Logueado (con dropdown) -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" 
+              href="#" 
+              id="navbarDropdown"
+              role="button" 
+              data-bs-toggle="dropdown" 
+              aria-expanded="false">
+              👤 {{ currentUser?.nombre || 'Usuario' }}
+            </a>
+
+            <!-- Dropdown Menu -->
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              
+              <!-- Mi Perfil -->
+              <li>
+                <a class="dropdown-item" href="#" (click)="irAMiPerfil(); $event.preventDefault()">
+                  👤 Mi Perfil
+                </a>
+              </li>
+
+              <!-- Mis Solicitudes -->
+              <li>
+                <a class="dropdown-item" href="#">
+                  📋 Mis Solicitudes
+                </a>
+              </li>
+
+              <!-- Separador -->
+              <li><hr class="dropdown-divider"></li>
+
+              <!-- 🚪 Cerrar Sesión -->
+              <li>
+                <button class="dropdown-item text-danger fw-bold" 
+                        (click)="logout()"
+                        style="border: none; background: none; cursor: pointer;">
+                  🚪 Cerrar Sesión
+                </button>
+              </li>
+            </ul>
+          </li>
+        </ng-container>
+
+        <!-- ========== NAVEGACIÓN ADMIN ========== -->
+        <ng-container *ngIf="authService.isAdmin()">
+      
+          <!-- Separador visual -->
+          <li class="nav-item">
+            <span class="navbar-text mx-2">|</span>
+          </li>
+
+          <!-- ➕ Agregar Auto -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAAgregarAuto(); $event.preventDefault()">
+              ➕ Agregar Auto
+            </a>
+          </li>
+
+          <!-- 👥 Usuarios -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAUsuarios(); $event.preventDefault()">
+              👥 Usuarios
+            </a>
+          </li>
+
+          <!-- 🧾 Ventas -->
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="irAVentas(); $event.preventDefault()">
+              🧾 Ventas
+            </a>
+          </li>
+
+          <!-- Separador visual -->
+          <li class="nav-item">
+            <span class="navbar-text mx-2">|</span>
+          </li>
+
+          <!-- INFO ADMIN -->
+          <li class="nav-item me-3">
+            <span class="navbar-text">
+              <span class="badge bg-warning text-dark">👑 ADMIN</span>
+              <strong class="ms-2">{{ currentUser?.nombre }}</strong>
+            </span>
+          </li>
+
+          <!-- 🚪 Cerrar Sesión -->
+          <li class="nav-item">
+            <button class="btn btn-danger btn-sm" (click)="logout()">
+              🚪 Cerrar Sesión
+            </button>
+          </li>
+        </ng-container>
+
+      </ul>
+    </div>
+  </div>
+</nav>

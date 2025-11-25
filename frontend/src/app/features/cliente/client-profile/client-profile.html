@@ -1,0 +1,427 @@
+<div class="profile-container">
+  <!-- Header -->
+  <div class="profile-header">
+    <button class="btn-back" (click)="goBack()" title="Volver atrás">
+      ← Volver
+    </button>
+    <h1>👤 Mi Perfil</h1>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="profile-content" *ngIf="currentUser">
+    
+    <!-- ============ SECCIÓN 1: DATOS DEL PERFIL ============ -->
+    <div class="profile-section">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2>📋 Información Personal</h2>
+          <span class="warning-badge">✅ Rellena tus datos</span>
+        </div>
+        <button 
+          class="btn-edit" 
+          (click)="toggleEditMode()"
+          [disabled]="isChangingPassword">
+          {{ isEditingProfile ? '✖ Cancelar' : '✏️ Editar' }}
+        </button>
+      </div>
+
+      <!-- Mensajes de éxito/error -->
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Vista de lectura -->
+      <div *ngIf="!isEditingProfile" class="profile-data">
+        
+        <div class="data-item">
+          <label>Nombre Completo:</label>
+          <div class="data-value">
+            {{ currentUser.nombre }}
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>Email:</label>
+          <div class="data-value">
+            {{ currentUser.email }}
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>Apellidos:</label>
+          <div class="data-value">
+            {{ currentUser.apellidos || 'No especificado' }}
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>DNI/CI:</label>
+          <div class="data-value">
+            {{ currentUser.dni || 'No especificado' }}
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>Teléfono:</label>
+          <div class="data-value">
+            {{ currentUser.telefono || 'No especificado' }}
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>Dirección:</label>
+          <div class="data-value">
+            {{ currentUser.direccion || 'No especificado' }}
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>Estado:</label>
+          <div class="data-value">
+            <span class="badge badge-success">
+              ✅ Activo
+            </span>
+          </div>
+        </div>
+
+        <div class="data-item">
+          <label>Miembro desde:</label>
+          <div class="data-value">
+            {{ currentUser.fechaCreacion ? (currentUser.fechaCreacion | date: 'short') : 'No disponible' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de edición -->
+      <form [formGroup]="profileForm" *ngIf="isEditingProfile" class="profile-form">
+        
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="nombre">Nombre Completo *</label>
+          <input 
+            id="nombre"
+            type="text" 
+            formControlName="nombre" 
+            class="form-control"
+            placeholder="Ingresa tu nombre completo">
+          <div class="error-message" *ngIf="profileForm.get('nombre')?.touched">
+            {{ getErrorMessage('nombre', profileForm) }}
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input 
+            id="email"
+            type="email" 
+            formControlName="email" 
+            class="form-control"
+            placeholder="tu@email.com">
+          <div class="error-message" *ngIf="profileForm.get('email')?.touched">
+            {{ getErrorMessage('email', profileForm) }}
+          </div>
+        </div>
+
+        <!-- Apellidos -->
+        <div class="form-group">
+          <label for="apellidos">Apellidos</label>
+          <input 
+            id="apellidos"
+            type="text" 
+            formControlName="apellidos" 
+            class="form-control"
+            placeholder="Tus apellidos">
+        </div>
+
+        <!-- DNI -->
+        <div class="form-group">
+          <label for="dni">DNI/CI</label>
+          <input 
+            id="dni"
+            type="text" 
+            formControlName="dni" 
+            class="form-control"
+            placeholder="Tu documento de identidad">
+        </div>
+
+        <!-- Teléfono -->
+        <div class="form-group">
+          <label for="telefono">Teléfono</label>
+          <input 
+            id="telefono"
+            type="text" 
+            formControlName="telefono" 
+            class="form-control"
+            placeholder="Tu número de teléfono">
+          <div class="error-message" *ngIf="profileForm.get('telefono')?.touched">
+            {{ getErrorMessage('telefono', profileForm) }}
+          </div>
+        </div>
+
+        <!-- Dirección -->
+        <div class="form-group">
+          <label for="direccion">Dirección</label>
+          <textarea 
+            id="direccion"
+            formControlName="direccion" 
+            class="form-control"
+            placeholder="Tu dirección completa"
+            rows="3"></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-primary"
+            (click)="guardarCambiosPerfil()"
+            [disabled]="profileForm.invalid">
+            💾 Guardar Cambios
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="toggleEditMode()">
+            ✖ Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============ SECCIÓN 2: CAMBIAR CONTRASEÑA ============ -->
+    <div class="profile-section">
+      <div class="section-header">
+        <h2>🔐 Cambiar Contraseña</h2>
+        <button 
+          class="btn-edit" 
+          (click)="togglePasswordMode()"
+          [disabled]="isEditingProfile">
+          {{ isChangingPassword ? '✖ Cancelar' : '🔑 Cambiar' }}
+        </button>
+      </div>
+
+      <!-- Mensajes de éxito/error -->
+      <div *ngIf="passwordSuccessMessage" class="alert alert-success">
+        {{ passwordSuccessMessage }}
+      </div>
+      <div *ngIf="passwordErrorMessage" class="alert alert-error">
+        {{ passwordErrorMessage }}
+      </div>
+
+      <!-- Vista de lectura (cuando no está editando contraseña) -->
+      <div *ngIf="!isChangingPassword && !showPasswordRecoveryForm" class="password-info">
+        <p class="info-text">
+          🛡️ Mantén tu contraseña segura. Cámbiala regularmente para proteger tu cuenta.
+        </p>
+      </div>
+
+      <!-- ============ PANTALLA DE RECUPERACIÓN DE CONTRASEÑA (sin formulario de cambio) ============ -->
+      <div *ngIf="showPasswordRecoveryForm && !isChangingPassword" class="recovery-section">
+        
+        <!-- Mensaje de envío de código -->
+        <div class="alert alert-info" *ngIf="!recoveryCodeCorrect && !showPasswordResetScreen">
+          📧 Se ha enviado un código de recuperación a <strong>{{ currentUser.email }}</strong>. 
+          Ingresa los 3 dígitos del código.
+        </div>
+
+        <!-- Entrada de código -->
+        <div *ngIf="!recoveryCodeCorrect && !showPasswordResetScreen" class="code-input-section">
+          <label>Código de Recuperación (3 dígitos) *</label>
+          <div class="code-input-group">
+            <input 
+              type="text" 
+              [(ngModel)]="recoveryCodeInput"
+              maxlength="3"
+              placeholder="000"
+              class="code-input"
+              [disabled]="recoveryExpired"
+              (keyup.enter)="verificarCodigoRecuperacion()">
+            <span class="code-timer" [ngClass]="recoveryCountdown <= 10 ? 'timer-danger' : ''">
+              ⏱️ {{ recoveryCountdown }}s
+            </span>
+          </div>
+          
+          <div *ngIf="recoveryExpired" class="alert alert-error">
+            ⏰ El código ha expirado. Solicita uno nuevo.
+          </div>
+
+          <div class="button-group">
+            <button 
+              type="button" 
+              class="btn btn-primary"
+              (click)="verificarCodigoRecuperacion()"
+              [disabled]="recoveryExpired || recoveryCodeInput.length !== 3">
+              ✓ Verificar Código
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-secondary"
+              (click)="cancelarRecuperacion()">
+              ✖ Cancelar
+            </button>
+          </div>
+        </div>
+
+        <!-- Pantalla de código verificado - mostrar código para usar como contraseña -->
+        <div *ngIf="showPasswordResetScreen && recoveryCodeCorrect" class="code-display-section">
+          <div class="alert alert-success">
+            ✅ Código verificado correctamente!
+          </div>
+
+          <p class="info-text">Usa el código abajo como tu contraseña actual. Disponible por {{ codeExpirationCountdown }} segundos.</p>
+
+          <div class="code-timer-display">
+            <span class="code-value">{{ recoveryCode }}</span>
+            <span class="code-expiration" [ngClass]="codeExpirationCountdown <= 15 ? 'timer-danger' : ''">
+              El código expira en {{ codeExpirationCountdown }}s
+            </span>
+          </div>
+
+          <div class="button-group">
+            <button 
+              type="button" 
+              class="btn btn-primary"
+              (click)="togglePasswordMode()">
+              🔐 Usar Código para Cambiar Contraseña
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-secondary"
+              (click)="cancelarRecuperacion()">
+              ✖ Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de cambio de contraseña -->
+      <form [formGroup]="passwordForm" *ngIf="isChangingPassword" class="password-form">
+        
+        <!-- Contraseña Actual / Contador de Código -->
+        <div class="form-group">
+          <label for="contrasenaActual">
+            {{ codeReplacesPassword ? 'Código de Recuperación' : 'Contraseña Actual' }} *
+          </label>
+          
+          <!-- Si el código reemplaza la contraseña -->
+          <div *ngIf="codeReplacesPassword" class="code-replacement-section">
+            <div class="code-timer-display">
+              <span class="code-value">{{ recoveryCode }}</span>
+              <span class="code-expiration" [ngClass]="codeExpirationCountdown <= 15 ? 'timer-danger' : ''">
+                El código expira en {{ codeExpirationCountdown }}s
+              </span>
+            </div>
+            <p class="info-text">Este código será usado como tu contraseña actual para actualizar tu contraseña.</p>
+          </div>
+          
+          <!-- Si es el flujo normal -->
+          <div *ngIf="!codeReplacesPassword" class="password-input-group">
+            <input 
+              id="contrasenaActual"
+              [type]="showCurrentPassword ? 'text' : 'password'" 
+              formControlName="contrasenaActual" 
+              class="form-control"
+              placeholder="Ingresa tu contraseña actual">
+            <button 
+              type="button" 
+              class="btn-toggle-password" 
+              (click)="toggleCurrentPasswordVisibility()"
+              title="Mostrar/Ocultar contraseña">
+              {{ showCurrentPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+          <div class="error-message" *ngIf="!codeReplacesPassword && passwordForm.get('contrasenaActual')?.touched">
+            {{ getErrorMessage('contrasenaActual', passwordForm) }}
+          </div>
+        </div>
+
+        <!-- Nueva Contraseña -->
+        <div class="form-group">
+          <label for="contrasenaNew">Nueva Contraseña *</label>
+          <div class="password-input-group">
+            <input 
+              id="contrasenaNew"
+              [type]="showNewPassword ? 'text' : 'password'" 
+              formControlName="contrasenaNew" 
+              class="form-control"
+              placeholder="Ingresa una nueva contraseña">
+            <button 
+              type="button" 
+              class="btn-toggle-password" 
+              (click)="toggleNewPasswordVisibility()"
+              title="Mostrar/Ocultar contraseña">
+              {{ showNewPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+          <div class="error-message" *ngIf="passwordForm.get('contrasenaNew')?.touched">
+            {{ getErrorMessage('contrasenaNew', passwordForm) }}
+          </div>
+        </div>
+
+        <!-- Confirmar Nueva Contraseña -->
+        <div class="form-group">
+          <label for="confirmarContrasena">Confirmar Nueva Contraseña *</label>
+          <div class="password-input-group">
+            <input 
+              id="confirmarContrasena"
+              [type]="showConfirmPassword ? 'text' : 'password'" 
+              formControlName="confirmarContrasena" 
+              class="form-control"
+              placeholder="Confirma tu nueva contraseña">
+            <button 
+              type="button" 
+              class="btn-toggle-password" 
+              (click)="toggleConfirmPasswordVisibility()"
+              title="Mostrar/Ocultar contraseña">
+              {{ showConfirmPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+          <div class="error-message" *ngIf="passwordForm.get('confirmarContrasena')?.touched">
+            {{ getErrorMessage('confirmarContrasena', passwordForm) }}
+          </div>
+        </div>
+
+        <!-- Error personalizado para contraseñas que no coinciden -->
+        <div *ngIf="passwordForm.hasError('passwordsMismatch') && isChangingPassword" class="error-message">
+          ⚠️ Las nuevas contraseñas no coinciden
+        </div>
+
+        <!-- Botones -->
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn btn-primary"
+            (click)="cambiarContrasena()"
+            [disabled]="passwordForm.invalid">
+            🔐 Actualizar Contraseña
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-secondary"
+            (click)="togglePasswordMode()">
+            ✖ Cancelar
+          </button>
+        </div>
+
+        <!-- Link de olvidé contraseña -->
+        <div class="forgot-password-section">
+          <p class="forgot-text">
+            <a href="#" (click)="mostrarMensajeRecuperacion(); $event.preventDefault()" class="forgot-password-link">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </p>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="!currentUser" class="loading">
+    <p>Cargando perfil...</p>
+  </div>
+</div>

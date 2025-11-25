@@ -1,0 +1,65 @@
+/* ✅ Usar solo Bootstrap - NO CSS personalizado */
+
+.container {
+  max-width: 1200px;
+}
+
+/* Carousel altura fija */
+.carousel-inner {
+  height: 400px;
+}
+
+.carousel-item img {
+  object-fit: cover;
+}
+
+/* Thumbnails hover */
+.img-thumbnail {
+  transition: all 0.3s ease;
+}
+
+.img-thumbnail:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.img-thumbnail.border-3 {
+  border-width: 3px !important;
+}
+
+/* Modal mejorado */
+.modal.show {
+  display: block;
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+/* Card mejorada */
+.card {
+  transition: box-shadow 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .carousel-inner {
+    height: 300px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 2rem !important;
+  }
+
+  .row.g-3 > div {
+    flex: 0 0 100%;
+  }
+}

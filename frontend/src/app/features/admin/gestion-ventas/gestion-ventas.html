@@ -1,0 +1,351 @@
+<div class="container">
+  <h1>🧾 Gestión de Ventas</h1>
+
+  <!-- Filtros -->
+  <div class="filtros" *ngIf="ventas.length > 0">
+    <label for="filtroEstado">Filtrar por estado:</label>
+    <select id="filtroEstado" 
+            [(ngModel)]="filtroEstado" 
+            (change)="filtrarVentas()" 
+            class="form-select">
+      <option value="TODAS">Todas las ventas</option>
+      <option value="PENDIENTE">Pendientes</option>
+      <option value="FINALIZADO">Finalizadas</option>
+      <option value="CANCELADO">Canceladas</option>
+    </select>
+    
+    <button (click)="recargarVentas()" class="btn btn-secondary">🔄 Actualizar</button>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-3">Cargando ventas...</p>
+  </div>
+  
+  <!-- ERROR -->
+  <div *ngIf="error && !loading" class="error alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>⚠️ Error:</strong> {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''; recargarVentas()"></button>
+  </div>
+
+  <!-- VENTAS CARDS -->
+  <div *ngIf="!loading && !error" class="ventas-container">
+    <div *ngIf="ventasFiltradas.length === 0" class="alert alert-info text-center py-5" role="alert">
+      <h5 class="mb-3">📊 Sin resultados</h5>
+      <p *ngIf="filtroEstado === 'TODAS'">No hay ventas registradas.</p>
+      <p *ngIf="filtroEstado !== 'TODAS'">
+        No hay ventas con estado "{{ getEstadoTexto(filtroEstado) }}".
+      </p>
+    </div>
+
+    <div *ngIf="ventasFiltradas.length > 0" class="ventas-grid">
+      <div *ngFor="let venta of ventasFiltradas" class="venta-card card shadow-sm mb-3">
+        
+        <!-- HEADER -->
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Venta #{{ venta.id }}</h5>
+          <span class="badge" 
+                [class]="'badge-' + getEstadoClass(venta.estado)">
+            {{ getEstadoTexto(venta.estado) }}
+          </span>
+        </div>
+
+        <!-- BODY - VISTA SIMPLIFICADA -->
+        <div class="card-body">
+          <div class="row">
+            
+            <!-- INFORMACIÓN DEL CLIENTE -->
+            <div class="col-md-6 mb-3">
+              <h6 class="fw-bold mb-2">👤 Cliente</h6>
+              <p class="mb-1">
+                <strong>Nombre:</strong><br>
+                {{ venta.clienteNombre }} {{ venta.clienteApellidos }}
+              </p>
+              <p class="mb-1">
+                <strong>DNI:</strong><br>
+                {{ venta.clienteDni }}
+              </p>
+              <p class="mb-1">
+                <strong>Teléfono:</strong><br>
+                {{ venta.clienteTelefono }}
+              </p>
+              <p class="mb-0">
+                <strong>Dirección:</strong><br>
+                {{ venta.clienteDireccion }}
+              </p>
+            </div>
+
+            <!-- FECHAS -->
+            <div class="col-md-6 mb-3">
+              <h6 class="fw-bold mb-2">📅 Fechas</h6>
+              <p class="mb-1">
+                <strong>Solicitud:</strong><br>
+                <small>{{ formatearFecha(venta.fechaSolicitud) }}</small>
+              </p>
+              <p class="mb-0">
+                <strong>Actualización:</strong><br>
+                <small>{{ formatearFecha(venta.fechaActualizacion) }}</small>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACCIONES (FOOTER) -->
+        <div class="card-footer bg-white" *ngIf="authService.isAdmin()">
+          <div class="d-flex gap-2 flex-wrap">
+            
+            <!-- BOTÓN FINALIZAR (Solo si está PENDIENTE) -->
+            <button *ngIf="venta.estado === 'PENDIENTE'"
+                    class="btn btn-success btn-sm"
+                    (click)="cambiarEstadoVenta(venta, 'FINALIZADO')">
+              ✅ Finalizar Venta
+            </button>
+
+            <!-- BOTÓN CANCELAR (Solo si está PENDIENTE) -->
+            <button *ngIf="venta.estado === 'PENDIENTE'"
+                    class="btn btn-warning btn-sm"
+                    (click)="cambiarEstadoVenta(venta, 'CANCELADO')">
+              ❌ Cancelar Venta
+            </button>
+
+            <!-- BOTÓN REACTIVAR (Si está CANCELADO) -->
+            <button *ngIf="venta.estado === 'CANCELADO'"
+                    class="btn btn-info btn-sm"
+                    (click)="cambiarEstadoVenta(venta, 'PENDIENTE')">
+              🔄 Reactivar
+            </button>
+
+            <!-- BOTÓN VER DETALLES (Todos) -->
+            <button class="btn btn-outline-primary btn-sm"
+                    (click)="abrirModalDetalles(venta)">
+              👁️ Ver Detalles
+            </button>
+
+            <!-- BOTÓN ELIMINAR (Todos) -->
+            <button class="btn btn-danger btn-sm"
+                    (click)="eliminarVenta(venta)">
+              🗑️ Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE DETALLES -->
+<div class="modal" [class.show]="mostrarModalDetalles" [style.display]="mostrarModalDetalles ? 'block' : 'none'" 
+     tabindex="-1" role="dialog" (click)="cerrarModalDetalles($event)">
+  <div class="modal-dialog modal-lg" role="document" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      
+      <!-- HEADER DEL MODAL -->
+      <div class="modal-header bg-light">
+        <h5 class="modal-title">Detalles Completos - Venta #{{ ventaSeleccionada?.id }}</h5>
+        <button type="button" class="btn-close" (click)="cerrarModalDetalles()"></button>
+      </div>
+
+      <!-- BODY DEL MODAL -->
+      <div class="modal-body">
+        <div *ngIf="ventaSeleccionada" class="row">
+          
+          <!-- CARRUSEL DE IMÁGENES DEL AUTO -->
+          <div class="col-12 mb-4">
+            <h6 class="fw-bold mb-3">🖼️ Imágenes del Vehículo</h6>
+            <div class="image-carousel-container" style="position: relative; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+              <!-- IMAGEN PRINCIPAL -->
+              <img [src]="obtenerImagenActual()" 
+                   [alt]="ventaSeleccionada.autoMarca + ' ' + ventaSeleccionada.autoModelo"
+                   (error)="manejarErrorImagen($event)"
+                   style="width: 100%; height: 400px; object-fit: cover;">
+              
+              <!-- CONTROLES NEXT/PREV -->
+              <button *ngIf="ventaSeleccionada.autoImagenes && ventaSeleccionada.autoImagenes.length > 1"
+                      (click)="imagenAnterior()"
+                      class="btn btn-dark"
+                      style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); border-radius: 50%; width: 40px; height: 40px; padding: 0;">
+                ❮
+              </button>
+              <button *ngIf="ventaSeleccionada.autoImagenes && ventaSeleccionada.autoImagenes.length > 1"
+                      (click)="siguienteImagen()"
+                      class="btn btn-dark"
+                      style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border-radius: 50%; width: 40px; height: 40px; padding: 0;">
+                ❯
+              </button>
+              
+              <!-- CONTADOR DE IMÁGENES -->
+              <div *ngIf="ventaSeleccionada.autoImagenes && ventaSeleccionada.autoImagenes.length > 1"
+                   style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.875rem;">
+                {{ currentImageIndex + 1 }} / {{ ventaSeleccionada.autoImagenes.length }}
+              </div>
+            </div>
+
+            <!-- THUMBNAILS -->
+            <div *ngIf="ventaSeleccionada.autoImagenes && ventaSeleccionada.autoImagenes.length > 1" 
+                 class="mt-3 d-flex gap-2 overflow-auto pb-2">
+              <img *ngFor="let img of ventaSeleccionada.autoImagenes; let i = index"
+                   [src]="img"
+                   [alt]="'Imagen ' + (i + 1)"
+                   (click)="irAImagen(i)"
+                   (error)="manejarErrorImagen($event)"
+                   class="img-thumbnail"
+                   style="width: 60px; height: 45px; cursor: pointer; object-fit: cover; flex-shrink: 0;"
+                   [class.border-primary]="i === currentImageIndex"
+                   [class.border-3]="i === currentImageIndex">
+            </div>
+          </div>
+          
+          <!-- INFORMACIÓN DEL CLIENTE -->
+          <div class="col-md-6 mb-4">
+            <h6 class="fw-bold mb-3">👤 Información del Cliente</h6>
+            <div class="detail-item">
+              <label>Nombre Completo:</label>
+              <p>{{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellidos }}</p>
+            </div>
+            <div class="detail-item">
+              <label>DNI:</label>
+              <p>{{ ventaSeleccionada.clienteDni }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Teléfono:</label>
+              <p>{{ ventaSeleccionada.clienteTelefono }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Dirección:</label>
+              <p>{{ ventaSeleccionada.clienteDireccion }}</p>
+            </div>
+          </div>
+
+          <!-- INFORMACIÓN DEL AUTO -->
+          <div class="col-md-6 mb-4">
+            <h6 class="fw-bold mb-3">🚗 Información del Vehículo</h6>
+            <div class="detail-item">
+              <label>Vehículo:</label>
+              <p>{{ ventaSeleccionada.autoMarca }} {{ ventaSeleccionada.autoModelo }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Año:</label>
+              <p>{{ ventaSeleccionada.autoAnio }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Precio:</label>
+              <p class="text-danger fw-bold">S/ {{ ventaSeleccionada.autoPrecio | number:'1.2-2' }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Color:</label>
+              <p>{{ ventaSeleccionada.autoColor }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Kilometraje:</label>
+              <p>{{ ventaSeleccionada.autoKilometraje | number }} km</p>
+            </div>
+          </div>
+
+          <!-- ESPECIFICACIONES DEL AUTO -->
+          <div class="col-12 mb-4">
+            <h6 class="fw-bold mb-3">⚙️ Especificaciones</h6>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <div class="detail-item">
+                  <label>Combustible:</label>
+                  <p>{{ ventaSeleccionada.autoCombustible }}</p>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="detail-item">
+                  <label>Transmisión:</label>
+                  <p>{{ ventaSeleccionada.autoTransmision }}</p>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="detail-item">
+                  <label>Categoría:</label>
+                  <p>{{ ventaSeleccionada.autoCategoria }}</p>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="detail-item">
+                  <label>Condición:</label>
+                  <p>{{ ventaSeleccionada.autoCondicion }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FECHAS -->
+          <div class="col-md-6 mb-4">
+            <h6 class="fw-bold mb-3">📅 Fechas de la Venta</h6>
+            <div class="detail-item">
+              <label>Solicitud:</label>
+              <p>{{ formatearFecha(ventaSeleccionada.fechaSolicitud) }}</p>
+            </div>
+            <div class="detail-item">
+              <label>Última Actualización:</label>
+              <p>{{ formatearFecha(ventaSeleccionada.fechaActualizacion) }}</p>
+            </div>
+          </div>
+
+          <!-- ESTADO DE LA VENTA -->
+          <div class="col-md-6 mb-4">
+            <h6 class="fw-bold mb-3">📊 Estado de la Venta</h6>
+            <div class="detail-item">
+              <label>Estado Actual:</label>
+              <p>
+                <span class="badge" [class]="'badge-' + getEstadoClass(ventaSeleccionada.estado)">
+                  {{ getEstadoTexto(ventaSeleccionada.estado) }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER DEL MODAL -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModalDetalles()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BACKDROP DEL MODAL -->
+<div class="modal-backdrop fade" [class.show]="mostrarModalDetalles" *ngIf="mostrarModalDetalles"></div>
+
+<!-- ESTILOS PARA EL MODAL -->
+<style>
+  .modal.show {
+    display: block;
+  }
+
+  .detail-item {
+    margin-bottom: 0.75rem;
+  }
+
+  .detail-item label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-item p {
+    margin-bottom: 0;
+    color: #212529;
+  }
+
+  .badge-pending {
+    background-color: #ffc107;
+    color: #000;
+  }
+
+  .badge-success {
+    background-color: #28a745;
+  }
+
+  .badge-danger {
+    background-color: #dc3545;
+  }
+</style>

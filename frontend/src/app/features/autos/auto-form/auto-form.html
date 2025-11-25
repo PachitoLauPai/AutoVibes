@@ -1,0 +1,147 @@
+<div class="container">
+  <div class="form-header">
+    <h1>Agregar Nuevo Auto</h1>
+    <button class="btn btn-secondary" (click)="volver()">← Volver</button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+  <form (ngSubmit)="onSubmit()" #autoForm="ngForm" class="auto-form">
+    
+    <!-- Información Básica -->
+    <div class="form-section">
+      <h3>Información Básica</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="marca">Marca *</label>
+          <select id="marca" name="marcaId" [(ngModel)]="auto.marcaId" required [disabled]="loadingMarcas">
+            <option value="">-- Selecciona una marca --</option>
+            <option *ngFor="let marca of marcas" [value]="marca.id">{{ marca.nombre }}</option>
+          </select>
+          <small *ngIf="loadingMarcas" class="text-muted">Cargando marcas...</small>
+        </div>
+
+        <div class="form-group">
+          <label for="modelo">Modelo *</label>
+          <input type="text" id="modelo" name="modelo" [(ngModel)]="auto.modelo" required>
+        </div>
+
+        <div class="form-group">
+          <label for="anio">Año *</label>
+          <input type="number" id="anio" name="anio" [(ngModel)]="auto.anio" min="2000" max="2030" required>
+        </div>
+
+        <div class="form-group">
+          <label for="precio">Precio ($) *</label>
+          <input type="number" id="precio" name="precio" [(ngModel)]="auto.precio" min="0" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+          <label for="color">Color</label>
+          <input type="text" id="color" name="color" [(ngModel)]="auto.color">
+        </div>
+
+        <div class="form-group">
+          <label for="kilometraje">Kilometraje</label>
+          <input type="number" id="kilometraje" name="kilometraje" [(ngModel)]="auto.kilometraje" min="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Especificaciones -->
+    <div class="form-section">
+      <h3>Especificaciones</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="combustible">Combustible</label>
+          <select id="combustible" name="combustibleId" [(ngModel)]="auto.combustibleId" [disabled]="loadingCombustibles">
+            <option value="">-- Selecciona combustible --</option>
+            <option *ngFor="let comb of combustibles" [value]="comb.id">{{ comb.nombre }}</option>
+          </select>
+          <small *ngIf="loadingCombustibles" class="text-muted">Cargando combustibles...</small>
+        </div>
+
+        <div class="form-group">
+          <label for="transmision">Transmisión</label>
+          <select id="transmision" name="transmisionId" [(ngModel)]="auto.transmisionId" [disabled]="loadingTransmisiones">
+            <option value="">-- Selecciona transmisión --</option>
+            <option *ngFor="let trans of transmisiones" [value]="trans.id">{{ trans.nombre }}</option>
+          </select>
+          <small *ngIf="loadingTransmisiones" class="text-muted">Cargando transmisiones...</small>
+        </div>
+
+        <div class="form-group">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoriaId" [(ngModel)]="auto.categoriaId" [disabled]="loadingCategorias">
+            <option value="">-- Selecciona categoría --</option>
+            <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
+          </select>
+          <small *ngIf="loadingCategorias" class="text-muted">Cargando categorías...</small>
+        </div>
+
+        <div class="form-group">
+          <label for="condicion">Condición</label>
+          <select id="condicion" name="condicionId" [(ngModel)]="auto.condicionId" [disabled]="loadingCondiciones">
+            <option value="">-- Selecciona condición --</option>
+            <option *ngFor="let cond of condiciones" [value]="cond.id">{{ cond.nombre }}</option>
+          </select>
+          <small *ngIf="loadingCondiciones" class="text-muted">Cargando condiciones...</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Descripción -->
+    <div class="form-section">
+      <h3>Descripción</h3>
+      <div class="form-group">
+        <textarea 
+          id="descripcion" 
+          name="descripcion" 
+          [(ngModel)]="auto.descripcion" 
+          placeholder="Describe el auto, características, estado, etc..."
+          rows="4">
+        </textarea>
+      </div>
+    </div>
+
+    <!-- Imágenes -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3>Imágenes del Auto</h3>
+        <button type="button" class="btn btn-outline" (click)="agregarImagen()">+ Agregar Imagen</button>
+      </div>
+      
+      <div *ngFor="let imagen of auto.imagenes; let i = index" class="image-input-group">
+        <div class="image-input">
+          <label>URL de Imagen {{ i + 1 }}</label>
+          <input 
+            type="url" 
+            [name]="'imagen' + i"
+            [(ngModel)]="auto.imagenes[i]" 
+            placeholder="https://ejemplo.com/imagen.jpg">
+        </div>
+        <button 
+          type="button" 
+          class="btn btn-danger" 
+          (click)="eliminarImagen(i)"
+          *ngIf="auto.imagenes.length > 1">
+          ✕
+        </button>
+      </div>
+      
+      <p class="help-text">Agrega URLs de imágenes del auto. Mínimo 1 imagen.</p>
+    </div>
+
+    <!-- Botones -->
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="volver()">Cancelar</button>
+      <button 
+        type="submit" 
+        class="btn btn-primary" 
+        [disabled]="loading || !auto.marcaId || !auto.modelo || !auto.anio || !auto.precio">
+        {{ loading ? 'Creando...' : 'Crear Auto' }}
+      </button>
+    </div>
+  </form>
+</div>

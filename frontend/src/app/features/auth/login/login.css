@@ -1,0 +1,391 @@
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* Contenedor principal con fondo blanco elegante */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto de ondas sutiles en el fondo */
+.login-container::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(15, 23, 42, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(37, 99, 235, 0.02) 0%, transparent 50%);
+  animation: float 15s ease-in-out infinite;
+}
+
+/* Patrón de puntos decorativo */
+.login-container::after {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: backgroundMove 25s linear infinite;
+  opacity: 0.5;
+}
+
+@keyframes backgroundMove {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(40px, 40px); }
+}
+
+/* Tarjeta de login con sombra sofisticada */
+.login-card {
+  background: #ffffff;
+  backdrop-filter: blur(10px);
+  padding: 50px 40px;
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 60px rgba(15, 23, 42, 0.08),
+    0 8px 24px rgba(59, 130, 246, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  animation: fadeInUp 0.8s ease-out;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 10;
+}
+
+.login-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 
+    0 30px 80px rgba(15, 23, 42, 0.12),
+    0 12px 32px rgba(59, 130, 246, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* Título con gradiente azul-negro */
+h2 {
+  text-align: center;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  animation: slideInRight 0.6s ease-out 0.2s both;
+  position: relative;
+}
+
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #1e40af, #0ea5e9);
+  border-radius: 2px;
+  animation: slideInRight 0.6s ease-out 0.4s both;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+}
+
+/* Grupo de formulario */
+.form-group {
+  margin-bottom: 25px;
+  animation: slideInRight 0.6s ease-out both;
+  animation-delay: calc(0.3s + var(--animation-order, 0) * 0.1s);
+}
+
+.form-group:nth-child(1) { --animation-order: 1; }
+.form-group:nth-child(2) { --animation-order: 2; }
+.form-group:nth-child(3) { --animation-order: 3; }
+
+/* Etiquetas */
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  transition: color 0.3s ease;
+}
+
+/* Inputs con efecto moderno azul */
+input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+input:hover {
+  border-color: #cbd5e0;
+  background: #fff;
+}
+
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.1),
+    0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+input:focus + label {
+  color: #1e40af;
+}
+
+/* Botón principal con gradiente azul-negro */
+.btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #0ea5e9 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 15px rgba(30, 64, 175, 0.3),
+    0 2px 8px rgba(15, 23, 42, 0.2);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: slideInRight 0.6s ease-out 0.6s both;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #1e293b 0%, #2563eb 50%, #06b6d4 100%);
+  box-shadow: 
+    0 8px 25px rgba(30, 64, 175, 0.4),
+    0 4px 12px rgba(15, 23, 42, 0.3);
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 15px rgba(30, 64, 175, 0.3),
+    0 2px 8px rgba(15, 23, 42, 0.2);
+}
+
+.btn:disabled {
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+}
+
+/* Mensaje de error con animación */
+.error-message {
+  color: #dc2626;
+  text-align: center;
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-radius: 12px;
+  border-left: 4px solid #dc2626;
+  font-weight: 600;
+  font-size: 14px;
+  animation: shake 0.5s ease-in-out, slideInRight 0.6s ease-out;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+/* Cuentas demo con estilo elegante */
+.demo-accounts {
+  margin-top: 35px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  font-size: 13px;
+  border: 1px solid #cbd5e0;
+  animation: slideInRight 0.6s ease-out 0.8s both;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-accounts::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(59, 130, 246, 0.1),
+    transparent
+  );
+}
+
+.demo-accounts:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  border-color: #3b82f6;
+}
+
+.demo-accounts:hover::before {
+  animation: shimmer 1.5s ease-in-out;
+}
+
+.demo-accounts h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-accounts h3::before {
+  content: '🔑';
+  font-size: 18px;
+  filter: grayscale(0.3);
+}
+
+.demo-accounts p {
+  margin: 10px 0;
+  color: #1e293b;
+  font-weight: 500;
+  padding-left: 12px;
+  border-left: 3px solid #3b82f6;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.5);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-radius: 6px;
+}
+
+.demo-accounts p:hover {
+  padding-left: 18px;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 35px 25px;
+  }
+  
+  h2 {
+    font-size: 26px;
+  }
+  
+  .btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
