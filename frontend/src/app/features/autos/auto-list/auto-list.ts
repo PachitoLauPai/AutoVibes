@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AutoService } from '../../../../core/services/auto.service';
@@ -6,6 +6,8 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { VentaService } from '../../../../core/services/venta.service';
 import { Auto } from '../../../../core/models/auto.model';
 import { VentaResponse } from '../../../../core/models/venta.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-auto-list',
@@ -14,7 +16,7 @@ import { VentaResponse } from '../../../../core/models/venta.model';
   templateUrl: './auto-list.html',
   styleUrls: ['./auto-list.css']
 })
-export class AutoListComponent implements OnInit {
+export class AutoListComponent implements OnInit, OnDestroy {
   autos: Auto[] = [];
   ventasPorAuto: Map<number, VentaResponse[]> = new Map();
   loading: boolean = true;
@@ -28,6 +30,7 @@ export class AutoListComponent implements OnInit {
   };
 
   currentImageIndex: Map<number, number> = new Map();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private autoService: AutoService,
@@ -40,6 +43,11 @@ export class AutoListComponent implements OnInit {
     this.cargarAutos();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   // ...existing code...
   cargarAutos(): void {
     this.loading = true;
@@ -50,7 +58,7 @@ export class AutoListComponent implements OnInit {
       ? this.autoService.getTodosLosAutos()
       : this.autoService.getAutosDisponibles();
 
-    observable.subscribe({
+    observable.pipe(takeUntil(this.destroy$)).subscribe({
       next: (autos: Auto[]) => {
         // Si es admin aplicamos filtro local según la vista seleccionada
         if (this.authService.isAdmin()) {
@@ -81,14 +89,14 @@ export class AutoListComponent implements OnInit {
       error: (error: any) => {
         this.error = 'Error al cargar los autos';
         this.loading = false;
-        console.error('Error:', error);
+        // Error ya manejado por el interceptor y ApiService
       }
     });
   }
 
   cargarVentasParaAutos(autos: Auto[]): void {
     // El backend no tiene /ventas/auto/{id}, por eso obtenemos todas y las agrupamos
-    this.ventaService.getVentasAdmin().subscribe({
+    this.ventaService.getVentasAdmin().pipe(takeUntil(this.destroy$)).subscribe({
       next: (ventas: VentaResponse[]) => {
         this.ventasPorAuto.clear();
         ventas.forEach(v => {
@@ -101,7 +109,7 @@ export class AutoListComponent implements OnInit {
         });
       },
       error: (err) => {
-        console.error('Error cargando ventas admin:', err);
+        // Error ya manejado por el interceptor
       }
     });
   }
