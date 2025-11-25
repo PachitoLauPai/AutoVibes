@@ -15,6 +15,7 @@ import com.ventadeautos.backend.repository.ClienteRepository;
 import com.ventadeautos.backend.repository.RolRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -86,7 +88,7 @@ public class UsuarioService {
             cliente.setUsuario(usuario); // Establecer relación con el usuario
             
             clienteRepository.save(cliente);
-            System.out.println("✅ Cliente creado automáticamente para: " + usuario.getEmail());
+            log.info("Cliente creado automáticamente para usuario: {}", usuario.getEmail());
         }
         
         LoginResponse response = new LoginResponse();
