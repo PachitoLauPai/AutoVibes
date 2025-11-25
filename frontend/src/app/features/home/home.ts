@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AutoService } from '../../../core/services/auto.service';
 import { Auto } from '../../../core/models/auto.model';
 import { Marca, CategoriaAuto } from '../../../core/models/shared.model';
+import { LoggerService } from '../../../core/services/logger.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -13,7 +16,7 @@ import { Marca, CategoriaAuto } from '../../../core/models/shared.model';
   templateUrl: './home.html',
   styleUrls: ['./home.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   autos: Auto[] = [];
   autosFilterrados: Auto[] = [];  // ✅ CORRECTO (sin typo)
 
@@ -27,10 +30,12 @@ export class HomeComponent implements OnInit {
 
   loading = true;
   error = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private autoService: AutoService,
-    private router: Router
+    private router: Router,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
@@ -38,23 +43,28 @@ export class HomeComponent implements OnInit {
     this.cargarAutos();
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   cargarOpciones(): void {
     // Cargar marcas
-    this.autoService.getMarcas().subscribe({
+    this.autoService.getMarcas().pipe(takeUntil(this.destroy$)).subscribe({
       next: (marcas) => {
         this.marcas = marcas;
-        console.log('✅ Marcas cargadas:', marcas);
+        this.logger.debug('Marcas cargadas', { count: marcas.length });
       },
-      error: (err) => console.error('Error cargando marcas:', err)
+      error: (err) => this.logger.error('Error cargando marcas', err)
     });
 
     // Cargar categorías
-    this.autoService.getCategorias().subscribe({
+    this.autoService.getCategorias().pipe(takeUntil(this.destroy$)).subscribe({
       next: (categorias) => {
         this.categorias = categorias;
-        console.log('✅ Categorías cargadas:', categorias);
+        this.logger.debug('Categorías cargadas', { count: categorias.length });
       },
-      error: (err) => console.error('Error cargando categorías:', err)
+      error: (err) => this.logger.error('Error cargando categorías', err)
     });
   }
 
@@ -62,23 +72,23 @@ export class HomeComponent implements OnInit {
     this.loading = true;
     this.error = '';
     
-    this.autoService.getAutosDisponibles().subscribe({
+    this.autoService.getAutosDisponibles().pipe(takeUntil(this.destroy$)).subscribe({
       next: (autos) => {
         this.autos = autos;
         this.autosFilterrados = autos;  // ✅ CORRECTO
         this.loading = false;
-        console.log('✅ Autos cargados:', autos);
+        this.logger.debug('Autos cargados', { count: autos.length });
       },
       error: (err) => {
         this.error = 'Error al cargar los autos';
         this.loading = false;
-        console.error('Error:', err);
+        this.logger.error('Error cargando autos', err);
       }
     });
   }
 
   buscar(): void {
-    console.log('🔍 Buscando con filtros:', {
+    this.logger.debug('Buscando con filtros', {
       marca: this.filtroMarca,
       categoria: this.filtroCategoria,
       modelo: this.filtroModelo
@@ -97,7 +107,7 @@ export class HomeComponent implements OnInit {
       return coincideMarca && coincideCategoria && coincideModelo;
     });
 
-    console.log('✅ Resultados encontrados:', this.autosFilterrados.length);
+    this.logger.debug('Resultados encontrados', { count: this.autosFilterrados.length });
   }
 
   limpiarFiltros(): void {
@@ -105,7 +115,7 @@ export class HomeComponent implements OnInit {
     this.filtroCategoria = '';
     this.filtroModelo = '';
     this.autosFilterrados = this.autos;
-    console.log('🔄 Filtros limpiados');
+    this.logger.debug('Filtros limpiados');
   }
 
   verDetalles(autoId: number): void {
