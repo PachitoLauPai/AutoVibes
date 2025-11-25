@@ -7,6 +7,7 @@ import com.ventadeautos.backend.dto.LoginResponse;
 import com.ventadeautos.backend.dto.CambiarContrasenaDTO;
 import com.ventadeautos.backend.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/usuarios")
 @RequiredArgsConstructor
@@ -27,9 +29,8 @@ public class UsuarioController {
     // ✅ CREAR USUARIO - MÉTODO POST CORREGIDO
     @PostMapping
     public ResponseEntity<?> crearUsuario(@RequestBody Map<String, Object> usuarioData) {
+        log.info("Creando nuevo usuario: {}", usuarioData.get("email"));
         try {
-            System.out.println("🔍 Creando nuevo usuario: " + usuarioData.get("email"));
-            System.out.println("📝 Datos recibidos: " + usuarioData);
             
             // Extraer datos del Map
             String email = (String) usuarioData.get("email");
@@ -72,17 +73,17 @@ public class UsuarioController {
                     usuarioService.actualizarUsuario(response.getId(), updateDTO);
                 }
                 
-                System.out.println("✅ Usuario creado exitosamente: " + response.getEmail());
+                log.info("Usuario creado exitosamente: {}", response.getEmail());
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else {
                 return ResponseEntity.badRequest().body(Map.of("mensaje", response.getMensaje()));
             }
             
         } catch (RuntimeException e) {
-            System.err.println("❌ Error al crear usuario: " + e.getMessage());
+            log.error("Error al crear usuario: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("❌ Error interno: " + e.getMessage());
+            log.error("Error interno al crear usuario", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error al crear usuario"));
         }
@@ -95,7 +96,7 @@ public class UsuarioController {
             List<UsuarioDTO> usuarios = usuarioService.obtenerTodosLosUsuarios();
             return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
-            System.err.println("Error al obtener usuarios: " + e.getMessage());
+            log.error("Error al obtener usuarios: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -107,11 +108,11 @@ public class UsuarioController {
             UsuarioDTO usuario = usuarioService.obtenerUsuarioPorId(id);
             return ResponseEntity.ok(usuario);
         } catch (RuntimeException e) {
-            System.err.println("Usuario no encontrado: " + e.getMessage());
+            log.error("Usuario no encontrado: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("Error interno: " + e.getMessage());
+            log.error("Error interno al obtener usuario: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error interno del servidor"));
         }
@@ -120,19 +121,19 @@ public class UsuarioController {
     // ✅ Eliminar usuario
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> eliminarUsuario(@PathVariable Long id) {
+        log.info("Intentando eliminar usuario ID: {}", id);
         try {
-            System.out.println("🔍 Intentando eliminar usuario ID: " + id);
             Map<String, Object> response = usuarioService.eliminarUsuario(id);
-            System.out.println("✅ Usuario eliminado: " + response);
+            log.info("Usuario eliminado exitosamente - ID: {}", id);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            System.err.println("❌ Error al eliminar usuario: " + e.getMessage());
+            log.error("Error al eliminar usuario ID: {} - {}", id, e.getMessage());
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("mensaje", e.getMessage());
             errorResponse.put("eliminado", false);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
-            System.err.println("❌ Error interno al eliminar: " + e.getMessage());
+            log.error("Error interno al eliminar usuario ID: {}", id, e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("mensaje", "Error al eliminar usuario: " + e.getMessage());
             errorResponse.put("eliminado", false);
@@ -145,17 +146,17 @@ public class UsuarioController {
     public ResponseEntity<?> cambiarEstadoUsuario(
             @PathVariable Long id,
             @RequestBody ActualizarEstadoUsuarioDTO estadoDTO) {
+        log.info("Cambiando estado usuario ID: {} a: {}", id, estadoDTO.getActivo());
         try {
-            System.out.println("🔍 Cambiando estado usuario ID: " + id + " a: " + estadoDTO.getActivo());
             UsuarioDTO usuarioActualizado = usuarioService.cambiarEstadoUsuario(id, estadoDTO);
-            System.out.println("✅ Estado cambiado exitosamente");
+            log.info("Estado cambiado exitosamente - Usuario ID: {}", id);
             return ResponseEntity.ok(usuarioActualizado);
         } catch (RuntimeException e) {
-            System.err.println("❌ Usuario no encontrado: " + e.getMessage());
+            log.error("Usuario no encontrado ID: {} - {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("❌ Error interno: " + e.getMessage());
+            log.error("Error interno al cambiar estado usuario ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error al cambiar estado del usuario"));
         }
@@ -166,18 +167,17 @@ public class UsuarioController {
     public ResponseEntity<?> actualizarUsuario(
             @PathVariable Long id,
             @RequestBody UsuarioDTO usuarioDTO) {
+        log.info("Actualizando usuario ID: {}", id);
         try {
-            System.out.println("🔍 Actualizando usuario ID: " + id);
-            System.out.println("📝 Datos recibidos: " + usuarioDTO);
             UsuarioDTO usuarioActualizado = usuarioService.actualizarUsuario(id, usuarioDTO);
-            System.out.println("✅ Usuario actualizado exitosamente");
+            log.info("Usuario actualizado exitosamente - ID: {}", id);
             return ResponseEntity.ok(usuarioActualizado);
         } catch (RuntimeException e) {
-            System.err.println("❌ Error en datos: " + e.getMessage());
+            log.error("Error en datos al actualizar usuario ID: {} - {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("❌ Error interno: " + e.getMessage());
+            log.error("Error interno al actualizar usuario ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error al actualizar usuario"));
         }
@@ -186,13 +186,13 @@ public class UsuarioController {
     // ✅ Endpoint para estadísticas
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
+        log.debug("Obteniendo estadísticas de usuarios");
         try {
-            System.out.println("📊 Obteniendo estadísticas de usuarios");
             Map<String, Object> estadisticas = usuarioService.obtenerEstadisticas();
-            System.out.println("✅ Estadísticas: " + estadisticas);
+            log.debug("Estadísticas obtenidas exitosamente");
             return ResponseEntity.ok(estadisticas);
         } catch (Exception e) {
-            System.err.println("❌ Error al obtener estadísticas: " + e.getMessage());
+            log.error("Error al obtener estadísticas: {}", e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("mensaje", "Error al obtener estadísticas: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -206,7 +206,7 @@ public class UsuarioController {
             List<com.ventadeautos.backend.model.Usuario> usuarios = usuarioService.obtenerTodosLosUsuariosEntidad();
             return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
-            System.err.println("Error al obtener usuarios (entidades): " + e.getMessage());
+            log.error("Error al obtener usuarios (entidades): {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -216,17 +216,17 @@ public class UsuarioController {
     public ResponseEntity<?> cambiarContrasena(
             @PathVariable Long id,
             @RequestBody CambiarContrasenaDTO cambioDTO) {
+        log.info("Cambiando contraseña para usuario ID: {}", id);
         try {
-            System.out.println("🔐 Cambiando contraseña para usuario ID: " + id);
             Map<String, Object> response = usuarioService.cambiarContrasena(id, cambioDTO);
-            System.out.println("✅ Contraseña cambiada exitosamente");
+            log.info("Contraseña cambiada exitosamente - Usuario ID: {}", id);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            System.err.println("❌ Error en cambio de contraseña: " + e.getMessage());
+            log.error("Error en cambio de contraseña - Usuario ID: {} - {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("❌ Error interno: " + e.getMessage());
+            log.error("Error interno al cambiar contraseña - Usuario ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("mensaje", "Error al cambiar contraseña"));
         }
