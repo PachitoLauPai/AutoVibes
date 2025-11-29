@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AutoService } from '../../../core/services/auto.service';
 import { Auto } from '../../../core/models/auto.model';
-import { Marca, CategoriaAuto } from '../../../core/models/shared.model';
+import { Marca, CategoriaAuto, CondicionAuto } from '../../../core/models/shared.model';
 import { LoggerService } from '../../../core/services/logger.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -17,18 +17,15 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./home.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  autos: Auto[] = [];
-  autosFilterrados: Auto[] = [];  // ✅ CORRECTO (sin typo)
-
   // Filtros
   marcas: Marca[] = [];
   categorias: CategoriaAuto[] = [];
+  condiciones: CondicionAuto[] = [];
 
   filtroMarca: string = '';
-  filtroCategoria: string = '';
-  filtroModelo: string = '';
+  filtroTipo: string = '';
 
-  loading = true;
+  loading = false;
   error = '';
   private destroy$ = new Subject<void>();
 
@@ -40,7 +37,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarOpciones();
-    this.cargarAutos();
   }
 
   ngOnDestroy(): void {
@@ -66,63 +62,68 @@ export class HomeComponent implements OnInit, OnDestroy {
       },
       error: (err) => this.logger.error('Error cargando categorías', err)
     });
-  }
 
-  cargarAutos(): void {
-    this.loading = true;
-    this.error = '';
-    
-    this.autoService.getAutosDisponibles().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (autos) => {
-        this.autos = autos;
-        this.autosFilterrados = autos;  // ✅ CORRECTO
-        this.loading = false;
-        this.logger.debug('Autos cargados', { count: autos.length });
+    // Cargar condiciones
+    this.autoService.getCondiciones().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (condiciones) => {
+        this.condiciones = condiciones;
+        this.logger.debug('Condiciones cargadas', { count: condiciones.length });
       },
-      error: (err) => {
-        this.error = 'Error al cargar los autos';
-        this.loading = false;
-        this.logger.error('Error cargando autos', err);
-      }
+      error: (err) => this.logger.error('Error cargando condiciones', err)
     });
   }
 
-  buscar(): void {
-    this.logger.debug('Buscando con filtros', {
-      marca: this.filtroMarca,
-      categoria: this.filtroCategoria,
-      modelo: this.filtroModelo
-    });
-
-    this.autosFilterrados = this.autos.filter(auto => {
-      const coincideMarca = !this.filtroMarca || 
-        auto.marca.id.toString() === this.filtroMarca;
-      
-      const coincideCategoria = !this.filtroCategoria || 
-        auto.categoria.id.toString() === this.filtroCategoria;
-      
-      const coincideModelo = !this.filtroModelo || 
-        auto.modelo.toLowerCase().includes(this.filtroModelo.toLowerCase());
-
-      return coincideMarca && coincideCategoria && coincideModelo;
-    });
-
-    this.logger.debug('Resultados encontrados', { count: this.autosFilterrados.length });
+  irAVehiculos(): void {
+    const queryParams: any = {};
+    
+    if (this.filtroTipo) {
+      queryParams.condicion = this.filtroTipo;
+    }
+    
+    if (this.filtroMarca) {
+      queryParams.marca = this.filtroMarca;
+    }
+    
+    this.router.navigate(['/autos'], { queryParams });
   }
 
-  limpiarFiltros(): void {
-    this.filtroMarca = '';
-    this.filtroCategoria = '';
-    this.filtroModelo = '';
-    this.autosFilterrados = this.autos;
-    this.logger.debug('Filtros limpiados');
+  irACategoria(categoriaId: number): void {
+    this.router.navigate(['/autos'], { queryParams: { categoria: categoriaId } });
   }
 
-  verDetalles(autoId: number): void {
-    this.router.navigate(['/autos', autoId]);
+  getCategoryImage(categoriaNombre: string): string {
+    // Mapear nombres de categorías a nombres de archivo
+    // Los archivos están en minúsculas con casos especiales
+    const nombreUpper = categoriaNombre.toUpperCase().trim();
+    const imageMap: { [key: string]: string } = {
+      'SEDAN': 'sedan',
+      'CAMIONETA': 'camioneta',
+      'HATCHBACK': 'hatchback',
+      'PICKUP': 'pick-up',  // El archivo tiene guión
+      'VAN': 'vans',        // El archivo es plural
+      'DEPORTIVO': 'deportivo'
+    };
+    
+    const nombreArchivo = imageMap[nombreUpper] || nombreUpper.toLowerCase();
+    return `/P_categorias/P_${nombreArchivo}.webp`;
   }
 
-  contactarVendedor(auto: Auto): void {
-    this.router.navigate(['/autos', auto.id, 'contactar']);
+  onCategoryImageError(event: any, categoriaNombre: string): void {
+    console.error(`Error cargando imagen para categoría ${categoriaNombre}`);
+    // Ocultar la imagen rota y mostrar un emoji como fallback
+    event.target.style.display = 'none';
+    const parent = event.target.parentElement;
+    if (parent) {
+      const emojiMap: { [key: string]: string } = {
+        'SEDAN': '🚗',
+        'CAMIONETA': '🚙',
+        'HATCHBACK': '🚐',
+        'PICKUP': '🚚',
+        'VAN': '🚐',
+        'DEPORTIVO': '🏎️'
+      };
+      const emoji = emojiMap[categoriaNombre.toUpperCase()] || '🚗';
+      parent.innerHTML = `<span style="font-size: 4rem;">${emoji}</span>`;
+    }
   }
 }

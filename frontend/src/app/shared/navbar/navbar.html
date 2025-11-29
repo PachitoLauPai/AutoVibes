@@ -1,10 +1,9 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg">
   <div class="container-fluid">
     
-    <!-- Logo -->
-    <a class="navbar-brand fw-bold" href="#" (click)="irAlLogo(); $event.preventDefault()">
-      <img src="assets/logo.png" alt="AutoVibes Logo" height="40" class="me-2">
-      <span class="d-none d-sm-inline">AutoVibes</span>
+    <!-- Logo a la izquierda -->
+    <a class="navbar-brand" href="#" (click)="irAlLogo(); $event.preventDefault()">
+      <span class="logo-text">AutoVibes</span>
     </a>
 
     <!-- Toggle Button (Mobile) -->
@@ -19,94 +18,87 @@
         
         <!-- ========== NAVEGACIÓN CLIENTE (NO LOGUEADO) ========== -->
         <ng-container *ngIf="!authService.isLoggedIn()">
-          <!-- 🏠 Inicio -->
+          <!-- Botón Iniciar Sesión -->
           <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAHome(); $event.preventDefault()">
-              🏠 Inicio
-            </a>
-          </li>
-
-          <!-- 🚗 Autos -->
-          <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAAutos(); $event.preventDefault()">
-              🚗 Autos
-            </a>
-          </li>
-
-          <!-- Separador visual -->
-          <li class="nav-item">
-            <span class="navbar-text mx-3">|</span>
-          </li>
-
-          <!-- 🔐 Iniciar Sesión -->
-          <li class="nav-item">
-            <button class="btn btn-primary btn-sm" (click)="irALogin()">
-              🔐 Iniciar Sesión
+            <button class="btn btn-login" (click)="irALogin()">
+              Iniciar sesión
             </button>
+          </li>
+
+          <!-- Botón Comprar con Dropdown -->
+          <li class="nav-item dropdown">
+            <button class="btn btn-comprar" 
+                    (click)="toggleComprarDropdown(); $event.stopPropagation()"
+                    [class.active]="isComprarDropdownOpen">
+              Comprar
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" 
+                 [class.show]="isComprarDropdownOpen"
+                 (click)="$event.stopPropagation()">
+              
+              <!-- Header del dropdown -->
+              <div class="dropdown-header">
+                <span class="dropdown-icon">🚗</span>
+                <span class="dropdown-title">Autos</span>
+                <span class="dropdown-arrow">›</span>
+              </div>
+
+              <!-- Opciones de condición -->
+              <div class="dropdown-options">
+                <div class="dropdown-option" 
+                     *ngFor="let condicion of condiciones"
+                     (click)="irACondicion(condicion.id)">
+                  <div class="option-title">{{ condicion.nombre === 'NUEVO' ? 'Nuevos Okm' : condicion.nombre }}</div>
+                  <div class="option-description">{{ getCondicionDescripcion(condicion.nombre) }}</div>
+                  <span class="option-arrow">›</span>
+                </div>
+              </div>
+            </div>
           </li>
         </ng-container>
 
         <!-- ========== NAVEGACIÓN CLIENTE LOGUEADO ========== -->
         <ng-container *ngIf="authService.isLoggedIn() && authService.isCliente()">
-          <!-- 🏠 Inicio -->
+          <!-- Botón Iniciar Sesión (mostrar nombre del usuario) -->
           <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAHome(); $event.preventDefault()">
-              🏠 Inicio
-            </a>
+            <button class="btn btn-login" (click)="irAMiPerfil()">
+              {{ currentUser?.nombre || 'Usuario' }}
+            </button>
           </li>
 
-          <!-- 🚗 Autos -->
-          <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAAutos(); $event.preventDefault()">
-              🚗 Autos
-            </a>
-          </li>
-
-          <!-- Separador visual -->
-          <li class="nav-item">
-            <span class="navbar-text mx-3">|</span>
-          </li>
-
-          <!-- 👤 Usuario Logueado (con dropdown) -->
+          <!-- Botón Comprar con Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" 
-              href="#" 
-              id="navbarDropdown"
-              role="button" 
-              data-bs-toggle="dropdown" 
-              aria-expanded="false">
-              👤 {{ currentUser?.nombre || 'Usuario' }}
-            </a>
-
+            <button class="btn btn-comprar" 
+                    (click)="toggleComprarDropdown(); $event.stopPropagation()"
+                    [class.active]="isComprarDropdownOpen">
+              Comprar
+            </button>
+            
             <!-- Dropdown Menu -->
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu" 
+                 [class.show]="isComprarDropdownOpen"
+                 (click)="$event.stopPropagation()">
               
-              <!-- Mi Perfil -->
-              <li>
-                <a class="dropdown-item" href="#" (click)="irAMiPerfil(); $event.preventDefault()">
-                  👤 Mi Perfil
-                </a>
-              </li>
+              <!-- Header del dropdown -->
+              <div class="dropdown-header">
+                <span class="dropdown-icon">🚗</span>
+                <span class="dropdown-title">Autos</span>
+                <span class="dropdown-arrow">›</span>
+              </div>
 
-              <!-- Mis Solicitudes -->
-              <li>
-                <a class="dropdown-item" href="#">
-                  📋 Mis Solicitudes
-                </a>
-              </li>
-
-              <!-- Separador -->
-              <li><hr class="dropdown-divider"></li>
-
-              <!-- 🚪 Cerrar Sesión -->
-              <li>
-                <button class="dropdown-item text-danger fw-bold" 
-                        (click)="logout()"
-                        style="border: none; background: none; cursor: pointer;">
-                  🚪 Cerrar Sesión
-                </button>
-              </li>
-            </ul>
+              <!-- Opciones de condición -->
+              <div class="dropdown-options">
+                <div class="dropdown-option" 
+                     *ngFor="let condicion of condiciones"
+                     (click)="irACondicion(condicion.id)">
+                  <div class="option-title">{{ condicion.nombre === 'NUEVO' ? 'Nuevos Okm' : condicion.nombre }}</div>
+                  <div class="option-description">{{ getCondicionDescripcion(condicion.nombre) }}</div>
+                  <span class="option-arrow">›</span>
+                </div>
+              </div>
+            </div>
           </li>
         </ng-container>
 
