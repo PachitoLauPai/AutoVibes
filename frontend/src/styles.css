@@ -8,10 +8,52 @@
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background-color: #ffffff;
+  scroll-behavior: smooth;
 }
 
 body {
   color: #333;
+  line-height: 1.6;
+}
+
+/* Mejoras globales */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+a {
+  color: #0066cc;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #0052a3;
+}
+
+/* Botones globales */
+.btn {
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+/* Cards globales */
+.card {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Badges */
+.badge {
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
 }
