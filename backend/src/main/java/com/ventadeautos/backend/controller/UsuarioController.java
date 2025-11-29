@@ -40,7 +40,6 @@ public class UsuarioController {
             String dni = (String) usuarioData.get("dni");
             String telefono = (String) usuarioData.get("telefono");
             String direccion = (String) usuarioData.get("direccion");
-            Boolean activo = usuarioData.get("activo") != null ? (Boolean) usuarioData.get("activo") : true;
             
             // Validar campos obligatorios
             if (email == null || email.isEmpty()) {

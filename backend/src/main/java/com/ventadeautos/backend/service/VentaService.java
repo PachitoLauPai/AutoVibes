@@ -146,9 +146,6 @@ public class VentaService {
         EstadoVenta estadoFinalizado = estadoVentaService.obtenerPorNombre("FINALIZADO")
             .orElseThrow(() -> new ResourceNotFoundException("Estado", "FINALIZADO"));
         
-        EstadoVenta estadoCancelado = estadoVentaService.obtenerPorNombre("CANCELADO")
-            .orElseThrow(() -> new ResourceNotFoundException("Estado", "CANCELADO"));
-        
         // Obtener TODAS las ventas del auto
         List<Venta> ventasDelAuto = ventaRepository.findByAutoId(autoId);
         

@@ -6,7 +6,6 @@ import com.ventadeautos.backend.dto.RegistroRequest;
 import com.ventadeautos.backend.dto.UsuarioDTO;
 import com.ventadeautos.backend.dto.ActualizarEstadoUsuarioDTO;
 import com.ventadeautos.backend.dto.CambiarContrasenaDTO;
-import com.ventadeautos.backend.dto.ActualizarPerfilDTO;
 import com.ventadeautos.backend.model.Usuario;
 import com.ventadeautos.backend.model.Cliente;
 import com.ventadeautos.backend.model.Rol;
