@@ -1,13 +1,17 @@
 package com.ventadeautos.backend.exception;
 
 import com.ventadeautos.backend.dto.ErrorResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.hibernate.LazyInitializationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -79,15 +83,81 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(LazyInitializationException.class)
+    public ResponseEntity<Map<String, Object>> handleLazyInitializationException(LazyInitializationException ex) {
+        log.error("LazyInitializationException: Error al acceder a relación lazy fuera de transacción", ex);
+        log.error("Stack trace completo:", ex);
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Error al cargar datos relacionados. Verifique la configuración de transacciones.");
+        response.put("error", "LAZY_INITIALIZATION_ERROR");
+        response.put("detalle", ex.getMessage());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("timestamp", java.time.LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public ResponseEntity<Map<String, Object>> handleHttpMessageNotWritableException(HttpMessageNotWritableException ex) {
+        log.error("HttpMessageNotWritableException: Error al serializar respuesta JSON", ex);
+        log.error("Causa raíz: {}", ex.getRootCause() != null ? ex.getRootCause().getMessage() : "Desconocida");
+        log.error("Stack trace completo:", ex);
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Error al serializar la respuesta JSON");
+        response.put("error", "JSON_SERIALIZATION_ERROR");
+        response.put("detalle", ex.getMessage());
+        if (ex.getRootCause() != null) {
+            response.put("causaRaiz", ex.getRootCause().getMessage());
+        }
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("timestamp", java.time.LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<Map<String, Object>> handleJsonProcessingException(JsonProcessingException ex) {
+        log.error("JsonProcessingException: Error al procesar JSON", ex);
+        log.error("Stack trace completo:", ex);
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Error al procesar JSON");
+        response.put("error", "JSON_PROCESSING_ERROR");
+        response.put("detalle", ex.getMessage());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("timestamp", java.time.LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoResourceFoundException ex) {
+        log.warn("NoResourceFoundException: Recurso no encontrado - {}", ex.getMessage());
+        log.warn("URL solicitada: {}", ex.getResourcePath());
+        log.warn("HTTP Method: {}", ex.getHttpMethod());
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Endpoint no encontrado");
+        response.put("error", "NOT_FOUND");
+        response.put("detalle", "El recurso solicitado no existe. Verifique la URL.");
+        response.put("recurso", ex.getResourcePath());
+        response.put("metodo", ex.getHttpMethod() != null ? ex.getHttpMethod().name() : "Desconocido");
+        response.put("sugerencia", "Asegúrese de usar la URL correcta: /api/concesionarios (con 'c', no 's')");
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("timestamp", java.time.LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        log.error("Error inesperado: {}", ex.getMessage(), ex);
-        ErrorResponse error = new ErrorResponse(
-            "Error interno del servidor",
-            "INTERNAL_SERVER_ERROR",
-            HttpStatus.INTERNAL_SERVER_ERROR.value()
-        );
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
+        log.error("Exception: Error inesperado - Tipo: {}, Mensaje: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+        log.error("Stack trace completo:", ex);
+        if (ex.getCause() != null) {
+            log.error("Causa: {} - {}", ex.getCause().getClass().getSimpleName(), ex.getCause().getMessage());
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensaje", "Error interno del servidor");
+        response.put("error", "INTERNAL_SERVER_ERROR");
+        response.put("tipo", ex.getClass().getSimpleName());
+        response.put("detalle", ex.getMessage());
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("timestamp", java.time.LocalDateTime.now());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 
