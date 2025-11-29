@@ -3,7 +3,8 @@ import {
   Combustible, 
   Transmision, 
   CategoriaAuto, 
-  CondicionAuto 
+  CondicionAuto,
+  Concesionario
 } from './shared.model';
 
 // ✅ Exporta la interfaz Auto
@@ -19,6 +20,7 @@ export interface Auto {
   transmision: Transmision;
   categoria: CategoriaAuto;
   condicion: CondicionAuto;
+  concesionario?: Concesionario;
   descripcion: string;
   disponible: boolean;
   imagenes: string[];

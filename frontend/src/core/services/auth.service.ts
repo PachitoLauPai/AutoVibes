@@ -249,7 +249,11 @@ export class AuthService {
       { headers: { 'Content-Type': 'application/json' } }
     ).pipe(
       tap(response => {
+<<<<<<< HEAD
         this.logger.info('Contraseña cambiada exitosamente', { userId });
+=======
+        this.logger.info('Contraseña cambiada exitosamente', { userId: usuarioId });
+>>>>>>> 48cc542 (Frontend: Actualización de servicios base y modelos TypeScript)
       }),
       catchError(error => {
         this.logger.error('Error al cambiar contraseña', error);

@@ -20,3 +20,13 @@ export interface CategoriaAuto extends BaseEntity {}
 export interface CondicionAuto extends BaseEntity {}
 
 export interface EstadoVenta extends BaseEntity {}
+
+export interface Concesionario {
+  id: number;
+  nombre: string;
+  direccion?: string;
+  telefono?: string;
+  email?: string;
+  activo?: boolean;
+  fechaCreacion?: string;
+}
