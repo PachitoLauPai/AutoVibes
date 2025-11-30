@@ -44,36 +44,55 @@
         <h2 class="section-title text-center mb-4">Busca tu auto ideal</h2>
         
         <div class="search-card">
-          <div class="row g-3">
-            <!-- Filtro Tipo/Condición -->
-            <div class="col-md-6">
-              <label for="filtroTipo" class="form-label fw-bold">Tipo</label>
-              <select class="form-select" id="filtroTipo" [(ngModel)]="filtroTipo">
-                <option value="">Todos los tipos</option>
-                <option *ngFor="let condicion of condiciones" [value]="condicion.id">
-                  {{ condicion.nombre }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Filtro Marca -->
-            <div class="col-md-6">
-              <label for="filtroMarca" class="form-label fw-bold">Marca</label>
-              <select class="form-select" id="filtroMarca" [(ngModel)]="filtroMarca">
-                <option value="">Todas las marcas</option>
-                <option *ngFor="let marca of marcas" [value]="marca.id">
-                  {{ marca.nombre }}
-                </option>
-              </select>
-            </div>
+          <!-- Mostrar error si existe -->
+          <div *ngIf="error" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>⚠️ Advertencia:</strong> {{ error }}
+            <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
           </div>
 
-          <!-- Botón Ver Vehículos -->
-          <div class="text-center mt-4">
-            <button class="btn btn-primary btn-lg px-5" (click)="irAVehiculos()">
-              Ver Vehículos
-            </button>
+          <!-- Mostrar spinner si está cargando -->
+          <div *ngIf="loading" class="text-center py-3">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando opciones...</span>
+            </div>
+            <p class="mt-2">Cargando opciones...</p>
           </div>
+
+          <!-- Contenido cuando está listo -->
+          <ng-container *ngIf="!loading">
+            <div class="row g-3">
+              <!-- Filtro Tipo/Condición -->
+              <div class="col-md-6">
+                <label for="filtroTipo" class="form-label fw-bold">Tipo</label>
+                <select class="form-select" id="filtroTipo" [(ngModel)]="filtroTipo">
+                  <option value="">Todos los tipos</option>
+                  <option *ngFor="let condicion of condiciones" [value]="condicion.id">
+                    {{ condicion.nombre }}
+                  </option>
+                </select>
+                <small class="text-muted">{{ condiciones.length }} opciones disponibles</small>
+              </div>
+
+              <!-- Filtro Marca -->
+              <div class="col-md-6">
+                <label for="filtroMarca" class="form-label fw-bold">Marca</label>
+                <select class="form-select" id="filtroMarca" [(ngModel)]="filtroMarca">
+                  <option value="">Todas las marcas</option>
+                  <option *ngFor="let marca of marcas" [value]="marca.id">
+                    {{ marca.nombre }}
+                  </option>
+                </select>
+                <small class="text-muted">{{ marcas.length }} opciones disponibles</small>
+              </div>
+            </div>
+
+            <!-- Botón Ver Vehículos -->
+            <div class="text-center mt-4">
+              <button class="btn btn-primary btn-lg px-5" (click)="irAVehiculos()">
+                Ver Vehículos
+              </button>
+            </div>
+          </ng-container>
         </div>
       </div>
     </div>

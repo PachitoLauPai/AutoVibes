@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.lang.NonNull;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -15,6 +16,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByEmail(String email);
 
     // ✅ MÉTODOS EXISTENTES (ya los tienes)
+    @NonNull
     List<Usuario> findAll();
 
     // ✅ NUEVOS MÉTODOS PARA GESTIÓN DE USUARIOS

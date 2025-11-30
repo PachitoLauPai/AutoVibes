@@ -22,7 +22,7 @@ public class MarcaService {
     }
     
     public Optional<Marca> obtenerMarcaPorId(Long id) {
-        return marcaRepository.findById(id);
+        return marcaRepository.findById((Long)id);
     }
     
     public Optional<Marca> obtenerMarcaPorNombre(String nombre) {
@@ -62,7 +62,7 @@ public class MarcaService {
     }
     
     public void eliminarMarca(Long id) {
-        Marca marca = marcaRepository.findById(id)
+        Marca marca = marcaRepository.findById((Long)id)
             .orElseThrow(() -> new RuntimeException("Marca no encontrada"));
         
         // Verificar si tiene autos asociados

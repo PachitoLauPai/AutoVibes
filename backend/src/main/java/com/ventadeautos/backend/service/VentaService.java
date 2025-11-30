@@ -28,67 +28,13 @@ public class VentaService {
     private final AutoRepository autoRepository;
     private final EstadoVentaService estadoVentaService;
     
+    // ✅ NOTA: crearSolicitudContacto está DEPRECADO
+    // Los contactos públicos ahora se manejan mediante ContactService
+    // Este método se mantiene por compatibilidad con el código legacy
+    @Deprecated(since = "2.0", forRemoval = true)
     public Venta crearSolicitudContacto(ContactRequest contactRequest, Usuario usuario) {
-        log.debug("Iniciando creación de solicitud de contacto - Usuario ID: {}, Email: {}, Auto ID: {}", 
-                usuario.getId(), usuario.getEmail(), contactRequest.getAutoId());
-        
-        try {
-            // 1. Verificar auto
-            log.debug("Buscando auto con ID: {}", contactRequest.getAutoId());
-            Auto auto = autoRepository.findById(contactRequest.getAutoId())
-                .orElseThrow(() -> {
-                    log.error("Auto no encontrado con ID: {}", contactRequest.getAutoId());
-                    return new ResourceNotFoundException("Auto", contactRequest.getAutoId());
-                });
-            log.debug("Auto encontrado: {} {}", auto.getMarca().getNombre(), auto.getModelo());
-            
-            // ✅ Verificar que el auto esté disponible
-            if (!auto.getDisponible()) {
-                log.warn("Intento de contacto con auto no disponible - Auto ID: {}", auto.getId());
-                throw new BadRequestException("El auto no está disponible para venta");
-            }
-            
-            // 2. Verificar cliente
-            log.debug("Procesando cliente para usuario ID: {}", usuario.getId());
-            Cliente cliente = clienteService.crearOActualizarCliente(contactRequest, usuario);
-            log.debug("Cliente procesado: {}", cliente.getNombres());
-            
-            // 3. Verificar venta existente
-            log.debug("Verificando ventas existentes para cliente ID: {} y auto ID: {}", cliente.getId(), auto.getId());
-            Optional<Venta> ventaExistente = ventaRepository.findByClienteIdAndAutoId(cliente.getId(), auto.getId());
-            if (ventaExistente.isPresent()) {
-                log.warn("Ya existe una solicitud de contacto pendiente - Venta ID: {}", ventaExistente.get().getId());
-                throw new ConflictException("Ya existe una solicitud de contacto pendiente para este auto");
-            }
-            
-            // 4. Obtener estado PENDIENTE de la base de datos
-            log.debug("Buscando estado PENDIENTE");
-            EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
-                    .orElseThrow(() -> new ResourceNotFoundException("Estado", "PENDIENTE"));
-            
-            // 5. Crear venta
-            log.debug("Creando nueva venta");
-            Venta venta = new Venta();
-            venta.setCliente(cliente);
-            venta.setAuto(auto);
-            venta.setEstado(estadoPendiente);
-            
-            Venta ventaGuardada = ventaRepository.save(venta);
-            log.info("Venta creada exitosamente - Venta ID: {}, Cliente: {}, Auto: {}", 
-                    ventaGuardada.getId(), cliente.getNombres(), auto.getModelo());
-            
-            // 6. ✅ ACTUALIZAR DISPONIBILIDAD DEL AUTO AUTOMÁTICAMENTE
-            actualizarDisponibilidadAuto(auto.getId());
-            
-            return ventaGuardada;
-            
-        } catch (BadRequestException | ConflictException | ResourceNotFoundException e) {
-            log.error("Error al crear solicitud de contacto: {}", e.getMessage(), e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Error crítico al crear solicitud de contacto", e);
-            throw new BadRequestException("Error al procesar la solicitud de contacto: " + e.getMessage());
-        }
+        log.warn("DEPRECADO: crearSolicitudContacto - Usar ContactService en su lugar");
+        throw new RuntimeException("Este método está deprecado. Usar ContactService.guardarContacto() en su lugar");
     }
     
     public List<Venta> obtenerVentasPorCliente(Long usuarioId) {
@@ -108,7 +54,7 @@ public class VentaService {
     public Venta actualizarEstadoVenta(Long ventaId, String nuevoEstadoNombre) {
         log.info("Actualizando venta ID: {} a estado: {}", ventaId, nuevoEstadoNombre);
         
-        Venta venta = ventaRepository.findById(ventaId)
+        Venta venta = ventaRepository.findById((Long)ventaId)
             .orElseThrow(() -> {
                 log.error("Venta no encontrada con ID: {}", ventaId);
                 return new ResourceNotFoundException("Venta", ventaId);
@@ -136,7 +82,7 @@ public class VentaService {
         
     // ✅ MÉTODO CORREGIDO
     private void actualizarDisponibilidadAuto(Long autoId) {
-        Auto auto = autoRepository.findById(autoId)
+        Auto auto = autoRepository.findById((Long)autoId)
             .orElseThrow(() -> new ResourceNotFoundException("Auto", autoId));
         
         // Obtener estados

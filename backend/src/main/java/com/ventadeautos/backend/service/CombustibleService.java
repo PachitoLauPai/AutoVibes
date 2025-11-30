@@ -21,7 +21,7 @@ public class CombustibleService {
     }
     
     public Optional<Combustible> obtenerPorId(Long id) {
-        return combustibleRepository.findById(id);
+        return combustibleRepository.findById((Long)id);
     }
     
     public Optional<Combustible> obtenerPorNombre(String nombre) {

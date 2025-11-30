@@ -99,14 +99,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotWritableException.class)
     public ResponseEntity<Map<String, Object>> handleHttpMessageNotWritableException(HttpMessageNotWritableException ex) {
         log.error("HttpMessageNotWritableException: Error al serializar respuesta JSON", ex);
-        log.error("Causa raíz: {}", ex.getRootCause() != null ? ex.getRootCause().getMessage() : "Desconocida");
+        Throwable rootCause = ex.getRootCause();
+        if (rootCause != null) {
+            log.error("Causa raíz: {}", rootCause.getMessage());
+        } else {
+            log.error("Causa raíz: Desconocida");
+        }
         log.error("Stack trace completo:", ex);
         Map<String, Object> response = new HashMap<>();
         response.put("mensaje", "Error al serializar la respuesta JSON");
         response.put("error", "JSON_SERIALIZATION_ERROR");
         response.put("detalle", ex.getMessage());
-        if (ex.getRootCause() != null) {
-            response.put("causaRaiz", ex.getRootCause().getMessage());
+        if (rootCause != null) {
+            response.put("causaRaiz", rootCause.getMessage());
         }
         response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.put("timestamp", java.time.LocalDateTime.now());

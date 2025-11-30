@@ -1,6 +1,5 @@
 package com.ventadeautos.backend.service;
 
-import com.ventadeautos.backend.dto.ContactRequest;
 import com.ventadeautos.backend.model.Cliente;
 import com.ventadeautos.backend.model.Usuario;
 import com.ventadeautos.backend.repository.ClienteRepository;
@@ -17,36 +16,40 @@ public class ClienteService {
     
     private final ClienteRepository clienteRepository;
     
-    public Cliente crearOActualizarCliente(ContactRequest contactRequest, Usuario usuario) {
-        // Verificar si ya existe un cliente para este usuario
-        Optional<Cliente> clienteExistente = clienteRepository.findByUsuarioId(usuario.getId());
-        
-        if (clienteExistente.isPresent()) {
-            // Actualizar cliente existente
-            Cliente cliente = clienteExistente.get();
-            cliente.setNombres(contactRequest.getNombres());
-            cliente.setApellidos(contactRequest.getApellidos());
-            cliente.setDni(contactRequest.getDni());
-            cliente.setTelefono(contactRequest.getTelefono());
-            cliente.setDireccion(contactRequest.getDireccion());
-            return clienteRepository.save(cliente);
-        } else {
-            // Verificar si ya existe un cliente con ese DNI
-            if (clienteRepository.existsByDni(contactRequest.getDni())) {
-                throw new RuntimeException("Ya existe un cliente con el DNI: " + contactRequest.getDni());
-            }
-            
-            // Crear nuevo cliente
-            Cliente cliente = new Cliente();
-            cliente.setNombres(contactRequest.getNombres());
-            cliente.setApellidos(contactRequest.getApellidos());
-            cliente.setDni(contactRequest.getDni());
-            cliente.setTelefono(contactRequest.getTelefono());
-            cliente.setDireccion(contactRequest.getDireccion());
-            cliente.setUsuario(usuario);
-            
-            return clienteRepository.save(cliente);
+    /**
+     * Crear un nuevo cliente (usado en registro legacy)
+     */
+    public Cliente crearCliente(String nombres, String apellidos, String dni, String telefono, String direccion, Usuario usuario) {
+        // Verificar si ya existe un cliente con ese DNI
+        if (clienteRepository.existsByDni(dni)) {
+            throw new RuntimeException("Ya existe un cliente con el DNI: " + dni);
         }
+        
+        Cliente cliente = new Cliente();
+        cliente.setNombres(nombres);
+        cliente.setApellidos(apellidos);
+        cliente.setDni(dni);
+        cliente.setTelefono(telefono);
+        cliente.setDireccion(direccion);
+        cliente.setUsuario(usuario);
+        
+        return clienteRepository.save(cliente);
+    }
+    
+    /**
+     * Actualizar cliente existente
+     */
+    public Cliente actualizarCliente(Long id, String nombres, String apellidos, String dni, String telefono, String direccion) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        
+        cliente.setNombres(nombres);
+        cliente.setApellidos(apellidos);
+        cliente.setDni(dni);
+        cliente.setTelefono(telefono);
+        cliente.setDireccion(direccion);
+        
+        return clienteRepository.save(cliente);
     }
     
     public Optional<Cliente> obtenerClientePorUsuarioId(Long usuarioId) {
@@ -55,5 +58,9 @@ public class ClienteService {
     
     public boolean existeClientePorUsuarioId(Long usuarioId) {
         return clienteRepository.existsByUsuarioId(usuarioId);
+    }
+    
+    public Optional<Cliente> obtenerClientePorId(Long id) {
+        return clienteRepository.findById(id);
     }
 }

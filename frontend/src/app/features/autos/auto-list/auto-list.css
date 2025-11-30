@@ -217,11 +217,40 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  animation: slideInImage 0.5s ease-out;
+}
+
+@keyframes slideInImage {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .auto-image-wrapper:hover .auto-main-image {
   transform: scale(1.05);
+  animation: none;
+}
+
+/* Animación de fade entre imágenes */
+.carousel-nav:active ~ .auto-main-image {
+  animation: fadeTransition 0.3s ease-in-out;
+}
+
+@keyframes fadeTransition {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .auto-badge {

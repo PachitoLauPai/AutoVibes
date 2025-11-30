@@ -42,7 +42,7 @@ public class RolService {
     }
     
     public Rol actualizar(Long id, String nombre, String descripcion, Boolean activa) {
-        Rol rol = rolRepository.findById(id)
+        Rol rol = rolRepository.findById((Long)id)
             .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         
         if (!rol.getNombre().equals(nombre) && rolRepository.existsByNombre(nombre)) {
@@ -57,7 +57,7 @@ public class RolService {
     }
     
     public void eliminar(Long id) {
-        Rol rol = rolRepository.findById(id)
+        Rol rol = rolRepository.findById((Long)id)
             .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         
         if (!rol.getUsuarios().isEmpty()) {

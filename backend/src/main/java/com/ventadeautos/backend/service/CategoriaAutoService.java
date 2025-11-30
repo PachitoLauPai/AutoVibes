@@ -21,7 +21,7 @@ public class CategoriaAutoService {
     }
     
     public Optional<CategoriaAuto> obtenerPorId(Long id) {
-        return categoriaAutoRepository.findById(id);
+        return categoriaAutoRepository.findById((Long)id);
     }
     
     public Optional<CategoriaAuto> obtenerPorNombre(String nombre) {

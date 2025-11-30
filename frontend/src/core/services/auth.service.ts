@@ -177,9 +177,43 @@ export class AuthService {
 
   logout(): void {
     this.logger.info('Logout');
-    this.currentUserSubject.next(null);  // ✅ Notificar logout
+    this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
-    // ✅ NO navegar aquí - dejar que el componente lo haga
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+  }
+
+  // ✅ NUEVO: Login para administradores
+  loginAdmin(credentials: { email: string; password: string }): Observable<any> {
+    this.logger.debug('Intentando login admin', { email: credentials.email });
+  
+    return this.http.post<any>(`${this.apiUrl}/auth/admin/login`, credentials, {
+      headers: { 'Content-Type': 'application/json' }
+    }).pipe(
+      tap(response => {
+        this.logger.info('Login admin exitoso', { userId: response.id, email: response.email });
+        
+        const user: User = {
+          id: response.id,
+          email: response.email,
+          nombre: response.nombre,
+          rol: response.rol,
+          activo: response.activo ?? true,
+          password: credentials.password
+        };
+        
+        // Guardar en localStorage para que el guard pueda verificar
+        localStorage.setItem('token', response.token || 'admin-token');
+        localStorage.setItem('userRole', response.rol?.nombre || 'ADMIN');
+        
+        this.currentUserSubject.next(user);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      }),
+      catchError(error => {
+        this.logger.error('Error en login admin', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   eliminarUsuario(id: number): Observable<any> {
@@ -241,24 +275,20 @@ export class AuthService {
     );
   }
 
-  // ✅ NUEVO: Cambiar contraseña del usuario
-  cambiarContrasena(usuarioId: number, cambioData: any): Observable<any> {
-    return this.http.put<any>(
-      `${this.apiUrl}/usuarios/${usuarioId}/cambiar-contrasena`,
-      cambioData,
-      { headers: { 'Content-Type': 'application/json' } }
-    ).pipe(
-      tap(response => {
-<<<<<<< HEAD
-        this.logger.info('Contraseña cambiada exitosamente', { userId });
-=======
-        this.logger.info('Contraseña cambiada exitosamente', { userId: usuarioId });
->>>>>>> 48cc542 (Frontend: Actualización de servicios base y modelos TypeScript)
-      }),
-      catchError(error => {
-        this.logger.error('Error al cambiar contraseña', error);
-        return throwError(() => new Error('Error al cambiar contraseña'));
-      })
-    );
-  }
+// ✅ NUEVO: Cambiar contraseña del usuario
+cambiarContrasena(usuarioId: number, cambioData: any): Observable<any> {
+  return this.http.put<any>(
+    `${this.apiUrl}/usuarios/${usuarioId}/cambiar-contrasena`,
+    cambioData,
+    { headers: { 'Content-Type': 'application/json' } }
+  ).pipe(
+    tap(response => {
+      this.logger.info('Contraseña cambiada exitosamente', { userId: usuarioId });
+    }),
+    catchError(error => {
+      this.logger.error('Error al cambiar contraseña', error);
+      return throwError(() => new Error('Error al cambiar contraseña'));
+    })
+  );
+}
 }

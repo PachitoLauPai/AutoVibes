@@ -21,7 +21,7 @@ public class CondicionAutoService {
     }
     
     public Optional<CondicionAuto> obtenerPorId(Long id) {
-        return condicionAutoRepository.findById(id);
+        return condicionAutoRepository.findById((Long)id);
     }
     
     public Optional<CondicionAuto> obtenerPorNombre(String nombre) {

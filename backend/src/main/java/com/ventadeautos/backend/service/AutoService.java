@@ -33,12 +33,12 @@ public class AutoService {
     
     // ✅ Para obtener un auto específico, cargar con marca
     public Optional<Auto> obtenerPorId(Long id) {
-        return autoRepository.findByIdWithMarca(id);
+        return autoRepository.findByIdWithMarca((Long)id);
     }
     
     // ✅ Método alternativo si solo necesitas el auto básico
     public Optional<Auto> obtenerPorIdBasico(Long id) {
-        return autoRepository.findById(id);
+        return autoRepository.findById((Long)id);
     }
     
     public List<Auto> obtenerAutosConVentasPendientes() {

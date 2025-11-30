@@ -45,31 +45,45 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   cargarOpciones(): void {
+    this.loading = true;
+    this.error = '';
+
     // Cargar marcas
     this.autoService.getMarcas().pipe(takeUntil(this.destroy$)).subscribe({
       next: (marcas) => {
         this.marcas = marcas;
-        this.logger.debug('Marcas cargadas', { count: marcas.length });
+        console.log('✅ Marcas cargadas:', { count: marcas.length, data: marcas });
       },
-      error: (err) => this.logger.error('Error cargando marcas', err)
+      error: (err) => {
+        console.error('❌ Error cargando marcas:', err);
+        this.error = 'Error al cargar marcas';
+      }
     });
 
     // Cargar categorías
     this.autoService.getCategorias().pipe(takeUntil(this.destroy$)).subscribe({
       next: (categorias) => {
         this.categorias = categorias;
-        this.logger.debug('Categorías cargadas', { count: categorias.length });
+        console.log('✅ Categorías cargadas:', { count: categorias.length, data: categorias });
       },
-      error: (err) => this.logger.error('Error cargando categorías', err)
+      error: (err) => {
+        console.error('❌ Error cargando categorías:', err);
+        this.error = 'Error al cargar categorías';
+      }
     });
 
     // Cargar condiciones
     this.autoService.getCondiciones().pipe(takeUntil(this.destroy$)).subscribe({
       next: (condiciones) => {
         this.condiciones = condiciones;
-        this.logger.debug('Condiciones cargadas', { count: condiciones.length });
+        console.log('✅ Condiciones cargadas:', { count: condiciones.length, data: condiciones });
+        this.loading = false;
       },
-      error: (err) => this.logger.error('Error cargando condiciones', err)
+      error: (err) => {
+        console.error('❌ Error cargando condiciones:', err);
+        this.error = 'Error al cargar condiciones';
+        this.loading = false;
+      }
     });
   }
 

@@ -10,4 +10,5 @@ public class LoginResponse {
     private String nombre;
     private Rol rol;
     private String mensaje;
+    private String token;  // ✅ NUEVO: Token para autenticación
 }

@@ -1,158 +1,141 @@
-<nav class="navbar navbar-expand-lg">
-  <div class="container-fluid">
-    
-    <!-- Logo a la izquierda -->
-    <a class="navbar-brand" href="#" (click)="irAlLogo(); $event.preventDefault()">
-      <span class="logo-text">AutoVibes</span>
-    </a>
-
-    <!-- Toggle Button (Mobile) -->
-    <button class="navbar-toggler" type="button" (click)="toggleMenu()" 
-            [attr.aria-expanded]="isMenuOpen">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <!-- Navbar Menu -->
-    <div class="collapse navbar-collapse" [class.show]="isMenuOpen">
-      <ul class="navbar-nav ms-auto">
-        
-        <!-- ========== NAVEGACIÓN CLIENTE (NO LOGUEADO) ========== -->
-        <ng-container *ngIf="!authService.isLoggedIn()">
-          <!-- Botón Iniciar Sesión -->
-          <li class="nav-item">
-            <button class="btn btn-login" (click)="irALogin()">
-              Iniciar sesión
-            </button>
-          </li>
-
-          <!-- Botón Comprar con Dropdown -->
-          <li class="nav-item dropdown">
-            <button class="btn btn-comprar" 
-                    (click)="toggleComprarDropdown(); $event.stopPropagation()"
-                    [class.active]="isComprarDropdownOpen">
-              Comprar
-            </button>
-            
-            <!-- Dropdown Menu -->
-            <div class="dropdown-menu" 
-                 [class.show]="isComprarDropdownOpen"
-                 (click)="$event.stopPropagation()">
-              
-              <!-- Header del dropdown -->
-              <div class="dropdown-header">
-                <span class="dropdown-icon">🚗</span>
-                <span class="dropdown-title">Autos</span>
-                <span class="dropdown-arrow">›</span>
-              </div>
-
-              <!-- Opciones de condición -->
-              <div class="dropdown-options">
-                <div class="dropdown-option" 
-                     *ngFor="let condicion of condiciones"
-                     (click)="irACondicion(condicion.id)">
-                  <div class="option-title">{{ condicion.nombre === 'NUEVO' ? 'Nuevos Okm' : condicion.nombre }}</div>
-                  <div class="option-description">{{ getCondicionDescripcion(condicion.nombre) }}</div>
-                  <span class="option-arrow">›</span>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ng-container>
-
-        <!-- ========== NAVEGACIÓN CLIENTE LOGUEADO ========== -->
-        <ng-container *ngIf="authService.isLoggedIn() && authService.isCliente()">
-          <!-- Botón Iniciar Sesión (mostrar nombre del usuario) -->
-          <li class="nav-item">
-            <button class="btn btn-login" (click)="irAMiPerfil()">
-              {{ currentUser?.nombre || 'Usuario' }}
-            </button>
-          </li>
-
-          <!-- Botón Comprar con Dropdown -->
-          <li class="nav-item dropdown">
-            <button class="btn btn-comprar" 
-                    (click)="toggleComprarDropdown(); $event.stopPropagation()"
-                    [class.active]="isComprarDropdownOpen">
-              Comprar
-            </button>
-            
-            <!-- Dropdown Menu -->
-            <div class="dropdown-menu" 
-                 [class.show]="isComprarDropdownOpen"
-                 (click)="$event.stopPropagation()">
-              
-              <!-- Header del dropdown -->
-              <div class="dropdown-header">
-                <span class="dropdown-icon">🚗</span>
-                <span class="dropdown-title">Autos</span>
-                <span class="dropdown-arrow">›</span>
-              </div>
-
-              <!-- Opciones de condición -->
-              <div class="dropdown-options">
-                <div class="dropdown-option" 
-                     *ngFor="let condicion of condiciones"
-                     (click)="irACondicion(condicion.id)">
-                  <div class="option-title">{{ condicion.nombre === 'NUEVO' ? 'Nuevos Okm' : condicion.nombre }}</div>
-                  <div class="option-description">{{ getCondicionDescripcion(condicion.nombre) }}</div>
-                  <span class="option-arrow">›</span>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ng-container>
-
-        <!-- ========== NAVEGACIÓN ADMIN ========== -->
-        <ng-container *ngIf="authService.isAdmin()">
-      
-          <!-- Separador visual -->
-          <li class="nav-item">
-            <span class="navbar-text mx-2">|</span>
-          </li>
-
-          <!-- ➕ Agregar Auto -->
-          <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAAgregarAuto(); $event.preventDefault()">
-              ➕ Agregar Auto
-            </a>
-          </li>
-
-          <!-- 👥 Usuarios -->
-          <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAUsuarios(); $event.preventDefault()">
-              👥 Usuarios
-            </a>
-          </li>
-
-          <!-- 🧾 Ventas -->
-          <li class="nav-item">
-            <a class="nav-link" href="#" (click)="irAVentas(); $event.preventDefault()">
-              🧾 Ventas
-            </a>
-          </li>
-
-          <!-- Separador visual -->
-          <li class="nav-item">
-            <span class="navbar-text mx-2">|</span>
-          </li>
-
-          <!-- INFO ADMIN -->
-          <li class="nav-item me-3">
-            <span class="navbar-text">
-              <span class="badge bg-warning text-dark">👑 ADMIN</span>
-              <strong class="ms-2">{{ currentUser?.nombre }}</strong>
-            </span>
-          </li>
-
-          <!-- 🚪 Cerrar Sesión -->
-          <li class="nav-item">
-            <button class="btn btn-danger btn-sm" (click)="logout()">
-              🚪 Cerrar Sesión
-            </button>
-          </li>
-        </ng-container>
-
-      </ul>
+<!-- NAVBAR PRINCIPAL -->
+<nav class="navbar-main">
+  <div class="navbar-container">
+    <!-- Logo izquierda -->
+    <div class="navbar-logo">
+      <a href="#" (click)="irAlHome(); $event.preventDefault()" class="logo-link">
+        <span class="logo-text">AutoVibes</span>
+      </a>
     </div>
+
+    <!-- Menú central -->
+    <ul class="navbar-menu">
+      <li class="navbar-item">
+        <a href="#" (click)="irAutos(); $event.preventDefault()" class="navbar-link">
+          Catálogo
+        </a>
+      </li>
+      <li class="navbar-item">
+        <button (click)="irSobreNosotros()" class="navbar-link">
+          Sobre Nosotros
+        </button>
+      </li>
+      <li class="navbar-item">
+        <button (click)="irServicios()" class="navbar-link">
+          Servicios
+        </button>
+      </li>
+      <li class="navbar-item">
+        <button (click)="abrirContacto()" class="navbar-link">
+          Contacto
+        </button>
+      </li>
+    </ul>
   </div>
 </nav>
+
+<!-- MODAL DE CONTACTO -->
+<div class="contact-modal" *ngIf="showContactModal" (click)="cerrarContacto()" [class.show]="showContactModal">
+  <div class="contact-modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="cerrarContacto()">✕</button>
+    <h2>Contactar a AutoVibes</h2>
+    
+    <form [formGroup]="contactForm" (ngSubmit)="enviarContacto()">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" class="form-control" formControlName="nombre" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" formControlName="email" required>
+      </div>
+
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" class="form-control" formControlName="telefono" required>
+      </div>
+
+      <div class="form-group">
+        <label>Asunto</label>
+        <input type="text" class="form-control" formControlName="asunto" required>
+      </div>
+
+      <div class="form-group">
+        <label>Mensaje</label>
+        <textarea class="form-control" formControlName="mensaje" rows="5" required></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary-contact" [disabled]="!contactForm.valid || enviandoContacto">
+        {{ enviandoContacto ? 'Enviando...' : 'Enviar Mensaje' }}
+      </button>
+    </form>
+
+    <div *ngIf="mensajeContacto" class="alert" [ngClass]="{'alert-success': contactoEnviado, 'alert-danger': !contactoEnviado}">
+      {{ mensajeContacto }}
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE SOBRE NOSOTROS -->
+<div class="info-modal" *ngIf="showSobreNosotros" (click)="cerrarSobreNosotros()" [class.show]="showSobreNosotros">
+  <div class="info-modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="cerrarSobreNosotros()">✕</button>
+    <h2>Sobre AutoVibes</h2>
+    
+    <div class="info-item">
+      <h4>🚗 Quiénes Somos</h4>
+      <p>AutoVibes es tu concesionario de confianza con más de 10 años de experiencia en el mercado automotriz. Nos especializamos en vehículos nuevos y seminuevos de las mejores marcas.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>✨ Nuestra Misión</h4>
+      <p>Proporcionar a nuestros clientes vehículos de calidad con los mejores precios y un servicio excepcional.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>🎯 Nuestra Visión</h4>
+      <p>Ser el concesionario preferido del país, reconocido por nuestra integridad, calidad y atención al cliente.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>📞 Contáctanos</h4>
+      <p><strong>Teléfono:</strong> +51 999 999 999</p>
+      <p><strong>Email:</strong> contacto@autovibes.com</p>
+      <p><strong>Dirección:</strong> Av. Principal 123, Lima - Perú</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE SERVICIOS -->
+<div class="info-modal" *ngIf="showServicios" (click)="cerrarServicios()" [class.show]="showServicios">
+  <div class="info-modal-content" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="cerrarServicios()">✕</button>
+    <h2>Nuestros Servicios</h2>
+    
+    <div class="info-item">
+      <h4>🔍 Asesoría Personalizada</h4>
+      <p>Nuestro equipo de expertos te ayudará a encontrar el vehículo perfecto según tus necesidades y presupuesto.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>💰 Financiamiento</h4>
+      <p>Ofrecemos opciones de financiamiento flexible con tasas competitivas para facilitar tu compra.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>🛠️ Mantenimiento</h4>
+      <p>Servicio de mantenimiento y reparación con repuestos originales y garantía.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>🔐 Garantía</h4>
+      <p>Todos nuestros vehículos incluyen garantía de fábrica o garantía extendida según corresponda.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>📋 Trámites</h4>
+      <p>Nos encargamos de todos los trámites legales y documentación necesaria para tu compra.</p>
+    </div>
+  </div>
+</div>

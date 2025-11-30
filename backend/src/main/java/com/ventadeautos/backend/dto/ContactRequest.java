@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class ContactRequest {
-    private String nombres;
-    private String apellidos;
-    private String dni;
+    private String nombre;
+    private String email;
     private String telefono;
-    private String direccion;
-    private Long autoId;
+    private String asunto;
+    private String mensaje;
+    private Long autoId;  // Opcional - si es consulta sobre un auto específico
 }

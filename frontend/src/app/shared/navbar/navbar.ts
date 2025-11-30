@@ -1,61 +1,53 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
-import { User } from '../../../core/models/user.model';
-import { LoggerService } from '../../../core/services/logger.service';
-import { AutoService } from '../../../core/services/auto.service';
-import { CondicionAuto } from '../../../core/models/shared.model';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ContactService } from '../../core/services/contact.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css']
 })
 export class NavbarComponent implements OnInit, OnDestroy {
-  currentUser: User | null = null;
-  isMenuOpen = false;
-  isComprarDropdownOpen = false;
-  condiciones: CondicionAuto[] = [];
+  // Modal de contacto
+  showContactModal = false;
+  contactForm: FormGroup;
+  enviandoContacto = false;
+  mensajeContacto = '';
+  contactoEnviado = false;
+
+  // Modal de Sobre Nosotros
+  showSobreNosotros = false;
+
+  // Modal de Servicios
+  showServicios = false;
+
+  // WhatsApp
+  whatsappLink = 'https://wa.me/51999999999?text=Hola%20AutoVibes%20tengo%20una%20consulta';
+
   private destroy$ = new Subject<void>();
 
   constructor(
-    public authService: AuthService,
     private router: Router,
-    private logger: LoggerService,
-    private autoService: AutoService
-  ) {}
-
-  ngOnInit(): void {
-    this.actualizarUsuario();
-    this.cargarCondiciones();
-    
-    this.authService.getCurrentUserObservable()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.actualizarUsuario();
-      });
-
-    // Cerrar dropdown al hacer click fuera
-    document.addEventListener('click', (event: any) => {
-      if (!event.target.closest('.nav-item.dropdown')) {
-        this.cerrarComprarDropdown();
-      }
+    private fb: FormBuilder,
+    private contactService: ContactService
+  ) {
+    this.contactForm = this.fb.group({
+      nombre: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required]],
+      asunto: ['', [Validators.required]],
+      mensaje: ['', [Validators.required, Validators.minLength(10)]]
     });
   }
 
-  cargarCondiciones(): void {
-    this.autoService.getCondiciones().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (condiciones) => {
-        this.condiciones = condiciones;
-        this.logger.debug('Condiciones cargadas en navbar', { count: condiciones.length });
-      },
-      error: (err) => this.logger.error('Error cargando condiciones en navbar', err)
-    });
+  ngOnInit(): void {
+    console.log('NavbarComponent inicializado');
   }
 
   ngOnDestroy(): void {
@@ -63,98 +55,100 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  actualizarUsuario(): void {
-    this.currentUser = this.authService.currentUser();
-    this.logger.debug('Usuario actual actualizado', { nombre: this.currentUser?.nombre });
-  }
-
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
-
-  logout(): void {
-    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-      this.logger.info('Cerrando sesión');
-      this.authService.logout();
-      this.currentUser = null;
-      this.isMenuOpen = false;
-      
-      this.router.navigate(['/home']).then(() => {
-        this.logger.debug('Sesión cerrada - Redirigido a HOME');
-      });
-    }
-  }
-
-  irALogin(): void {
-    this.router.navigate(['/login']);
-  }
-
-  irAHome(): void {
+  /**
+   * Navegación pública
+   */
+  irAlHome(): void {
     this.router.navigate(['/home']);
-    this.isMenuOpen = false;
   }
 
-  irAAutos(): void {
+  irAutos(): void {
     this.router.navigate(['/autos']);
-    this.isMenuOpen = false;
   }
 
-  irAAgregarAuto(): void {
-    this.router.navigate(['/admin/autos/nuevo']);
-    this.isMenuOpen = false;
+  /**
+   * Modalidad de Contacto
+   */
+  abrirContacto(): void {
+    this.showContactModal = true;
+    this.contactoEnviado = false;
+    this.mensajeContacto = '';
   }
 
-  irAUsuarios(): void {
-    this.router.navigate(['/admin/usuarios']);
-    this.isMenuOpen = false;
+  cerrarContacto(): void {
+    this.showContactModal = false;
+    this.contactForm.reset();
+    this.contactoEnviado = false;
+    this.enviandoContacto = false;
   }
 
-  irAVentas(): void {
-    this.router.navigate(['/admin/ventas']);
-    this.isMenuOpen = false;
-  }
-
-  // ✅ NUEVO: Ir a Mi Perfil
-  irAMiPerfil(): void {
-    this.router.navigate(['/cliente/perfil']);
-    this.isMenuOpen = false;
-  }
-
-  // ✅ CAMBIAR: irAHome() a irAlLogo()
-  irAlLogo(): void {
-    if (this.authService.isAdmin()) {
-      // ✅ Si es ADMIN → Ir a gestión de autos
-      this.router.navigate(['/autos']);
-    } else {
-      // ✅ Si es CLIENTE o NO logueado → Ir a HOME
-      this.router.navigate(['/home']);
+  enviarContacto(): void {
+    if (!this.contactForm.valid) {
+      this.mensajeContacto = '❌ Por favor completa todos los campos correctamente.';
+      return;
     }
-    this.isMenuOpen = false;
+
+    this.enviandoContacto = true;
+    this.mensajeContacto = '';
+    
+    const contactData = this.contactForm.value;
+    
+    this.contactService.enviarContacto(contactData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: string) => {
+          this.enviandoContacto = false;
+          this.contactoEnviado = true;
+          this.mensajeContacto = '✅ ' + (response || 'Mensaje enviado correctamente. Te contactaremos pronto.');
+          this.contactForm.reset();
+          
+          // Cerrar automáticamente después de 3 segundos
+          setTimeout(() => {
+            this.cerrarContacto();
+          }, 3000);
+        },
+        error: (error: Error) => {
+          this.enviandoContacto = false;
+          this.contactoEnviado = false;
+          this.mensajeContacto = '❌ Error al enviar mensaje: ' + (error?.message || 'Intenta nuevamente');
+          console.error('Error al enviar contacto:', error);
+        }
+      });
   }
 
-  abrirComprarDropdown(): void {
-    this.isComprarDropdownOpen = true;
+  /**
+   * Modal de Sobre Nosotros
+   */
+  irSobreNosotros(): void {
+    this.showSobreNosotros = true;
   }
 
-  cerrarComprarDropdown(): void {
-    this.isComprarDropdownOpen = false;
+  cerrarSobreNosotros(): void {
+    this.showSobreNosotros = false;
   }
 
-  toggleComprarDropdown(): void {
-    this.isComprarDropdownOpen = !this.isComprarDropdownOpen;
+  /**
+   * Modal de Servicios
+   */
+  irServicios(): void {
+    this.showServicios = true;
   }
 
-  irACondicion(condicionId: number): void {
-    this.router.navigate(['/autos'], { queryParams: { condicion: condicionId } });
-    this.cerrarComprarDropdown();
+  cerrarServicios(): void {
+    this.showServicios = false;
   }
 
-  getCondicionDescripcion(condicionNombre: string): string {
-    const descripciones: { [key: string]: string } = {
-      'USADO': 'Vendidos por sus dueños o vendedores especializados.',
-      'NUEVO': 'Tiendas oficiales de más de 20 concesionarios y marcas.',
-      'SEMINUEVO': 'Vehículos con poco uso, en excelente estado.'
-    };
-    return descripciones[condicionNombre.toUpperCase()] || 'Explora nuestra selección.';
+  /**
+   * Cerrar modales al hacer click fuera (solo en desktop)
+   */
+  cerrarModalAlClickAfuera(event: MouseEvent, tipo: 'contacto' | 'sobreNosotros' | 'servicios'): void {
+    const target = event.target as HTMLElement;
+    if (tipo === 'contacto' && target.classList.contains('contact-modal')) {
+      this.cerrarContacto();
+    } else if (tipo === 'sobreNosotros' && target.classList.contains('info-modal')) {
+      this.cerrarSobreNosotros();
+    } else if (tipo === 'servicios' && target.classList.contains('info-modal')) {
+      this.cerrarServicios();
+    }
   }
 }

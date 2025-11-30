@@ -56,6 +56,58 @@ public class UsuarioService {
         return response;
     }
     
+    // ✅ LOGIN PARA ADMINISTRADORES SOLAMENTE
+    public LoginResponse loginAdmin(LoginRequest request) {
+        log.info("Intentando login de admin: {}", request.getEmail());
+        
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(request.getEmail());
+        
+        if (!usuarioOpt.isPresent()) {
+            log.warn("Usuario no encontrado: {}", request.getEmail());
+            LoginResponse response = new LoginResponse();
+            response.setMensaje("Credenciales inválidas");
+            return response;
+        }
+        
+        Usuario usuario = usuarioOpt.get();
+        
+        // Verificar que sea admin
+        if (!usuario.getRol().getNombre().equals("ADMIN")) {
+            log.warn("Intento de login admin desde usuario no-admin: {}", request.getEmail());
+            LoginResponse response = new LoginResponse();
+            response.setMensaje("No tienes permisos de administrador");
+            return response;
+        }
+        
+        // Verificar contraseña
+        if (!usuario.getPassword().equals(request.getPassword())) {
+            log.warn("Contraseña incorrecta para admin: {}", request.getEmail());
+            LoginResponse response = new LoginResponse();
+            response.setMensaje("Credenciales inválidas");
+            return response;
+        }
+        
+        // Login exitoso
+        log.info("Login de admin exitoso: {}", request.getEmail());
+        LoginResponse response = new LoginResponse();
+        response.setId(usuario.getId());
+        response.setEmail(usuario.getEmail());
+        response.setNombre(usuario.getNombre());
+        response.setRol(usuario.getRol());
+        response.setMensaje("Login de administrador exitoso");
+        // ✅ GENERAR TOKEN SIMPLE (ID + Timestamp)
+        String token = generateSimpleToken(usuario.getId(), usuario.getEmail());
+        response.setToken(token);
+        return response;
+    }
+    
+    // ✅ MÉTODO AUXILIAR PARA GENERAR TOKEN SIMPLE
+    private String generateSimpleToken(Long userId, String email) {
+        long timestamp = System.currentTimeMillis();
+        // Formato simple: userId_email_timestamp_ADMIN
+        return userId + "_" + email + "_" + timestamp + "_ADMIN";
+    }
+    
     public LoginResponse registrar(RegistroRequest request) {
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             LoginResponse response = new LoginResponse();
@@ -108,14 +160,14 @@ public class UsuarioService {
     }
     
     public UsuarioDTO obtenerUsuarioPorId(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
+        Usuario usuario = usuarioRepository.findById((Long)id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
         return convertirADTO(usuario);
     }
     
     @Transactional
     public Map<String, Object> eliminarUsuario(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
+        Usuario usuario = usuarioRepository.findById((Long)id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
         
         usuarioRepository.delete(usuario);
@@ -130,10 +182,11 @@ public class UsuarioService {
     
     @Transactional
     public UsuarioDTO cambiarEstadoUsuario(Long id, ActualizarEstadoUsuarioDTO estadoDTO) {
-        Usuario usuario = usuarioRepository.findById(id)
+        Usuario usuario = usuarioRepository.findById((Long)id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
         
         usuario.setActivo(estadoDTO.getActivo());
+        @SuppressWarnings("unchecked")
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
         
         return convertirADTO(usuarioActualizado);
@@ -141,7 +194,7 @@ public class UsuarioService {
     
     @Transactional
     public UsuarioDTO actualizarUsuario(Long id, UsuarioDTO usuarioDTO) {
-        Usuario usuario = usuarioRepository.findById(id)
+        Usuario usuario = usuarioRepository.findById((Long)id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
         
         // Verificar si el email ya existe (excluyendo el usuario actual)
@@ -231,7 +284,7 @@ public class UsuarioService {
     }
     
     public Usuario actualizarUsuarioEntidad(Long id, Usuario usuarioActualizado) {
-        return usuarioRepository.findById(id)
+        return usuarioRepository.findById((Long)id)
             .map(usuario -> {
                 if (usuarioActualizado.getNombre() != null) {
                     usuario.setNombre(usuarioActualizado.getNombre());
@@ -247,7 +300,9 @@ public class UsuarioService {
                     usuario.setRol(usuarioActualizado.getRol());
                 }
                 
-                return usuarioRepository.save(usuario);
+                @SuppressWarnings("unchecked")
+                Usuario usuarioGuardado = usuarioRepository.save(usuario);
+                return usuarioGuardado;
             })
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
     }

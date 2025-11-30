@@ -21,7 +21,7 @@ public class EstadoVentaService {
     }
     
     public Optional<EstadoVenta> obtenerPorId(Long id) {
-        return estadoVentaRepository.findById(id);
+        return estadoVentaRepository.findById((Long)id);
     }
     
     public Optional<EstadoVenta> obtenerPorNombre(String nombre) {
