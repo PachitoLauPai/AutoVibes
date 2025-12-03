@@ -12,8 +12,10 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:4200") // URL de tu Angular
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                .allowedHeaders("Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin")
+                .exposedHeaders("Content-Type", "Authorization")
+                .allowCredentials(true)
+                .maxAge(3600); // Cache preflight requests for 1 hour
     }
 }
