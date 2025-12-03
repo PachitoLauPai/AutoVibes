@@ -22,7 +22,7 @@ public class Usuario {
     private String nombre;
     
     // ✅ AGREGAR ESTAS PROPIEDADES QUE FALTAN
-    private String apellidos;
+    private String apellido;
     private String dni;
     private String telefono;
     private String direccion;

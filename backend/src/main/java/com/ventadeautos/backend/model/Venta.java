@@ -13,8 +13,8 @@ public class Venta {
     private Long id;
     
     @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
+    @JoinColumn(name = "contact_id", nullable = false)
+    private Contact contact;
     
     @ManyToOne
     @JoinColumn(name = "auto_id", nullable = false)

@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,7 @@ public class ContactService {
             // Crear nuevo contacto
             Contact contact = new Contact();
             contact.setNombre(request.getNombre());
+            contact.setDni(request.getDni() != null ? request.getDni() : "");
             contact.setEmail(request.getEmail());
             contact.setTelefono(request.getTelefono() != null ? request.getTelefono() : "");
             contact.setAsunto(request.getAsunto() != null ? request.getAsunto() : "Consulta general");
@@ -155,6 +158,16 @@ public class ContactService {
      */
     public long contarNoLeidos() {
         return contactRepository.countByLeidoFalse();
+    }
+    
+    /**
+     * Contar contactos creados hoy
+     */
+    public long obtenerContactosHoy() {
+        LocalDate hoy = LocalDate.now();
+        LocalDateTime inicioDia = hoy.atStartOfDay();
+        LocalDateTime finDia = hoy.atTime(23, 59, 59);
+        return contactRepository.countByFechaCreacionBetween(inicioDia, finDia);
     }
     
     /**

@@ -15,6 +15,9 @@ public class Contact {
     @Column(nullable = false)
     private String nombre;
     
+    @Column
+    private String dni;
+    
     @Column(nullable = false)
     private String email;
     

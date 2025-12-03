@@ -29,4 +29,7 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     
     // Contar contactos no leídos
     long countByLeidoFalse();
+    
+    // Contar contactos entre fechas
+    long countByFechaCreacionBetween(java.time.LocalDateTime inicio, java.time.LocalDateTime fin);
 }

@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 public class VentaService {
     
     private final VentaRepository ventaRepository;
-    private final ClienteService clienteService;
     private final AutoRepository autoRepository;
     private final EstadoVentaService estadoVentaService;
     
@@ -35,10 +34,6 @@ public class VentaService {
     public Venta crearSolicitudContacto(ContactRequest contactRequest, Usuario usuario) {
         log.warn("DEPRECADO: crearSolicitudContacto - Usar ContactService en su lugar");
         throw new RuntimeException("Este método está deprecado. Usar ContactService.guardarContacto() en su lugar");
-    }
-    
-    public List<Venta> obtenerVentasPorCliente(Long usuarioId) {
-        return ventaRepository.findByClienteUsuarioIdWithAutoAndMarca(usuarioId);
     }
     
     public List<Venta> obtenerTodasLasVentas() {
@@ -132,13 +127,12 @@ public class VentaService {
         VentaResponse dto = new VentaResponse();
         dto.setId(venta.getId());
         
-        // Información del cliente
-        if (venta.getCliente() != null) {
-            dto.setClienteNombre(venta.getCliente().getNombres());
-            dto.setClienteApellidos(venta.getCliente().getApellidos());
-            dto.setClienteDni(venta.getCliente().getDni());
-            dto.setClienteTelefono(venta.getCliente().getTelefono());
-            dto.setClienteDireccion(venta.getCliente().getDireccion());
+        // Información del contacto
+        if (venta.getContact() != null) {
+            dto.setClienteNombre(venta.getContact().getNombre());
+            dto.setClienteDni(venta.getContact().getDni());
+            dto.setClienteTelefono(venta.getContact().getTelefono());
+            dto.setClienteEmail(venta.getContact().getEmail());
         }
         
         // Información del auto
@@ -202,26 +196,4 @@ public class VentaService {
             .map(this::convertirAVentaResponse)
             .collect(Collectors.toList());
     }
-
-    // ✅ MÉTODO: Verificar si un usuario tiene ventas activas
-    public boolean tieneVentasActivas(Long usuarioId) {
-        // Buscar cliente asociado al usuario
-        Optional<Cliente> cliente = clienteService.obtenerClientePorUsuarioId(usuarioId);
-        
-        if (cliente.isPresent()) {
-            // Obtener estado PENDIENTE de la base de datos
-            EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
-                    .orElseThrow(() -> new ResourceNotFoundException("Estado", "PENDIENTE"));
-            
-            // Verificar si el cliente tiene ventas pendientes
-            List<Venta> ventasPendientes = ventaRepository.findByClienteIdAndEstado(
-                cliente.get().getId(), estadoPendiente);
-            return !ventasPendientes.isEmpty();
-        }
-        
-        return false;
-
-    }
-    
-
 }

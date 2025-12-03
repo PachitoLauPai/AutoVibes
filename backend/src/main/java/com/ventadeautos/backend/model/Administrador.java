@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "clientes")
+@Table(name = "administradores")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Cliente {
+public class Administrador {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,11 +26,11 @@ public class Cliente {
     @Column(nullable = false, unique = true)
     private String dni;
     
-    @Column(nullable = false)
-    private String telefono;
+    @Column(nullable = false, unique = true)
+    private String correo;
     
     @Column(nullable = false)
-    private String direccion;
+    private String password;
     
     @ManyToOne
     @JoinColumn(name = "rol_id", nullable = false)

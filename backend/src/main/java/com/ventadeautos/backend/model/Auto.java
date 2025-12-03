@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Table(name = "autos")
 @Data
-@ToString(exclude = {"marca", "combustible", "transmision", "categoria", "condicion", "concesionario", "ventas"})
+@ToString(exclude = {"marca", "combustible", "transmision", "categoria", "condicion", "ventas"})
 public class Auto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,12 +54,8 @@ public class Auto {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "condicion_id", nullable = false)
     private CondicionAuto condicion;
-    
-    // ✅ Relación ManyToOne con Concesionario
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "concesionario_id")
-    private Concesionario concesionario;
-    
+
+
     private String descripcion;
     private Boolean disponible = true;
 
