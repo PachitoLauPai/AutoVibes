@@ -9,12 +9,11 @@ import java.util.List;
 public class VentaResponse {
     private Long id;
     
-    // Información del cliente
+    // Información del contacto
     private String clienteNombre;
-    private String clienteApellidos;
     private String clienteDni;
+    private String clienteEmail;
     private String clienteTelefono;
-    private String clienteDireccion;
     
     // Información del auto
     private Long autoId;
