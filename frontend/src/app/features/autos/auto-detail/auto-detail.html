@@ -1,4 +1,4 @@
-<div class="container py-5">
+<div class="auto-detail-page">
   
   <!-- LOADING -->
   <div *ngIf="loading" class="text-center py-5">
@@ -15,170 +15,178 @@
   </div>
 
   <!-- AUTO DETAIL CONTENT -->
-  <div *ngIf="auto && !loading" class="row">
+  <div *ngIf="auto && !loading" class="auto-detail-container">
     
     <!-- BREADCRUMB -->
-    <div class="col-12 mb-4">
-      <button class="btn btn-outline-secondary" (click)="volverALista()">
+    <div class="breadcrumb-section">
+      <button class="btn-back" (click)="volverALista()">
         ← Volver a la lista
       </button>
     </div>
 
-    <!-- IMAGE GALLERY (LEFT) -->
-    <div class="col-lg-6 mb-4">
-      <div class="card border-0 shadow-sm">
-        
-        <!-- MAIN IMAGE WITH CAROUSEL -->
-        <div id="carouselAuto" class="carousel slide" data-bs-ride="carousel" *ngIf="auto.imagenes && auto.imagenes.length > 0">
-          <div class="carousel-inner">
-            <div *ngFor="let imagen of auto.imagenes; let i = index" 
-                 class="carousel-item" 
-                 [class.active]="i === 0">
-              <img [src]="imagen" 
-                   [alt]="auto.modelo"
-                   (error)="handleImageError($event)"
-                   class="d-block w-100" 
-                   style="height: 400px; object-fit: cover;">
+    <div class="auto-detail-layout">
+      <!-- LEFT COLUMN - IMAGE GALLERY -->
+      <div class="gallery-column">
+        <div class="gallery-container">
+          <div class="gallery-layout">
+            <!-- Main Image (Left) -->
+            <div class="main-image-section">
+              <div class="main-image-wrapper" (click)="openImageModal(currentImageIndex)">
+                <img [src]="getCurrentImage()" 
+                     [alt]="auto.modelo"
+                     (error)="handleImageError($event)"
+                     class="main-image"
+                     style="cursor: pointer;">
+                
+                <!-- Image Counter -->
+                <div class="image-counter" *ngIf="auto.imagenes && auto.imagenes.length > 0">
+                  📷 {{ auto.imagenes.length }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Thumbnail Gallery (Right) -->
+            <div class="thumbnail-section" *ngIf="auto.imagenes && auto.imagenes.length > 1">
+              <div class="thumbnail-grid">
+                <img *ngFor="let img of auto.imagenes.slice(0, 4); let i = index"
+                     [src]="img"
+                     [alt]="'Miniatura ' + (i + 1)"
+                     (click)="goToImage(i)"
+                     (error)="handleImageError($event)"
+                     class="thumbnail"
+                     [class.active]="i === currentImageIndex">
+                <button class="thumbnail-view-more" 
+                        *ngIf="auto.imagenes.length > 4"
+                        (click)="openImageModal(currentImageIndex)">
+                  Ver fotos
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- CAROUSEL CONTROLS -->
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselAuto" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselAuto" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-          </button>
+      <!-- RIGHT COLUMN - AUTO INFO -->
+      <div class="info-column">
+        <!-- Title -->
+        <h1 class="auto-title">{{ auto.marca?.nombre }} {{ auto.modelo }} {{ auto.anio }}</h1>
 
-          <!-- IMAGE COUNTER -->
-          <div class="position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            <span class="badge bg-dark">{{ currentImageIndex + 1 }} / {{ auto.imagenes.length }}</span>
+        <!-- Key Specs Row -->
+        <div class="key-specs-row">
+          <div class="spec-item">
+            <div class="spec-icon">📅</div>
+            <div class="spec-content">
+              <div class="spec-label">Año modelo</div>
+              <div class="spec-value">{{ auto.anio }}</div>
+            </div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-content">
+              <div class="spec-label">Kilometraje</div>
+              <div class="spec-value">{{ auto.kilometraje | number }} km</div>
+            </div>
+          </div>
+          <div class="spec-item">
+            <div class="spec-content">
+              <div class="spec-label">Transmisión</div>
+              <div class="spec-value">{{ auto.transmision?.nombre }}</div>
+            </div>
           </div>
         </div>
 
-        <!-- SINGLE IMAGE IF NO CAROUSEL -->
-        <img *ngIf="!auto.imagenes || auto.imagenes.length === 0"
-             [src]="getPlaceholderImage()"
-             [alt]="auto.modelo"
-             class="card-img-top"
-             style="height: 400px; object-fit: cover;">
+        <!-- Price -->
+        <div class="price-section">
+          <div class="price-label">Precio</div>
+          <div class="price-value">US$ {{ auto.precio | number:'1.0-0' }}</div>
+        </div>
 
-        <!-- THUMBNAILS -->
-        <div *ngIf="auto.imagenes && auto.imagenes.length > 1" class="card-footer bg-light">
-          <div class="d-flex gap-2 overflow-auto">
-            <img *ngFor="let img of auto.imagenes; let i = index"
-                 [src]="img"
-                 [alt]="'Miniatura ' + (i + 1)"
-                 (click)="goToImage(i)"
-                 (error)="handleImageError($event)"
-                 class="img-thumbnail"
-                 style="width: 60px; height: 45px; cursor: pointer; object-fit: cover;"
-                 [class.border-primary]="i === currentImageIndex"
-                 [class.border-3]="i === currentImageIndex">
-            >
+        <!-- Contact Section -->
+        <div class="contact-section">
+          <div class="contact-divider"></div>
+          <div class="contact-header">Contáctate con el anunciante</div>
+          
+          <div class="dealer-info" *ngIf="auto.concesionario">
+            <div class="dealer-logo">
+              <div class="dealer-logo-circle">{{ auto.concesionario.nombre.charAt(0) }}</div>
+            </div>
+            <div class="dealer-details">
+              <div class="dealer-name">{{ auto.concesionario.nombre }}</div>
+              <div class="dealer-phone" *ngIf="auto.concesionario.telefono">
+                {{ auto.concesionario.telefono }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Buttons Container -->
+          <div class="contact-buttons" *ngIf="auto.disponible">
+            <!-- WhatsApp Button -->
+            <button class="btn-whatsapp" 
+                    *ngIf="auto.concesionario?.telefono"
+                    (click)="contactarWhatsApp()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white" class="whatsapp-icon">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>
+              Más información
+            </button>
+
+            <!-- Contact Button -->
+            <button class="btn-contact" 
+                    (click)="openContactModal()">
+              CONTACTAR
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- AUTO INFORMATION (RIGHT) -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-
-          <!-- TITLE -->
-          <h1 class="card-title fw-bold mb-2">
-            {{ auto.marca?.nombre }} {{ auto.modelo }}
-          </h1>
-
-          <!-- PRICE AND STATUS -->
-          <div class="mb-4">
-            <h2 class="text-danger fw-bold" style="font-size: 2.5rem;">
-              S/ {{ auto.precio | number:'1.2-2' }}
-            </h2>
-            <span [class]="'badge ' + (auto.disponible ? 'bg-success' : 'bg-danger')"
-                  style="font-size: 1rem; padding: 0.5rem 1rem;">
-              {{ auto.disponible ? '✅ Disponible' : '💰 Vendido' }}
-            </span>
-          </div>
-
-          <!-- SPECIFICATIONS -->
-          <div class="row g-3 mb-4">
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">📅 Año</small>
-                <strong>{{ auto.anio }}</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">🛣️ Kilometraje</small>
-                <strong>{{ auto.kilometraje | number }} km</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">🎨 Color</small>
-                <strong>{{ auto.color }}</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">⛽ Combustible</small>
-                <strong>{{ auto.combustible?.nombre }}</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">🔧 Transmisión</small>
-                <strong>{{ auto.transmision?.nombre }}</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">📂 Categoría</small>
-                <strong>{{ auto.categoria?.nombre }}</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">📊 Condición</small>
-                <strong>{{ auto.condicion?.nombre }}</strong>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 bg-light rounded">
-                <small class="text-muted d-block">✔️ Estado</small>
-                <strong class="text-success" *ngIf="auto.disponible">Disponible</strong>
-                <strong class="text-danger" *ngIf="!auto.disponible">No Disponible</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- DESCRIPTION -->
-          <div class="mb-4">
-            <h5 class="fw-bold mb-2">Descripción</h5>
-            <p class="text-muted">{{ auto.descripcion }}</p>
-          </div>
-
-          <!-- ACTION BUTTONS -->
-          <div class="d-grid gap-2">
-            <button *ngIf="auto.disponible"
-                    class="btn btn-primary btn-lg"
-                    (click)="openContactModal()">
-              📞 Contactar al Vendedor
-            </button>
-            <button *ngIf="!auto.disponible"
-                    class="btn btn-secondary btn-lg"
-                    disabled>
-              ⏳ Auto No Disponible
-            </button>
-            <button class="btn btn-outline-secondary"
-                    (click)="volverALista()">
-              ← Volver a la lista
-            </button>
-          </div>
-        </div>
+    <!-- Technical Specifications Table -->
+    <div class="specifications-section">
+      <h2 class="section-title">Especificaciones técnicas</h2>
+      <div class="spec-table-container">
+        <table class="spec-table">
+          <tbody>
+            <tr>
+              <td class="spec-label">Marca</td>
+              <td class="spec-value">{{ auto.marca?.nombre }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Modelo</td>
+              <td class="spec-value">{{ auto.modelo }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Año de fabricación</td>
+              <td class="spec-value">{{ auto.anio }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Categoría</td>
+              <td class="spec-value">{{ auto.categoria?.nombre }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Combustible</td>
+              <td class="spec-value">{{ auto.combustible?.nombre }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Número de puertas</td>
+              <td class="spec-value">-</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Color</td>
+              <td class="spec-value">{{ auto.color }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Transmisión</td>
+              <td class="spec-value">{{ auto.transmision?.nombre }}</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Kilometraje</td>
+              <td class="spec-value">{{ auto.kilometraje | number }} km</td>
+            </tr>
+            <tr>
+              <td class="spec-label">Condición</td>
+              <td class="spec-value">{{ auto.condicion?.nombre }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -206,29 +214,17 @@
 
       <!-- MODAL BODY -->
       <div class="modal-body">
-        <form (ngSubmit)="contactarVendedor()">
+        <form (ngSubmit)="enviarContacto()">
           
-          <!-- NOMBRES -->
+          <!-- NOMBRE -->
           <div class="mb-3">
-            <label for="nombres" class="form-label fw-bold">Nombres *</label>
+            <label for="nombre" class="form-label fw-bold">Nombre completo *</label>
             <input type="text" 
                    class="form-control" 
-                   id="nombres"
-                   [(ngModel)]="contactData.nombres"
-                   name="nombres"
-                   placeholder="Juan"
-                   required>
-          </div>
-
-          <!-- APELLIDOS -->
-          <div class="mb-3">
-            <label for="apellidos" class="form-label fw-bold">Apellidos *</label>
-            <input type="text" 
-                   class="form-control" 
-                   id="apellidos"
-                   [(ngModel)]="contactData.apellidos"
-                   name="apellidos"
-                   placeholder="Pérez García"
+                   id="nombre"
+                   [(ngModel)]="contactData.nombre"
+                   name="nombre"
+                   placeholder="Juan Pérez García"
                    required>
           </div>
 
@@ -241,6 +237,19 @@
                    [(ngModel)]="contactData.dni"
                    name="dni"
                    placeholder="12345678"
+                   maxlength="8"
+                   required>
+          </div>
+
+          <!-- EMAIL -->
+          <div class="mb-3">
+            <label for="email" class="form-label fw-bold">Email *</label>
+            <input type="email" 
+                   class="form-control" 
+                   id="email"
+                   [(ngModel)]="contactData.email"
+                   name="email"
+                   placeholder="juan@example.com"
                    required>
           </div>
 
@@ -256,15 +265,15 @@
                    required>
           </div>
 
-          <!-- DIRECCIÓN -->
+          <!-- MENSAJE -->
           <div class="mb-3">
-            <label for="direccion" class="form-label fw-bold">Dirección *</label>
+            <label for="mensaje" class="form-label fw-bold">Mensaje *</label>
             <textarea class="form-control" 
-                      id="direccion"
-                      [(ngModel)]="contactData.direccion"
-                      name="direccion"
-                      rows="3"
-                      placeholder="Calle Principal 123, Apt 4..."
+                      id="mensaje"
+                      [(ngModel)]="contactData.mensaje"
+                      name="mensaje"
+                      rows="4"
+                      placeholder="Escribe tu mensaje aquí..."
                       required></textarea>
           </div>
 
@@ -291,3 +300,57 @@
      [class.show]="showContactModal"
      *ngIf="showContactModal"
      (click)="closeContactModal()"></div>
+
+<!-- IMAGE MODAL WITH ZOOM -->
+<div class="image-modal" 
+     [class.show]="showImageModal"
+     *ngIf="showImageModal"
+     (click)="closeImageModal()">
+  <div class="image-modal-content" (click)="$event.stopPropagation()">
+    <button class="image-modal-close" (click)="closeImageModal()">×</button>
+    
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+      <button class="zoom-btn" (click)="zoomIn()">+</button>
+      <button class="zoom-btn" (click)="zoomOut()">-</button>
+      <button class="zoom-btn" (click)="resetZoom()">Reset</button>
+    </div>
+
+    <!-- Image Container -->
+    <div class="image-modal-container">
+      <img [src]="getModalImage()" 
+           [alt]="auto?.modelo"
+           class="modal-image"
+           [style.transform]="'scale(' + imageZoom + ')'"
+           (error)="handleImageError($event)">
+    </div>
+
+    <!-- Navigation Arrows -->
+    <button class="modal-nav-arrow modal-nav-prev" 
+            *ngIf="(auto?.imagenes?.length ?? 0) > 1"
+            (click)="prevModalImage()">
+      ‹
+    </button>
+    <button class="modal-nav-arrow modal-nav-next" 
+            *ngIf="(auto?.imagenes?.length ?? 0) > 1"
+            (click)="nextModalImage()">
+      ›
+    </button>
+
+    <!-- Image Counter -->
+    <div class="modal-image-counter" *ngIf="(auto?.imagenes?.length ?? 0) > 1">
+      {{ modalImageIndex + 1 }} / {{ auto?.imagenes?.length ?? 0 }}
+    </div>
+
+    <!-- Thumbnail Strip -->
+    <div class="modal-thumbnails" *ngIf="(auto?.imagenes?.length ?? 0) > 1">
+      <img *ngFor="let img of auto?.imagenes; let i = index"
+           [src]="img"
+           [alt]="'Miniatura ' + (i + 1)"
+           (click)="goToModalImage(i)"
+           (error)="handleImageError($event)"
+           class="modal-thumbnail"
+           [class.active]="i === modalImageIndex">
+    </div>
+  </div>
+</div>
