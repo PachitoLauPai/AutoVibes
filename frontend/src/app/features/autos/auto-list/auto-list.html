@@ -333,13 +333,7 @@
 
                 <!-- Botón Contactar -->
                 <button class="btn-contactar" 
-                        *ngIf="authService.isLoggedIn()"
                         [routerLink]="['/autos', auto.id]">
-                  CONTACTAR
-                </button>
-                <button class="btn-contactar" 
-                        *ngIf="!authService.isLoggedIn()"
-                        (click)="irALogin()">
                   CONTACTAR
                 </button>
               </div>

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ContactService } from '../../core/services/contact.service';
+import { ContactService } from '../../../core/services/contact.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
