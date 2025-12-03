@@ -1,0 +1,32 @@
+<div class="admin-header">
+  <h1>💬 Contactos Recibidos</h1>
+  <div class="header-stats">
+    <span class="stat">Total: 5</span>
+    <span class="stat">Sin leer: 2</span>
+  </div>
+</div>
+
+<div class="contacts-list">
+  <div class="contact-item" *ngFor="let contact of [1,2,3,4,5]">
+    <div class="contact-header">
+      <h3>Contacto #{{ contact }}</h3>
+      <span class="contact-date">Hace 2 horas</span>
+    </div>
+    <div class="contact-content">
+      <p><strong>Nombre:</strong> Juan Pérez</p>
+      <p><strong>Email:</strong> juan@example.com</p>
+      <p><strong>Teléfono:</strong> +51 999 999 999</p>
+      <p><strong>Asunto:</strong> Consulta sobre Toyota Corolla</p>
+      <p><strong>Mensaje:</strong> Me interesa conocer más detalles sobre el auto, disponibilidad y formas de pago.</p>
+    </div>
+    <div class="contact-actions">
+      <button (click)="marcarLeido(contact)" class="btn-sm btn-success">✓ Marcar como leído</button>
+      <button (click)="enviarRespuesta(contact)" class="btn-sm btn-primary">↩️ Responder</button>
+      <button (click)="eliminarContacto(contact)" class="btn-sm btn-delete">🗑️ Eliminar</button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="false">
+    <p>No hay contactos</p>
+  </div>
+</div>

@@ -1,0 +1,54 @@
+<div class="admin-header">
+  <h1>🚗 Gestionar Autos</h1>
+  <button (click)="agregarAuto()" class="btn-primary">
+    ➕ Agregar Nuevo Auto
+  </button>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-state">
+  <p>Cargando autos...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error" class="error-state">
+  <p>⚠️ {{ error }}</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!loading && !error && autos.length === 0" class="empty-state">
+  <p>No hay autos registrados. ¡Crea uno nuevo!</p>
+</div>
+
+<div class="auto-table" *ngIf="!loading && !error && autos.length > 0">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Marca</th>
+        <th>Modelo</th>
+        <th>Año</th>
+        <th>Precio</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let auto of autos">
+        <td>#{{ auto.id }}</td>
+        <td>{{ auto.marca?.nombre || 'N/A' }}</td>
+        <td>{{ auto.modelo }}</td>
+        <td>{{ auto.anio }}</td>
+        <td>${{ auto.precio | number:'1.2-2' }}</td>
+        <td>
+          <span *ngIf="auto.disponible" class="badge badge-success">Disponible</span>
+          <span *ngIf="!auto.disponible" class="badge badge-danger">No Disponible</span>
+        </td>
+        <td>
+          <button (click)="editarAuto(auto.id)" class="btn-sm btn-edit">Editar</button>
+          <button (click)="eliminarAuto(auto.id)" class="btn-sm btn-delete">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

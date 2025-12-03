@@ -1,0 +1,54 @@
+<div class="dashboard-header">
+  <h1>Bienvenido al Panel de Administración</h1>
+  <p>Gestiona tu catálogo de vehículos y contactos</p>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-state">
+  <p>Cargando estadísticas...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error" class="error-state">
+  <p>⚠️ {{ error }}</p>
+</div>
+
+<!-- Dashboard Grid -->
+<div class="dashboard-grid" *ngIf="!loading && !error">
+  <div class="dashboard-card">
+    <div class="card-icon">🚗</div>
+    <h3>Autos en Catálogo</h3>
+    <p class="card-number">{{ stats?.totalAutosEnCatalogo ?? 0 }}</p>
+    <a (click)="navigate('/admin/autos')" class="card-link">Ver detalles →</a>
+  </div>
+
+  <div class="dashboard-card">
+    <div class="card-icon">💬</div>
+    <h3>Contactos Nuevos</h3>
+    <p class="card-number">{{ stats?.contactosNuevos ?? 0 }}</p>
+    <a (click)="navigate('/admin/contactos')" class="card-link">Ver mensajes →</a>
+  </div>
+
+  <div class="dashboard-card">
+    <div class="card-icon">📧</div>
+    <h3>Contactos Hoy</h3>
+    <p class="card-number">{{ stats?.contactosHoy ?? 0 }}</p>
+    <a (click)="navigate('/admin/contactos')" class="card-link">Ver contactos →</a>
+  </div>
+
+  <div class="dashboard-card">
+    <div class="card-icon">📊</div>
+    <h3>Total Autos</h3>
+    <p class="card-number">{{ stats?.totalAutos ?? 0 }}</p>
+    <a (click)="navigate('/admin/autos')" class="card-link">Ver todos →</a>
+  </div>
+</div>
+
+<div class="dashboard-actions">
+  <a (click)="navigate('/admin/autos')" class="btn-primary">
+    ➕ Agregar Nuevo Auto
+  </a>
+  <a (click)="navigate('/admin/contactos')" class="btn-secondary">
+    📨 Ver Todos los Contactos
+  </a>
+</div>

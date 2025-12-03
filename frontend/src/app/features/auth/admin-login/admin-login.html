@@ -1,0 +1,74 @@
+<div class="admin-login-container">
+  <div class="admin-login-box">
+    <div class="login-header">
+      <h1>🔐 Área Administrativa</h1>
+      <p>Ingresa tus credenciales para acceder</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          formControlName="email"
+          placeholder="Ingresa tu email"
+          [class.is-invalid]="isFieldInvalid('email')"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">Email es requerido</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Email inválido</span>
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          formControlName="password"
+          placeholder="••••••••"
+          [class.is-invalid]="isFieldInvalid('password')"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('password')">
+          Contraseña es requerida
+        </div>
+      </div>
+
+      <!-- Recuérdame -->
+      <div class="form-check">
+        <input
+          type="checkbox"
+          id="remember"
+          class="form-check-input"
+          formControlName="remember"
+        />
+        <label class="form-check-label" for="remember">Recuérdame</label>
+      </div>
+
+      <!-- Botón login -->
+      <button
+        type="submit"
+        class="btn-login"
+        [disabled]="loginForm.invalid || isLoading"
+      >
+        <span *ngIf="!isLoading">Acceder</span>
+        <span *ngIf="isLoading">Cargando...</span>
+      </button>
+    </form>
+
+    <!-- Mensaje de error -->
+    <div class="error-alert" *ngIf="errorMessage">
+      <strong>⚠️ Error:</strong> {{ errorMessage }}
+    </div>
+
+    <!-- Volver -->
+    <div class="back-link">
+      <a (click)="volver()">← Volver al inicio</a>
+    </div>
+  </div>
+</div>
