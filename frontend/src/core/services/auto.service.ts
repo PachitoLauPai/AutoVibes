@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { LoggerService } from './logger.service';
 import { Auto } from '../models/auto.model';
 import { AutoRequest } from '../models/AutoRequest';
 import {  
@@ -18,7 +20,8 @@ import {
 export class AutoService {
   constructor(
     private api: ApiService, 
-    private authService: AuthService
+    private authService: AuthService,
+    private logger: LoggerService
   ) {}
 
   getAutos(): Observable<Auto[]> {
@@ -30,9 +33,20 @@ export class AutoService {
   }
 
   getTodosLosAutos(): Observable<Auto[]> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Solo administradores pueden ver todos los autos');
+    const user = this.authService.currentUser();
+    const isAdmin = user?.rol?.nombre === 'ADMIN' || user?.rol === 'ADMIN';
+    
+    this.logger.debug('getTodosLosAutos - usuario:', { 
+      email: user?.email, 
+      rol: user?.rol, 
+      isAdmin 
+    });
+    
+    if (!isAdmin) {
+      // Si no es admin, retornar error observable
+      return throwError(() => new Error('Solo administradores pueden ver todos los autos'));
     }
+    
     return this.api.get<Auto[]>('autos?admin=true');
   }
 

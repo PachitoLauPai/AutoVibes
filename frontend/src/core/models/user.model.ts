@@ -5,14 +5,22 @@ export interface Usuario {
   email: string;
   password?: string;
   nombre: string;
-  apellidos?: string;
-  dni?: string;
-  telefono?: string;
-  direccion?: string;
+  apellido?: string;
   rol: Rol;
   activo: boolean;
   fechaCreacion?: string;
   fechaActualizacion?: string;
+}
+
+export interface Administrador extends Usuario {
+  dni: string;
+  correo: string;
+}
+
+export interface Cliente extends Usuario {
+  dni: string;
+  telefono: string;
+  direccion: string;
 }
 
 export type User = Usuario;

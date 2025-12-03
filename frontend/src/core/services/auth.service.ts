@@ -191,12 +191,18 @@ export class AuthService {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap(response => {
+        // Validar que sea un admin
+        if (!response.rol || response.rol.nombre !== 'ADMIN') {
+          throw new Error('Solo administradores pueden acceder');
+        }
+        
         this.logger.info('Login admin exitoso', { userId: response.id, email: response.email });
         
         const user: User = {
           id: response.id,
           email: response.email,
           nombre: response.nombre,
+          apellido: response.apellido,
           rol: response.rol,
           activo: response.activo ?? true,
           password: credentials.password
