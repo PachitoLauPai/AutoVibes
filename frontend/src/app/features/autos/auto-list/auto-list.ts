@@ -141,13 +141,10 @@ export class AutoListComponent implements OnInit, OnDestroy {
         }
 
         this.autos = autos;
-        if (!this.authService.isAdmin()) {
-          this.autosFiltrados = autos;
-          this.aplicarFiltros();
-        } else {
-          this.autosFiltrados = autos;
-        }
-        if (this.authService.isAdmin() && this.vistaActual === 'todos') {
+        this.autosFiltrados = autos;
+        this.aplicarFiltros();
+        
+        if (this.authService.isAdmin()) {
           this.actualizarContadores();
         }
         this.inicializarIndices();
@@ -160,7 +157,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
       error: (error: any) => {
         this.error = 'Error al cargar los autos';
         this.loading = false;
-        // Error ya manejado por el interceptor y ApiService
+        console.error('Error:', error);
       }
     });
   }
@@ -488,6 +485,11 @@ export class AutoListComponent implements OnInit, OnDestroy {
 
   aplicarFiltros(): void {
     this.autosFiltrados = this.autos.filter(auto => {
+      // Para usuarios normales, solo mostrar autos disponibles
+      if (!this.authService.isAdmin() && !auto.disponible) {
+        return false;
+      }
+
       // Filtro condición
       if (this.filtroCondicion && auto.condicion?.id.toString() !== this.filtroCondicion) {
         return false;
