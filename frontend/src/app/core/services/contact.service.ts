@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { ApiService } from './api.service';
 
 export interface ContactRequest {
   nombre: string;
@@ -12,13 +13,28 @@ export interface ContactRequest {
   autoId?: number;
 }
 
+export interface Contact {
+  id?: number;
+  nombre: string;
+  correo: string;
+  telefono?: string;
+  asunto: string;
+  mensaje: string;
+  estado?: string;
+  fechaCreacion?: Date;
+  leido?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ContactService {
   private apiUrl = 'http://localhost:8080/api/contact';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private api: ApiService
+  ) {}
 
   /**
    * Enviar un nuevo contacto (público - sin autenticación)
@@ -37,6 +53,42 @@ export class ContactService {
       catchError((error) => {
         console.error('Error al enviar contacto:', error);
         return this.handleError(error);
+      })
+    );
+  }
+
+  /**
+   * Obtener todos los contactos (admin)
+   */
+  obtenerContactos(): Observable<Contact[]> {
+    return this.api.get<Contact[]>('contactos').pipe(
+      catchError(error => {
+        console.error('Error obteniendo contactos:', error);
+        return of([]);
+      })
+    );
+  }
+
+  /**
+   * Eliminar un contacto
+   */
+  eliminarContacto(id: number): Observable<void> {
+    return this.api.delete<void>(`contactos/${id}`).pipe(
+      catchError(error => {
+        console.error('Error eliminando contacto:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Marcar contacto como leído
+   */
+  marcarComoLeido(id: number): Observable<void> {
+    return this.api.put<void>(`contactos/${id}/leido`, {}).pipe(
+      catchError(error => {
+        console.error('Error marcando contacto como leído:', error);
+        return throwError(() => error);
       })
     );
   }
