@@ -1,0 +1,539 @@
+/* ==================== FOOTER ==================== */
+.footer {
+  background: linear-gradient(135deg, #0f2438 0%, #1a3a4a 50%, #0d1f2d 100%);
+  color: #e0e0e0;
+  padding: 80px 30px 30px;
+  margin-top: 100px;
+  border-top: 3px solid #667eea;
+  position: relative;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 60px;
+  margin-bottom: 50px;
+}
+
+/* ==================== FOOTER COLUMN ==================== */
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.footer-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+  display: inline-block;
+  letter-spacing: 0.5px;
+}
+
+.footer-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #b0b0b0;
+  margin: 0;
+}
+
+/* ==================== SOCIAL LINKS ==================== */
+.footer-social {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(102, 126, 234, 0.15);
+  border-radius: 50%;
+  color: #667eea;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.social-link:hover {
+  background-color: #667eea;
+  color: #ffffff;
+  transform: translateY(-3px);
+}
+
+.social-link svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: currentColor;
+}
+
+/* ==================== FOOTER LINKS ==================== */
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  color: #b0b0b0;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.footer-links a:hover {
+  color: #667eea;
+  padding-left: 5px;
+}
+
+/* ==================== CONTACT INFO ==================== */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+.contact-item:hover {
+  transform: translateX(4px);
+}
+
+.contact-icon {
+  width: 20px;
+  height: 20px;
+  color: #667eea;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contact-item a {
+  color: #b0b0b0;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  word-break: break-word;
+}
+
+.contact-item a:hover {
+  color: #667eea;
+}
+
+.contact-item span {
+  color: #b0b0b0;
+}
+
+/* ==================== PAYMENT METHODS ==================== */
+.location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.location-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px;
+  background-color: rgba(102, 126, 234, 0.08);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border-left: 3px solid #667eea;
+}
+
+.location-item:hover {
+  background-color: rgba(102, 126, 234, 0.15);
+  transform: translateX(4px);
+}
+
+.location-icon {
+  width: 20px;
+  height: 20px;
+  color: #667eea;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.location-name {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.location-address {
+  margin: 0;
+  color: #b0b0b0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.payment-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+.payment-badge:hover {
+  background-color: rgba(102, 126, 234, 0.15);
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
+.payment-badge svg {
+  width: 35px;
+  height: 35px;
+  color: currentColor;
+}
+
+.payment-note {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin: 10px 0 0 0;
+  font-weight: 500;
+}
+
+/* ==================== FOOTER BOTTOM ==================== */
+.footer-bottom {
+  border-top: 1px solid rgba(102, 126, 234, 0.2);
+  padding: 40px 30px;
+  background-color: rgba(0, 0, 0, 0.2);
+  margin-top: 50px;
+}
+
+.footer-bottom-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-bottom-container p {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.footer-bottom-links a {
+  color: #999;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.footer-bottom-links a:hover {
+  color: #667eea;
+}
+
+.divider {
+  color: #666;
+}
+
+/* ==================== FOOTER SECTIONS ==================== */
+.footer-sections {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 30px;
+  background-color: rgba(102, 126, 234, 0.08);
+  border-radius: 12px;
+  margin-bottom: 30px;
+  display: none;
+}
+
+.footer-sections .footer-section {
+  display: block;
+}
+
+.footer-sections:has(.footer-section) {
+  display: block;
+}
+
+.footer-section {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #667eea;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+}
+
+.faq-items {
+  display: grid;
+  gap: 16px;
+}
+
+.faq-item {
+  padding: 16px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.faq-question {
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.faq-answer {
+  color: #b0b0b0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-content p {
+  margin: 0;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+  color: #b0b0b0;
+  font-size: 13px;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.info-content p:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.info-content strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ==================== TERMINOS SECTION ==================== */
+.footer-section-terminos {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  padding: 35px !important;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  margin: 0 !important;
+}
+
+.footer-section-terminos .section-title {
+  color: #1a1a1a !important;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 18px !important;
+  margin-bottom: 28px !important;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.footer-section-terminos .info-content p {
+  background-color: #f9f9f9;
+  color: #333 !important;
+  border-left: 4px solid #667eea;
+  padding: 16px;
+  margin: 12px 0;
+  line-height: 1.8;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.footer-section-terminos .info-content p:hover {
+  background-color: #f0f0f0;
+  transform: translateX(6px);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+}
+
+.footer-section-terminos strong {
+  color: #1a1a1a !important;
+  font-weight: 700;
+}
+
+/* ==================== FOOTER SECTIONS BOTTOM ==================== */
+.footer-sections-bottom {
+  max-width: 1400px;
+  margin: 30px auto 0;
+  padding: 0 30px;
+  display: none;
+}
+
+.footer-sections-bottom .footer-section {
+  display: block;
+}
+
+.footer-sections-bottom:has(.footer-section) {
+  display: block;
+}
+
+.footer-section-formal {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  padding: 35px !important;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  margin: 0 !important;
+  margin-bottom: 30px !important;
+  animation: slideDown 0.3s ease;
+}
+
+.footer-section-formal .section-title {
+  color: #1a1a1a !important;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 18px !important;
+  margin-bottom: 28px !important;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.footer-section-formal .info-content p {
+  background-color: #f9f9f9;
+  color: #333 !important;
+  border-left: 4px solid #667eea;
+  padding: 16px;
+  margin: 12px 0;
+  line-height: 1.8;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.footer-section-formal .info-content p:hover {
+  background-color: #f0f0f0;
+  transform: translateX(6px);
+  box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+}
+
+.footer-section-formal strong {
+  color: #1a1a1a !important;
+  font-weight: 700;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .footer {
+    padding: 50px 20px 20px;
+    margin-top: 60px;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .footer-sections {
+    padding: 30px 20px;
+  }
+
+  .footer-sections-bottom {
+    padding: 0 20px;
+  }
+
+  .footer-sections-bottom .footer-section {
+    padding: 25px !important;
+  }
+
+  .footer-bottom-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .footer-bottom-links {
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .footer-bottom-links .divider {
+    display: none;
+  }
+
+  .payment-methods {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    gap: 20px;
+  }
+
+  .footer-title {
+    font-size: 16px;
+  }
+
+  .contact-info {
+    gap: 12px;
+  }
+
+  .payment-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-bottom-links {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
