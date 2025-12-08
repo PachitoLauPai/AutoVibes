@@ -255,14 +255,22 @@
 
           <!-- TELÉFONO -->
           <div class="mb-3">
-            <label for="telefono" class="form-label fw-bold">Teléfono *</label>
-            <input type="tel" 
-                   class="form-control" 
-                   id="telefono"
-                   [(ngModel)]="contactData.telefono"
-                   name="telefono"
-                   placeholder="+51 987654321"
-                   required>
+            <label for="telefono" class="form-label fw-bold">Teléfono (Perú) *</label>
+            <div class="input-group">
+              <span class="input-group-text">🇵🇪 +51</span>
+              <input type="text" 
+                     class="form-control" 
+                     id="telefono"
+                     [(ngModel)]="contactData.telefono"
+                     name="telefono"
+                     placeholder="987654321"
+                     maxlength="9"
+                     inputmode="numeric"
+                     appNumericInput
+                     title="Debe ser un número de 9 dígitos"
+                     required>
+            </div>
+            <small class="text-muted d-block mt-1">Ingresa 9 dígitos comenzando con 9</small>
           </div>
 
           <!-- MENSAJE -->
@@ -285,8 +293,8 @@
               Cancelar
             </button>
             <button type="submit" 
-                    class="btn btn-primary flex-grow-1">
-              ✅ Enviar Solicitud
+                    class="btn btn-success flex-grow-1">
+              💬 Contactar a través de WhatsApp
             </button>
           </div>
         </form>
