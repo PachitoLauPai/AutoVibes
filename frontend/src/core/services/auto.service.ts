@@ -33,20 +33,7 @@ export class AutoService {
   }
 
   getTodosLosAutos(): Observable<Auto[]> {
-    const user = this.authService.currentUser();
-    const isAdmin = user?.rol?.nombre === 'ADMIN' || user?.rol === 'ADMIN';
-    
-    this.logger.debug('getTodosLosAutos - usuario:', { 
-      email: user?.email, 
-      rol: user?.rol, 
-      isAdmin 
-    });
-    
-    if (!isAdmin) {
-      // Si no es admin, retornar error observable
-      return throwError(() => new Error('Solo administradores pueden ver todos los autos'));
-    }
-    
+    // Confiar en que el backend valide la autorización
     return this.api.get<Auto[]>('autos?admin=true');
   }
 
@@ -55,9 +42,6 @@ export class AutoService {
   }
 
   cambiarDisponibilidadAuto(autoId: number, disponible: boolean): Observable<Auto> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Solo administradores pueden cambiar disponibilidad');
-    }
     return this.api.put<Auto>(`autos/admin/${autoId}/disponibilidad?disponible=${disponible}`, {});
   }
 
@@ -87,23 +71,14 @@ export class AutoService {
 
   // Crear/Actualizar usando AutoRequest (coincidir con DTO del backend)
   crearAuto(autoRequest: AutoRequest): Observable<Auto> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Solo administradores pueden crear autos');
-    }
     return this.api.post<Auto>('autos', autoRequest);
   }
 
   actualizarAuto(id: number, autoRequest: Partial<AutoRequest>): Observable<Auto> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Solo administradores pueden actualizar autos');
-    }
     return this.api.put<Auto>(`autos/${id}`, autoRequest);
   }
 
   eliminarAuto(id: number): Observable<void> {
-    if (!this.authService.isAdmin()) {
-      throw new Error('Solo administradores pueden eliminar autos');
-    }
     return this.api.delete<void>(`autos/${id}`);
   }
 
