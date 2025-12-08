@@ -1,54 +1,161 @@
-<div class="dashboard-header">
-  <h1>Bienvenido al Panel de Administración</h1>
-  <p>Gestiona tu catálogo de vehículos y contactos</p>
-</div>
-
-<!-- Loading State -->
-<div *ngIf="loading" class="loading-state">
-  <p>Cargando estadísticas...</p>
-</div>
-
-<!-- Error State -->
-<div *ngIf="error" class="error-state">
-  <p>⚠️ {{ error }}</p>
-</div>
-
-<!-- Dashboard Grid -->
-<div class="dashboard-grid" *ngIf="!loading && !error">
-  <div class="dashboard-card">
-    <div class="card-icon">🚗</div>
-    <h3>Autos en Catálogo</h3>
-    <p class="card-number">{{ stats?.totalAutosEnCatalogo ?? 0 }}</p>
-    <a (click)="navigate('/admin/autos')" class="card-link">Ver detalles →</a>
+<div class="dashboard-container">
+  <!-- Premium Header -->
+  <div class="dashboard-header-premium">
+    <div class="header-background">
+      <div class="header-shape shape-1"></div>
+      <div class="header-shape shape-2"></div>
+    </div>
+    
+    <div class="header-content-wrapper">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h1 class="header-title">Dashboard de Control</h1>
+          <p class="header-subtitle">Bienvenido al panel de administración - Gestiona tu inventario y contactos</p>
+        </div>
+      </div>
+      
+      <button class="btn-refresh-premium" (click)="cargarEstadisticas()" [disabled]="loading" title="Actualizar datos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+        <span>Actualizar</span>
+      </button>
+    </div>
   </div>
 
-  <div class="dashboard-card">
-    <div class="card-icon">💬</div>
-    <h3>Contactos Nuevos</h3>
-    <p class="card-number">{{ stats?.contactosNuevos ?? 0 }}</p>
-    <a (click)="navigate('/admin/contactos')" class="card-link">Ver mensajes →</a>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos del sistema...</p>
   </div>
 
-  <div class="dashboard-card">
-    <div class="card-icon">📧</div>
-    <h3>Contactos Hoy</h3>
-    <p class="card-number">{{ stats?.contactosHoy ?? 0 }}</p>
-    <a (click)="navigate('/admin/contactos')" class="card-link">Ver contactos →</a>
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <div>
+      <h3>Oops! Algo salió mal</h3>
+      <p>{{ error }}</p>
+    </div>
   </div>
 
-  <div class="dashboard-card">
-    <div class="card-icon">📊</div>
-    <h3>Total Autos</h3>
-    <p class="card-number">{{ stats?.totalAutos ?? 0 }}</p>
-    <a (click)="navigate('/admin/autos')" class="card-link">Ver todos →</a>
-  </div>
-</div>
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error && stats" class="dashboard-content">
+    <!-- Statistics Cards Grid -->
+    <div class="stats-grid">
+      <!-- Total Autos Card -->
+      <div class="stat-card stat-card-primary">
+        <div class="card-header">
+          <h3>Total de Autos</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 17h2v.5M1 7h22v10H1zM6.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM22.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <p class="stat-number">{{ stats?.totalAutos ?? 0 }}</p>
+          <p class="stat-label">Vehículos en el sistema</p>
+        </div>
+        <div class="card-footer">
+          <a (click)="navigate('/admin/autos')" class="card-action">Ver todos →</a>
+        </div>
+      </div>
 
-<div class="dashboard-actions">
-  <a (click)="navigate('/admin/autos')" class="btn-primary">
-    ➕ Agregar Nuevo Auto
-  </a>
-  <a (click)="navigate('/admin/contactos')" class="btn-secondary">
-    📨 Ver Todos los Contactos
-  </a>
+      <!-- Available Autos Card -->
+      <div class="stat-card stat-card-success">
+        <div class="card-header">
+          <h3>Autos Disponibles</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <p class="stat-number">{{ stats?.autosDisponibles ?? 0 }}</p>
+          <p class="stat-label">Listos para venta</p>
+        </div>
+        <div class="card-footer">
+          <a (click)="navigate('/admin/autos')" class="card-action">Gestionar →</a>
+        </div>
+      </div>
+
+      <!-- New Contacts Card -->
+      <div class="stat-card stat-card-warning">
+        <div class="card-header">
+          <h3>Contactos Nuevos</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <p class="stat-number">{{ stats?.contactosNuevos ?? 0 }}</p>
+          <p class="stat-label">Clientes sin respuesta</p>
+        </div>
+        <div class="card-footer">
+          <a (click)="navigate('/admin/contactos')" class="card-action">Revisar →</a>
+        </div>
+      </div>
+
+      <!-- Total Contacts Card -->
+      <div class="stat-card stat-card-info">
+        <div class="card-header">
+          <h3>Total de Contactos</h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="card-body">
+          <p class="stat-number">{{ stats?.totalContactos ?? 0 }}</p>
+          <p class="stat-label">Mensajes registrados</p>
+        </div>
+        <div class="card-footer">
+          <a (click)="navigate('/admin/contactos')" class="card-action">Ver todos →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+      <h2>Acciones Rápidas</h2>
+      <div class="actions-grid">
+        <button class="action-btn action-btn-primary" (click)="navigate('/admin/autos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>Agregar Nuevo Auto</span>
+        </button>
+        <button class="action-btn action-btn-secondary" (click)="navigate('/admin/autos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+          </svg>
+          <span>Ver Catálogo</span>
+        </button>
+        <button class="action-btn action-btn-tertiary" (click)="navigate('/admin/contactos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>Ver Contactos</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="info-section">
+      <div class="info-box">
+        <h3>💡 Consejos útiles</h3>
+        <ul>
+          <li>Mantén tu catálogo actualizado con información completa de los vehículos</li>
+          <li>Responde los contactos nuevos en el menor tiempo posible</li>
+          <li>Utiliza fotografías de buena calidad para los autos</li>
+          <li>Verifica regularmente el estado de los vehículos disponibles</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>
