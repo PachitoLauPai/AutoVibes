@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ContactService } from '../../../core/services/contact.service';
+import { NumericInputDirective } from '../directives/numeric-input.directive';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, NumericInputDirective],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css']
 })
@@ -48,6 +49,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('NavbarComponent inicializado');
+    
+    // Escuchar evento del footer para abrir el modal de contacto
+    window.addEventListener('openContactModal', () => {
+      this.abrirContacto();
+    });
   }
 
   ngOnDestroy(): void {
@@ -88,32 +94,42 @@ export class NavbarComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Validar que el teléfono tenga exactamente 9 dígitos y comience con 9
+    const telefonoSinFormato = this.contactForm.get('telefono')?.value.replace(/\D/g, '');
+    if (telefonoSinFormato.length !== 9 || !telefonoSinFormato.startsWith('9')) {
+      this.mensajeContacto = '❌ El teléfono debe tener 9 dígitos y comenzar con 9';
+      return;
+    }
+
     this.enviandoContacto = true;
     this.mensajeContacto = '';
     
     const contactData = this.contactForm.value;
     
-    this.contactService.enviarContacto(contactData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: string) => {
-          this.enviandoContacto = false;
-          this.contactoEnviado = true;
-          this.mensajeContacto = '✅ ' + (response || 'Mensaje enviado correctamente. Te contactaremos pronto.');
-          this.contactForm.reset();
-          
-          // Cerrar automáticamente después de 3 segundos
-          setTimeout(() => {
-            this.cerrarContacto();
-          }, 3000);
-        },
-        error: (error: Error) => {
-          this.enviandoContacto = false;
-          this.contactoEnviado = false;
-          this.mensajeContacto = '❌ Error al enviar mensaje: ' + (error?.message || 'Intenta nuevamente');
-          console.error('Error al enviar contacto:', error);
-        }
-      });
+    // Redirigir a WhatsApp con el número del asesor en Perú
+    const numeroAsesor = '51928770187'; // +51 928770187
+    const mensaje = encodeURIComponent(
+      `Hola AutoVibes, tengo una consulta.\n\n` +
+      `Mis datos:\n` +
+      `Nombre: ${contactData.nombre}\n` +
+      `Email: ${contactData.email}\n` +
+      `Teléfono: +51${telefonoSinFormato}\n` +
+      `Asunto: ${contactData.asunto}\n` +
+      `Mensaje: ${contactData.mensaje}`
+    );
+
+    const whatsappUrl = `https://wa.me/${numeroAsesor}?text=${mensaje}`;
+    window.open(whatsappUrl, '_blank');
+    
+    this.enviandoContacto = false;
+    this.contactoEnviado = true;
+    this.mensajeContacto = '✅ Abriendo WhatsApp. Te conectaremos con nuestro asesor.';
+    this.contactForm.reset();
+    
+    // Cerrar automáticamente después de 3 segundos
+    setTimeout(() => {
+      this.cerrarContacto();
+    }, 3000);
   }
 
   /**
