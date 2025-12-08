@@ -20,5 +20,6 @@ public class AutoRequest {
     private Long condicionId;
     
     private String descripcion;
+    private Boolean disponible;
     private List<String> imagenes;
 }
