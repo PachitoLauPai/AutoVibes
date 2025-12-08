@@ -33,6 +33,11 @@ export class AuthService {
           user.rol = { nombre: user.rol } as Rol;
         }
         this.currentUserSubject.next(user);
+        
+        // ✅ Asegurar que userRole esté en localStorage
+        if (user?.rol?.nombre) {
+          localStorage.setItem('userRole', user.rol.nombre);
+        }
       } catch (error) {
         this.logger.error('Error cargando usuario desde localStorage', error);
         localStorage.removeItem('currentUser');
@@ -66,6 +71,10 @@ export class AuthService {
         
         this.currentUserSubject.next(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
+        // ✅ Guardar también userRole para el guard
+        if (user.rol?.nombre) {
+          localStorage.setItem('userRole', user.rol.nombre);
+        }
       }),
       catchError(error => {
         this.logger.error('Error en login', error);
@@ -144,6 +153,10 @@ export class AuthService {
           
           this.currentUserSubject.next(user);
           localStorage.setItem('currentUser', JSON.stringify(user));
+          // ✅ Guardar también userRole para el guard
+          if (user.rol?.nombre) {
+            localStorage.setItem('userRole', user.rol.nombre);
+          }
         }
       }),
       catchError(error => {
