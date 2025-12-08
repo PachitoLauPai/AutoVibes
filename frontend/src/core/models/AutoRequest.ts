@@ -10,5 +10,6 @@ export interface AutoRequest {
   categoriaId?: number;
   condicionId?: number;
   descripcion?: string;
+  disponible?: boolean;
   imagenes?: string[];
 }
