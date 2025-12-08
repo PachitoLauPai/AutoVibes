@@ -1,32 +1,236 @@
-<div class="admin-header">
-  <h1>💬 Contactos Recibidos</h1>
-  <div class="header-stats">
-    <span class="stat">Total: 5</span>
-    <span class="stat">Sin leer: 2</span>
+<div class="contacts-container">
+  <!-- Premium Header -->
+  <div class="admin-header-premium">
+    <div class="header-background">
+      <div class="header-shape shape-1"></div>
+      <div class="header-shape shape-2"></div>
+    </div>
+    
+    <div class="header-content-wrapper">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h1 class="header-title">Gestión de Contactos</h1>
+          <p class="header-subtitle">Responde a las consultas de tus clientes</p>
+          <div class="header-stats">
+            <span class="stat-badge"><strong>{{ contactos.length }}</strong> Total</span>
+            <span class="stat-badge"><strong>{{ unreadCount }}</strong> Sin leer</span>
+          </div>
+        </div>
+      </div>
+      
+      <button *ngIf="contactos.length > 0" class="btn-mark-read-premium" (click)="marcarTodosLeidos()" title="Marcar todos como leídos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Marcar como leído</span>
+      </button>
+    </div>
   </div>
-</div>
 
-<div class="contacts-list">
-  <div class="contact-item" *ngFor="let contact of [1,2,3,4,5]">
-    <div class="contact-header">
-      <h3>Contacto #{{ contact }}</h3>
-      <span class="contact-date">Hace 2 horas</span>
-    </div>
-    <div class="contact-content">
-      <p><strong>Nombre:</strong> Juan Pérez</p>
-      <p><strong>Email:</strong> juan@example.com</p>
-      <p><strong>Teléfono:</strong> +51 999 999 999</p>
-      <p><strong>Asunto:</strong> Consulta sobre Toyota Corolla</p>
-      <p><strong>Mensaje:</strong> Me interesa conocer más detalles sobre el auto, disponibilidad y formas de pago.</p>
-    </div>
-    <div class="contact-actions">
-      <button (click)="marcarLeido(contact)" class="btn-sm btn-success">✓ Marcar como leído</button>
-      <button (click)="enviarRespuesta(contact)" class="btn-sm btn-primary">↩️ Responder</button>
-      <button (click)="eliminarContacto(contact)" class="btn-sm btn-delete">🗑️ Eliminar</button>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando contactos...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <div>
+      <h3>Error</h3>
+      <p>{{ error }}</p>
     </div>
   </div>
 
-  <div class="empty-state" *ngIf="false">
-    <p>No hay contactos</p>
+  <!-- Search and Filter -->
+  <div *ngIf="!loading && !error && contactos.length > 0" class="filters-section">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        placeholder="Buscar por nombre, email o asunto..."
+        class="search-input"
+      />
+    </div>
+    <div class="filter-buttons">
+      <button 
+        [class.active]="selectedStatus === 'todos'"
+        (click)="selectedStatus = 'todos'"
+        class="filter-btn"
+      >
+        Todos ({{ contactos.length }})
+      </button>
+      <button 
+        [class.active]="selectedStatus === 'pendiente'"
+        (click)="selectedStatus = 'pendiente'"
+        class="filter-btn"
+      >
+        Pendientes
+      </button>
+      <button 
+        [class.active]="selectedStatus === 'respondido'"
+        (click)="selectedStatus = 'respondido'"
+        class="filter-btn"
+      >
+        Respondidos
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && contactosFiltrados.length === 0" class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <h3>No hay contactos</h3>
+    <p>Aquí aparecerán los mensajes de tus clientes</p>
+  </div>
+
+  <!-- Contacts List -->
+  <div *ngIf="!loading && !error && contactosFiltrados.length > 0" class="contacts-list">
+    <div *ngFor="let contacto of contactosFiltrados" class="contact-card" [class.unread]="!contacto.leido">
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="contact-info-header">
+          <h3 class="contact-name">{{ contacto.nombre }}</h3>
+          <span class="contact-date">{{ contacto.fechaCreacion | date:'short' }}</span>
+        </div>
+        <div class="card-badges">
+          <span *ngIf="!contacto.leido" class="badge badge-unread">Sin leer</span>
+          <span *ngIf="contacto.estado === 'respondido'" class="badge badge-success">Respondido</span>
+          <span *ngIf="contacto.estado === 'pendiente'" class="badge badge-warning">Pendiente</span>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body">
+        <div class="contact-metadata">
+          <div class="metadata-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22 6 12 13 2 6"/>
+            </svg>
+            <a [href]="'mailto:' + contacto.correo">{{ contacto.correo }}</a>
+          </div>
+          <div class="metadata-item" *ngIf="contacto.telefono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            {{ contacto.telefono }}
+          </div>
+        </div>
+
+        <div class="contact-subject">
+          <strong>Asunto:</strong> {{ contacto.asunto }}
+        </div>
+
+        <div class="contact-message">
+          {{ contacto.mensaje }}
+        </div>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <button 
+          *ngIf="!contacto.leido"
+          (click)="marcarLeido(contacto)" 
+          class="btn-action btn-mark-read"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Marcar como leído
+        </button>
+        <button 
+          (click)="verDetalles(contacto)" 
+          class="btn-action btn-view"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Ver Detalles
+        </button>
+        <button 
+          (click)="eliminarContacto(contacto.id)" 
+          class="btn-action btn-delete"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div *ngIf="showDetail && selectedContact" class="modal-overlay" (click)="cerrarDetalles()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Detalles del Contacto</h2>
+        <button class="btn-close" (click)="cerrarDetalles()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-section">
+          <h3>Información Personal</h3>
+          <div class="detail-row">
+            <span class="label">Nombre:</span>
+            <span class="value">{{ selectedContact.nombre }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Correo:</span>
+            <span class="value">{{ selectedContact.correo }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedContact.telefono">
+            <span class="label">Teléfono:</span>
+            <span class="value">{{ selectedContact.telefono }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Mensaje</h3>
+          <div class="detail-row">
+            <span class="label">Asunto:</span>
+            <span class="value">{{ selectedContact.asunto }}</span>
+          </div>
+          <div class="message-box">
+            {{ selectedContact.mensaje }}
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="enviarRespuesta(selectedContact)" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>
+          </svg>
+          Responder
+        </button>
+        <button (click)="cerrarDetalles()" class="btn-secondary">
+          Cerrar
+        </button>
+      </div>
+    </div>
   </div>
 </div>
