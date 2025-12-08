@@ -90,7 +90,7 @@ export class ClientProfileComponent implements OnInit, OnDestroy {
     this.profileForm = this.fb.group({
       nombre: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      apellidos: [''],
+      apellido: [''],
       dni: [''],
       telefono: ['', [Validators.pattern(/^[0-9]{0,20}$/)]],
       direccion: ['']
@@ -115,7 +115,7 @@ export class ClientProfileComponent implements OnInit, OnDestroy {
       this.profileForm.patchValue({
         nombre: this.currentUser.nombre,
         email: this.currentUser.email,
-        apellidos: this.currentUser.apellidos,
+        apellido: this.currentUser.apellido,
         dni: this.currentUser.dni,
         telefono: this.currentUser.telefono,
         direccion: this.currentUser.direccion
