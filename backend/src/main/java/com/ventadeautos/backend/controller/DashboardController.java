@@ -1,5 +1,6 @@
 package com.ventadeautos.backend.controller;
 
+import com.ventadeautos.backend.model.Auto;
 import com.ventadeautos.backend.service.AutoService;
 import com.ventadeautos.backend.service.ContactService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,9 +26,9 @@ public class DashboardController {
         try {
             Map<String, Object> stats = new HashMap<>();
             
-            // Contar autos disponibles (en catálogo)
-            long totalAutosDisponibles = autoService.obtenerAutosDisponibles().size();
-            long totalAutos = autoService.obtenerTodos().size();
+            // Obtener autos con toda la información
+            List<Auto> autosDisponibles = autoService.obtenerAutosDisponibles();
+            List<Auto> todosLosAutos = autoService.obtenerTodos();
             
             // Contar contactos nuevos (no leídos)
             long contactosNoLeidos = contactService.contarNoLeidos();
@@ -41,11 +43,16 @@ public class DashboardController {
                 contactosHoy = 0;
             }
             
-            stats.put("totalAutosEnCatalogo", totalAutosDisponibles);
-            stats.put("totalAutos", totalAutos);
+            stats.put("totalAutosEnCatalogo", autosDisponibles.size());
+            stats.put("totalAutos", todosLosAutos.size());
+            stats.put("autosDisponibles", autosDisponibles.size());
             stats.put("contactosNuevos", contactosNoLeidos);
             stats.put("totalContactos", totalContactos);
             stats.put("contactosHoy", contactosHoy);
+            
+            // Incluir los autos disponibles con toda su información
+            stats.put("autos", autosDisponibles);
+            stats.put("todosLosAutos", todosLosAutos);
             
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
