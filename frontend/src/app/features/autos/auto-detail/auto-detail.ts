@@ -7,6 +7,7 @@ import { Auto } from '../../../../core/models/auto.model';
 import { ContactService, ContactRequest } from '../../../../core/services/contact.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { LoggerService } from '../../../../core/services/logger.service';
+import { NumericInputDirective } from '../../../shared/directives/numeric-input.directive';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -14,7 +15,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-auto-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NumericInputDirective],
   templateUrl: './auto-detail.html',
   styleUrls: ['./auto-detail.css']
 })
@@ -220,26 +221,12 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
   openContactModal(): void {
     if (this.auto) {
       // No requiere login para contactar
+      this.resetContactForm();
       this.contactData.autoId = this.auto.id;
       this.contactData.asunto = `Consulta sobre ${this.auto.marca?.nombre} ${this.auto.modelo} ${this.auto.anio}`;
       
-      // Si está logueado, autocompletar datos
-      if (this.authService.isLoggedIn()) {
-        this.autocompletarDatosCliente();
-      }
-      
+      // No autocompletar datos - formulario siempre en blanco
       this.showContactModal = true;
-    }
-  }
-
-  // ✅ AUTOCOMPLETAR DATOS DEL CLIENTE LOGUEADO
-  autocompletarDatosCliente(): void {
-    const user = this.authService.currentUser();
-    if (user) {
-      this.contactData.nombre = user.nombre || '';
-      this.contactData.email = user.email || '';
-      
-      this.logger.debug('Datos autocompletados del cliente', { autoId: this.contactData.autoId });
     }
   }
 
@@ -256,23 +243,29 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Asegurar que el autoId esté presente
-    if (this.auto) {
-      this.contactData.autoId = this.auto.id;
+    // Validar que el teléfono tenga exactamente 9 dígitos y comience con 9
+    const telefonoSinFormato = this.contactData.telefono.replace(/\D/g, '');
+    if (telefonoSinFormato.length !== 9 || !telefonoSinFormato.startsWith('9')) {
+      alert('El teléfono debe tener 9 dígitos y comenzar con 9');
+      return;
     }
 
-    this.contactService.enviarContacto(this.contactData).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (response) => {
-        this.logger.info('Contacto enviado exitosamente', { autoId: this.contactData.autoId });
-        alert('¡Mensaje enviado correctamente! Te contactaremos pronto.');
-        this.closeContactModal();
-      },
-      error: (error) => {
-        this.logger.error('Error al enviar contacto', error);
-        const errorMessage = error.error?.mensaje || error.message || 'Error desconocido';
-        alert('Error al enviar mensaje: ' + errorMessage);
-      }
-    });
+    // Redirigir a WhatsApp con el número del asesor en Perú
+    const numeroAsesor = '51928770187'; // +51 928770187
+    const mensaje = encodeURIComponent(
+      `Hola, me interesa el ${this.auto?.marca?.nombre} ${this.auto?.modelo} ${this.auto?.anio}.\n\n` +
+      `Mis datos:\n` +
+      `Nombre: ${this.contactData.nombre}\n` +
+      `Email: ${this.contactData.email}\n` +
+      `Teléfono: +51${telefonoSinFormato}\n` +
+      `Mensaje: ${this.contactData.mensaje}`
+    );
+
+    const whatsappUrl = `https://wa.me/${numeroAsesor}?text=${mensaje}`;
+    window.open(whatsappUrl, '_blank');
+    
+    this.logger.info('Contacto redirigido a WhatsApp', { autoId: this.contactData.autoId });
+    this.closeContactModal();
   }
 
   private isFormValid(): boolean {
