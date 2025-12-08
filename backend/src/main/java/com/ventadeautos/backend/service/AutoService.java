@@ -206,6 +206,10 @@ public class AutoService {
             auto.setDescripcion(request.getDescripcion());
         }
         
+        if (request.getDisponible() != null) {
+            auto.setDisponible(request.getDisponible());
+        }
+        
         if (request.getImagenes() != null) {
             auto.setImagenes(request.getImagenes());
         }
