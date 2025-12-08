@@ -24,7 +24,7 @@ describe('ClientProfileComponent', () => {
       id: 1,
       nombre: 'Juan',
       email: 'juan@example.com',
-      apellidos: 'Perez',
+      apellido: 'Perez',
       dni: '123456',
       telefono: '1234567890',
       direccion: 'Calle 1',
