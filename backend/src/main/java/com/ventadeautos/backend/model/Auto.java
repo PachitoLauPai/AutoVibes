@@ -1,3 +1,4 @@
+
 package com.ventadeautos.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
