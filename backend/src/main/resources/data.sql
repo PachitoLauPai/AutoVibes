@@ -78,21 +78,21 @@ INSERT INTO marcas (id, nombre, descripcion, activa) VALUES
 (12, 'Subaru', 'Fabricante japonés de automóviles', true);
 
 -- Insertar Autos (sin concesionario_id)
-INSERT INTO autos (id, marca_id, modelo, anio, precio, color, kilometraje, combustible_id, transmision_id, categoria_id, condicion_id, descripcion, disponible) VALUES
+INSERT INTO autos (id, marca_id, modelo, anio, precio, color, kilometraje, stock, combustible_id, transmision_id, categoria_id, condicion_id, descripcion, disponible) VALUES
 -- Autos NUEVOS
-(1, 1, 'Corolla', 2023, 25500.00, 'Blanco', 0, 1, 2, 1, 1, 'Auto nuevo full equipo, perfecto estado', true),
-(2, 2, 'Civic', 2023, 23000.00, 'Gris', 0, 1, 2, 1, 1, 'Deportivo y económico, bajo consumo', true),
-(3, 3, 'Mustang', 2024, 45000.00, 'Rojo', 0, 1, 2, 6, 1, 'Deportivo americano iconico, motor V8', true),
-(5, 5, 'Serie 3', 2024, 52000.00, 'Negro', 0, 1, 2, 1, 1, 'Sedán de lujo con excelente manejo', true),
-(7, 7, 'A4', 2024, 48000.00, 'Blanco', 0, 1, 2, 1, 1, 'Calidad premium y tracción integral', true),
-(9, 9, 'Tucson', 2024, 32000.00, 'Verde', 0, 3, 2, 2, 1, 'SUV familiar con tecnología híbrida', true),
-(11, 11, 'CX-5', 2024, 34000.00, 'Rojo', 0, 1, 2, 2, 1, 'Diseño premium y eficiente', true),
+(1, 1, 'Corolla', 2023, 25500.00, 'Blanco', 0, 5, 1, 2, 1, 1, 'Auto nuevo full equipo, perfecto estado', true),
+(2, 2, 'Civic', 2023, 23000.00, 'Gris', 0, 3, 1, 2, 1, 1, 'Deportivo y económico, bajo consumo', true),
+(3, 3, 'Mustang', 2024, 45000.00, 'Rojo', 0, 2, 1, 2, 6, 1, 'Deportivo americano iconico, motor V8', true),
+(5, 5, 'Serie 3', 2024, 52000.00, 'Negro', 0, 1, 1, 2, 1, 1, 'Sedán de lujo con excelente manejo', true),
+(7, 7, 'A4', 2024, 48000.00, 'Blanco', 0, 2, 1, 2, 1, 1, 'Calidad premium y tracción integral', true),
+(9, 9, 'Tucson', 2024, 32000.00, 'Verde', 0, 4, 3, 2, 2, 1, 'SUV familiar con tecnología híbrida', true),
+(11, 11, 'CX-5', 2024, 34000.00, 'Rojo', 0, 3, 1, 2, 2, 1, 'Diseño premium y eficiente', true),
 -- Autos USADOS
-(4, 4, 'Golf', 2023, 28000.00, 'Azul', 1500, 1, 1, 3, 2, 'Hatchback versátil y divertido de conducir', true),
-(6, 6, 'Clase C', 2023, 55000.00, 'Plateado', 5000, 1, 2, 1, 2, 'Elegancia y tecnología alemana', true),
-(8, 8, 'Sentra', 2023, 22000.00, 'Gris', 8000, 1, 1, 1, 2, 'Económico y confiable para el día a día', true),
-(10, 10, 'Sportage', 2023, 31000.00, 'Blanco', 12000, 1, 2, 2, 2, 'SUV espacioso y bien equipado', true),
-(12, 12, 'Outback', 2023, 36000.00, 'Azul', 7000, 1, 1, 2, 2, 'Todo terreno con tracción integral', true);
+(4, 4, 'Golf', 2023, 28000.00, 'Azul', 1500, 6, 1, 1, 3, 2, 'Hatchback versátil y divertido de conducir', true),
+(6, 6, 'Clase C', 2023, 55000.00, 'Plateado', 5000, 1, 1, 2, 1, 2, 'Elegancia y tecnología alemana', true),
+(8, 8, 'Sentra', 2023, 22000.00, 'Gris', 8000, 4, 1, 1, 1, 2, 'Económico y confiable para el día a día', true),
+(10, 10, 'Sportage', 2023, 31000.00, 'Blanco', 12000, 2, 1, 2, 2, 2, 'SUV espacioso y bien equipado', true),
+(12, 12, 'Outback', 2023, 36000.00, 'Azul', 7000, 3, 1, 1, 2, 2, 'Todo terreno con tracción integral', true);
 
 -- Insertar imágenes para Toyota Corolla (5 imágenes)
 INSERT INTO auto_imagenes (auto_id, url_imagen) VALUES 
