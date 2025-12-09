@@ -168,6 +168,12 @@
             <span class="label">Transmisión:</span>
             <span class="value">{{ auto.transmision?.nombre || 'N/A' }}</span>
           </div>
+          <div class="info-row">
+            <span class="label">Stock:</span>
+            <span class="value stock-badge" [ngClass]="{'low-stock': auto.stock <= 2, 'medium-stock': auto.stock > 2 && auto.stock <= 5, 'high-stock': auto.stock > 5}">
+              {{ auto.stock }} unidades
+            </span>
+          </div>
         </div>
 
         <div class="price-section">
@@ -252,6 +258,16 @@
         <div class="form-group">
           <label>Kilometraje *</label>
           <input type="number" formControlName="kilometraje" [disabled]="isFormDisabled" class="form-control" placeholder="0">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Stock *</label>
+          <input type="number" formControlName="stock" [disabled]="isFormDisabled" class="form-control" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <!-- Empty for grid layout -->
         </div>
       </div>
 
