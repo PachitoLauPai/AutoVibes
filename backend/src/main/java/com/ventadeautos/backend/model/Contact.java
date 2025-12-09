@@ -41,6 +41,14 @@ public class Contact {
     @Column(nullable = false)
     private Boolean respondido = false;
     
+    // Estado del contacto: PENDIENTE, EN_PROCESO, VENTA_FINALIZADA, CANCELADO
+    @Column(nullable = false)
+    private String estado = "PENDIENTE";
+    
+    // Tipo de transacción: COMPRA, VENTA, PENDIENTE
+    @Column(nullable = false)
+    private String tipoTransaccion = "PENDIENTE";
+    
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
     
