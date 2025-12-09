@@ -22,6 +22,7 @@ export class AutoFormComponent implements OnInit {
     precio: 0,
     color: '',
     kilometraje: 0,
+    stock: 0,  // Stock del vehículo
     combustibleId: null,
     transmisionId: null,
     categoriaId: null,
