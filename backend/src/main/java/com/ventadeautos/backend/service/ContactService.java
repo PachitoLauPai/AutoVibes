@@ -31,19 +31,19 @@ public class ContactService {
     /**
      * Guardar un nuevo contacto desde el formulario público
      */
-    public ResponseEntity<String> guardarContacto(ContactRequest request) {
+    public ResponseEntity<Contact> guardarContacto(ContactRequest request) {
         log.info("Guardando nuevo contacto de: {}", request.getNombre());
         
         try {
             // Validar campos obligatorios
             if (request.getNombre() == null || request.getNombre().isEmpty()) {
                 log.warn("Intento de contacto sin nombre");
-                return ResponseEntity.badRequest().body("El nombre es obligatorio");
+                return ResponseEntity.badRequest().build();
             }
             
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
                 log.warn("Intento de contacto sin email");
-                return ResponseEntity.badRequest().body("El email es obligatorio");
+                return ResponseEntity.badRequest().build();
             }
             
             // Crear nuevo contacto
@@ -68,16 +68,14 @@ public class ContactService {
             Contact contactGuardado = contactRepository.save(contact);
             log.info("Contacto guardado exitosamente - ID: {}, Email: {}", contactGuardado.getId(), contactGuardado.getEmail());
             
-            return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Contacto guardado correctamente. Nos pondremos en contacto pronto.");
+            return ResponseEntity.status(HttpStatus.CREATED).body(contactGuardado);
             
         } catch (ResourceNotFoundException e) {
             log.error("Error al guardar contacto: Auto no encontrado - {}", e.getMessage());
-            return ResponseEntity.badRequest().body("El auto especificado no existe");
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.error("Error al guardar contacto", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al procesar el contacto. Intenta más tarde.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
@@ -118,12 +116,13 @@ public class ContactService {
     }
     
     /**
-     * Marcar contacto como leído
+     * Marcar contacto como leído y cambiar estado a EN_PROCESO
      */
     public Contact marcarComoLeido(Long id) {
-        log.info("Marcando contacto {} como leído", id);
+        log.info("Marcando contacto {} como leído y cambiando estado a EN_PROCESO", id);
         Contact contact = obtenerContactoPorId(id);
         contact.setLeido(true);
+        contact.setEstado("EN_PROCESO");  // Cambiar estado automáticamente
         return contactRepository.save(contact);
     }
     
@@ -135,6 +134,88 @@ public class ContactService {
         Contact contact = obtenerContactoPorId(id);
         contact.setRespondido(true);
         return contactRepository.save(contact);
+    }
+    
+    /**
+     * Actualizar estado del contacto y ajustar stock automáticamente
+     */
+    public Contact actualizarEstado(Long id, String nuevoEstado) {
+        log.info("Actualizando estado del contacto {} a: {}", id, nuevoEstado);
+        Contact contact = obtenerContactoPorId(id);
+        String estadoAnterior = contact.getEstado();
+        
+        // Validar que el estado sea válido
+        if (!nuevoEstado.equals("PENDIENTE") && !nuevoEstado.equals("EN_PROCESO") 
+            && !nuevoEstado.equals("VENTA_FINALIZADA") && !nuevoEstado.equals("CANCELADO")) {
+            log.warn("Intento de actualizar contacto con estado inválido: {}", nuevoEstado);
+            throw new IllegalArgumentException("Estado inválido. Use: PENDIENTE, EN_PROCESO, VENTA_FINALIZADA o CANCELADO");
+        }
+        
+        // Actualizar estado
+        contact.setEstado(nuevoEstado);
+        
+        // ✅ LÓGICA DE STOCK: Ajustar stock del auto asociado
+        if (contact.getAuto() != null) {
+            Auto auto = contact.getAuto();
+            
+            // Si cambia a VENTA_FINALIZADA: disminuir stock
+            if (nuevoEstado.equals("VENTA_FINALIZADA") && !estadoAnterior.equals("VENTA_FINALIZADA")) {
+                if (auto.getStock() > 0) {
+                    auto.setStock(auto.getStock() - 1);
+                    log.info("Stock disminuido para auto ID: {}. Nuevo stock: {}", auto.getId(), auto.getStock());
+                } else {
+                    log.warn("No hay stock disponible para disminuir en auto ID: {}", auto.getId());
+                }
+            }
+            
+            // Si se cambia desde VENTA_FINALIZADA a CANCELADO: recuperar stock
+            if (nuevoEstado.equals("CANCELADO") && estadoAnterior.equals("VENTA_FINALIZADA")) {
+                auto.setStock(auto.getStock() + 1);
+                log.info("Stock recuperado para auto ID: {}. Nuevo stock: {}", auto.getId(), auto.getStock());
+            }
+            
+            // Si se cambia desde CANCELADO a VENTA_FINALIZADA: disminuir stock nuevamente
+            if (nuevoEstado.equals("VENTA_FINALIZADA") && estadoAnterior.equals("CANCELADO")) {
+                if (auto.getStock() > 0) {
+                    auto.setStock(auto.getStock() - 1);
+                    log.info("Stock disminuido para auto ID: {}. Nuevo stock: {}", auto.getId(), auto.getStock());
+                } else {
+                    log.warn("No hay stock disponible para disminuir en auto ID: {}", auto.getId());
+                }
+            }
+            
+            // Si se cambia desde otros estados a CANCELADO (que no sea VENTA_FINALIZADA), no hace nada
+            
+            // Guardar cambios en auto
+            autoRepository.save(auto);
+        }
+        
+        return contactRepository.save(contact);
+    }
+    
+    /**
+     * Actualizar tipo de transacción (COMPRA, VENTA)
+     */
+    public Contact actualizarTipoTransaccion(Long id, String nuevoTipo) {
+        log.info("Actualizando tipo de transacción del contacto {} a: {}", id, nuevoTipo);
+        Contact contact = obtenerContactoPorId(id);
+        
+        // Validar que el tipo sea válido
+        if (!nuevoTipo.equals("COMPRA") && !nuevoTipo.equals("VENTA") && !nuevoTipo.equals("PENDIENTE")) {
+            log.warn("Intento de actualizar contacto con tipo inválido: {}", nuevoTipo);
+            throw new IllegalArgumentException("Tipo inválido. Use: COMPRA, VENTA o PENDIENTE");
+        }
+        
+        contact.setTipoTransaccion(nuevoTipo);
+        return contactRepository.save(contact);
+    }
+    
+    /**
+     * Obtener contactos por estado
+     */
+    public List<Contact> obtenerContactosPorEstado(String estado) {
+        log.debug("Obteniendo contactos con estado: {}", estado);
+        return contactRepository.findByEstado(estado);
     }
     
     /**
