@@ -1,56 +1,69 @@
-<!-- Carrusel Hero Section -->
-<div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+<!-- HERO CAROUSEL -->
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+  </div>
   <div class="carousel-inner">
     <div class="carousel-item active">
-      <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=1600&h=600&fit=crop&q=80');">
+      <div class="hero-slide"
+        style="background-image: url('https://img.freepik.com/fotos-premium/fondo-abstracto-lugar-borroso-concesionario-autos-nuevos_896558-2366.jpg');">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-          <h1 class="hero-title">Autos Nuevos y Seminuevos en AutoVibes</h1>
+          <h1 class="hero-title">Encuentra el Auto de Tus Sueños</h1>
+          <p class="hero-subtitle">La mejor selección de vehículos nuevos y seminuevos en AutoVibes</p>
+          <a href="#buscar" class="hero-cta">Explorar Catálogo</a>
         </div>
       </div>
     </div>
     <div class="carousel-item">
-      <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1600&h=600&fit=crop&q=80');">
+      <div class="hero-slide"
+        style="background-image: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1600&h=600&fit=crop&q=80');">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-          <h1 class="hero-title">Autos Nuevos y Seminuevos en AutoVibes</h1>
+          <h1 class="hero-title">Calidad Garantizada</h1>
+          <p class="hero-subtitle">Todos nuestros vehículos pasan rigurosas inspecciones</p>
+          <a href="#buscar" class="hero-cta">Ver Vehículos</a>
         </div>
       </div>
     </div>
     <div class="carousel-item">
-      <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&h=600&fit=crop&q=80');">
+      <div class="hero-slide"
+        style="background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1600&h=600&fit=crop&q=80');">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-          <h1 class="hero-title">Autos Nuevos y Seminuevos en AutoVibes</h1>
+          <h1 class="hero-title">Financiamiento Flexible</h1>
+          <p class="hero-subtitle">Opciones de pago adaptadas a tu presupuesto</p>
+          <a href="#buscar" class="hero-cta">Consultar Ahora</a>
         </div>
       </div>
     </div>
   </div>
   <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
+    <span class="visually-hidden">Anterior</span>
   </button>
   <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
+    <span class="visually-hidden">Siguiente</span>
   </button>
 </div>
 
-<!-- Sección Busca tu Auto Ideal -->
-<section class="search-section py-5">
+<!-- SEARCH SECTION -->
+<section class="search-section" id="buscar">
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <h2 class="section-title text-center mb-4">Busca tu auto ideal</h2>
-        
+      <div class="col-lg-9">
+        <h2 class="section-title">Busca tu Auto Ideal</h2>
+        <p class="section-subtitle">Filtra por tipo y marca para encontrar el vehículo perfecto</p>
+
         <div class="search-card">
-          <!-- Mostrar error si existe -->
           <div *ngIf="error" class="alert alert-warning alert-dismissible fade show" role="alert">
             <strong>⚠️ Advertencia:</strong> {{ error }}
             <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
           </div>
 
-          <!-- Mostrar spinner si está cargando -->
           <div *ngIf="loading" class="text-center py-3">
             <div class="spinner-border" role="status">
               <span class="visually-hidden">Cargando opciones...</span>
@@ -58,64 +71,58 @@
             <p class="mt-2">Cargando opciones...</p>
           </div>
 
-          <!-- Contenido cuando está listo -->
-          <ng-container *ngIf="!loading">
-            <div class="row g-3">
-              <!-- Filtro Tipo/Condición -->
-              <div class="col-md-6">
-                <label for="filtroTipo" class="form-label fw-bold">Tipo</label>
-                <select class="form-select" id="filtroTipo" [(ngModel)]="filtroTipo">
-                  <option value="">Todos los tipos</option>
-                  <option *ngFor="let condicion of condiciones" [value]="condicion.id">
-                    {{ condicion.nombre }}
-                  </option>
-                </select>
-                <small class="text-muted">{{ condiciones.length }} opciones disponibles</small>
-              </div>
-
-              <!-- Filtro Marca -->
-              <div class="col-md-6">
-                <label for="filtroMarca" class="form-label fw-bold">Marca</label>
-                <select class="form-select" id="filtroMarca" [(ngModel)]="filtroMarca">
-                  <option value="">Todas las marcas</option>
-                  <option *ngFor="let marca of marcas" [value]="marca.id">
-                    {{ marca.nombre }}
-                  </option>
-                </select>
-                <small class="text-muted">{{ marcas.length }} opciones disponibles</small>
-              </div>
+          <!-- Contenido del formulario -->
+          <div class="row g-4" *ngIf="!loading">
+            <div class="col-md-6">
+              <label for="filtroTipo" class="form-label">Tipo de Vehículo</label>
+              <select class="form-select" id="filtroTipo" [(ngModel)]="filtroTipo">
+                <option value="">Todos los tipos</option>
+                <option *ngFor="let condicion of condiciones" [value]="condicion.id">
+                  {{ condicion.nombre | titlecase }}
+                </option>
+              </select>
+              <small class="text-muted">{{ condiciones.length }} opciones disponibles</small>
             </div>
 
-            <!-- Botón Ver Vehículos -->
-            <div class="text-center mt-4">
-              <button class="btn btn-primary btn-lg px-5" (click)="irAVehiculos()">
-                Ver Vehículos
-              </button>
+            <div class="col-md-6">
+              <label for="filtroMarca" class="form-label">Marca</label>
+              <select class="form-select" id="filtroMarca" [(ngModel)]="filtroMarca">
+                <option value="">Todas las marcas</option>
+                <option *ngFor="let marca of marcas" [value]="marca.id">
+                  {{ marca.nombre }}
+                </option>
+              </select>
+              <small class="text-muted">{{ marcas.length }} opciones disponibles</small>
             </div>
-          </ng-container>
+          </div>
+
+          <div class="text-center mt-4">
+            <button class="btn btn-primary btn-lg px-5" (click)="irAVehiculos()">
+              🚗 Ver Vehículos Disponibles
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Sección Categorías Destacadas -->
-<section class="categories-section py-5 bg-light">
+<!-- CATEGORIES SECTION -->
+<section class="categories-section">
   <div class="container">
-    <h2 class="section-title text-center mb-5">Categorías Destacadas</h2>
-    
+    <h2 class="section-title mb-5">Categorías Destacadas</h2>
+
     <div class="row g-4">
       <div class="col-md-4 col-sm-6" *ngFor="let categoria of categorias">
         <div class="category-card" (click)="irACategoria(categoria.id)">
           <div class="category-icon">
-            <img [src]="getCategoryImage(categoria.nombre)"
-                 [alt]="categoria.nombre"
-                 (error)="onCategoryImageError($event, categoria.nombre)"
-                 class="category-image">
+            <img [src]="getCategoryImage(categoria.nombre)" [alt]="categoria.nombre"
+              (error)="onCategoryImageError($event, categoria.nombre)" class="category-image">
           </div>
           <h4 class="category-name">{{ categoria.nombre }}</h4>
           <p class="category-description">{{ categoria.descripcion || 'Explora nuestra selección' }}</p>
-          <a href="#" class="category-link" (click)="irACategoria(categoria.id); $event.preventDefault()">
+          <a href="javascript:void(0)" class="category-link"
+            (click)="irACategoria(categoria.id); $event.stopPropagation()">
             Ver autos →
           </a>
         </div>

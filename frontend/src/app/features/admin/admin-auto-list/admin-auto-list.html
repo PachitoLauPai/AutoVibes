@@ -5,12 +5,14 @@
       <div class="header-shape shape-1"></div>
       <div class="header-shape shape-2"></div>
     </div>
-    
+
     <div class="header-content-wrapper">
       <div class="header-left">
         <div class="header-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
           </svg>
         </div>
         <div class="header-text">
@@ -21,10 +23,10 @@
           </div>
         </div>
       </div>
-      
+
       <button class="btn-add-auto-premium" (click)="abrirCrearAuto()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 5v14M5 12h14"/>
+          <path d="M12 5v14M5 12h14" />
         </svg>
         <span>Agregar Nuevo Auto</span>
       </button>
@@ -53,13 +55,14 @@
   <!-- Empty State -->
   <div *ngIf="!loading && !error && autosFilterados.length === 0" class="empty-state">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M19 17h2v.5M1 7h22v10H1zM6.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM22.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+      <path
+        d="M19 17h2v.5M1 7h22v10H1zM6.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM22.5 17a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
     </svg>
     <h3>No hay autos registrados</h3>
     <p>Comienza agregando un nuevo vehículo a tu catálogo</p>
     <button class="btn-add-auto-premium" (click)="abrirCrearAuto()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 5v14M5 12h14"/>
+        <path d="M12 5v14M5 12h14" />
       </svg>
       Crear Primer Auto
     </button>
@@ -70,35 +73,21 @@
     <div class="search-box">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"></circle>
-        <path d="m21 21-4.35-4.35"/>
+        <path d="m21 21-4.35-4.35" />
       </svg>
-      <input 
-        type="text" 
-        [(ngModel)]="searchTerm" 
-        placeholder="Buscar por marca, modelo o color..."
-        class="search-input"
-      />
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar por marca, modelo o color..."
+        class="search-input" />
     </div>
     <div class="filter-buttons">
-      <button 
-        [class.active]="selectedFilter === 'todos'"
-        (click)="selectedFilter = 'todos'"
-        class="filter-btn"
-      >
+      <button [class.active]="selectedFilter === 'todos'" (click)="selectedFilter = 'todos'" class="filter-btn">
         Todos ({{ autos.length }})
       </button>
-      <button 
-        [class.active]="selectedFilter === 'disponibles'"
-        (click)="selectedFilter = 'disponibles'"
-        class="filter-btn"
-      >
+      <button [class.active]="selectedFilter === 'disponibles'" (click)="selectedFilter = 'disponibles'"
+        class="filter-btn">
         Disponibles ({{ autosDisponibles }})
       </button>
-      <button 
-        [class.active]="selectedFilter === 'noDisponibles'"
-        (click)="selectedFilter = 'noDisponibles'"
-        class="filter-btn"
-      >
+      <button [class.active]="selectedFilter === 'noDisponibles'" (click)="selectedFilter = 'noDisponibles'"
+        class="filter-btn">
         No Disponibles ({{ autosNoDisponibles }})
       </button>
     </div>
@@ -115,7 +104,7 @@
         <div class="card-actions-top">
           <button class="action-icon" (click)="abrirEditarAuto(auto)" title="Editar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
             </svg>
           </button>
         </div>
@@ -123,11 +112,8 @@
 
       <!-- Card Image -->
       <div class="card-image">
-        <img 
-          [src]="(auto.imagenes && auto.imagenes.length > 0) ? auto.imagenes[0] : 'assets/placeholder-car.jpg'" 
-          [alt]="auto.marca?.nombre + ' ' + auto.modelo"
-          onerror="this.src='assets/placeholder-car.jpg'"
-        />
+        <img [src]="(auto.imagenes && auto.imagenes.length > 0) ? auto.imagenes[0] : 'assets/placeholder-car.jpg'"
+          [alt]="auto.marca?.nombre + ' ' + auto.modelo" onerror="this.src='assets/placeholder-car.jpg'" />
       </div>
 
       <!-- Card Body -->
@@ -143,13 +129,15 @@
           </span>
           <span class="spec">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 12c0-1.657.895-3.107 2.232-3.9M4 12c0 1.657.895 3.107 2.232 3.9M4 12h16m-4-3.9c1.337-.793 2.232-2.243 2.232-3.9M4.464 8.1C5.8 7.307 7.27 6.8 8.85 6.8M20 12c0-1.657-.895-3.107-2.232-3.9M20 12c0 1.657-.895 3.107-2.232 3.9m4 0C22.2 12 23 10.657 23 9c0-1.657-.8-3-1.768-3.9"/>
+              <path
+                d="M4 12c0-1.657.895-3.107 2.232-3.9M4 12c0 1.657.895 3.107 2.232 3.9M4 12h16m-4-3.9c1.337-.793 2.232-2.243 2.232-3.9M4.464 8.1C5.8 7.307 7.27 6.8 8.85 6.8M20 12c0-1.657-.895-3.107-2.232-3.9M20 12c0 1.657-.895 3.107-2.232 3.9m4 0C22.2 12 23 10.657 23 9c0-1.657-.8-3-1.768-3.9" />
             </svg>
             {{ auto.color }}
           </span>
           <span class="spec">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 2H3v20h18V8z"/><polyline points="13 2 13 8 19 8"/>
+              <path d="M13 2H3v20h18V8z" />
+              <polyline points="13 2 13 8 19 8" />
             </svg>
             {{ auto.kilometraje | number:'1.0-0' }} km
           </span>
@@ -170,7 +158,8 @@
           </div>
           <div class="info-row">
             <span class="label">Stock:</span>
-            <span class="value stock-badge" [ngClass]="{'low-stock': auto.stock <= 2, 'medium-stock': auto.stock > 2 && auto.stock <= 5, 'high-stock': auto.stock > 5}">
+            <span class="value stock-badge"
+              [ngClass]="{'low-stock': auto.stock <= 2, 'medium-stock': auto.stock > 2 && auto.stock <= 5, 'high-stock': auto.stock > 5}">
               {{ auto.stock }} unidades
             </span>
           </div>
@@ -185,20 +174,23 @@
       <div class="card-footer">
         <button class="btn-secondary" (click)="abrirDetalles(auto)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-            <circle cx="12" cy="12" r="3"/>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
           </svg>
           Ver Detalles
         </button>
         <button class="btn-edit" (click)="abrirEditarAuto(auto)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
           </svg>
           Editar
         </button>
         <button class="btn-delete" (click)="eliminarAuto(auto)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <line x1="10" y1="11" x2="10" y2="17" />
+            <line x1="14" y1="11" x2="14" y2="17" />
           </svg>
           Eliminar
         </button>
@@ -228,87 +220,130 @@
       <div class="form-row">
         <div class="form-group">
           <label>Marca *</label>
-          <select formControlName="marca" [disabled]="isFormDisabled" class="form-control">
+          <select formControlName="marca" [disabled]="isFormDisabled" class="form-control"
+            [class.is-invalid]="autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched">
             <option value="">Selecciona una marca</option>
             <option *ngFor="let marca of marcas" [value]="marca.id">{{ marca.nombre }}</option>
           </select>
+          <small class="form-error" *ngIf="autoForm.get('marca')?.invalid && autoForm.get('marca')?.touched">La marca es
+            obligatoria</small>
         </div>
         <div class="form-group">
           <label>Modelo *</label>
-          <input type="text" formControlName="modelo" [disabled]="isFormDisabled" class="form-control" placeholder="Ej: Corolla">
+          <input type="text" formControlName="modelo" [disabled]="isFormDisabled" class="form-control"
+            placeholder="Ej: Corolla"
+            [class.is-invalid]="autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched">
+          <small class="form-error" *ngIf="autoForm.get('modelo')?.invalid && autoForm.get('modelo')?.touched">El modelo
+            es obligatorio</small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Condición *</label>
+          <select formControlName="condicion" [disabled]="isFormDisabled" class="form-control"
+            [class.is-invalid]="autoForm.get('condicion')?.invalid && autoForm.get('condicion')?.touched">
+            <option value="">Selecciona la condición</option>
+            <option *ngFor="let cond of condiciones" [value]="cond.id">{{ cond.nombre }}</option>
+          </select>
+          <small class="form-error" *ngIf="autoForm.get('condicion')?.invalid && autoForm.get('condicion')?.touched">La
+            condición es obligatoria</small>
+        </div>
+        <div class="form-group">
+          <label>Kilometraje *</label>
+          <input type="number" formControlName="kilometraje" [disabled]="isFormDisabled" class="form-control"
+            placeholder="0"
+            [class.is-invalid]="autoForm.get('kilometraje')?.invalid && autoForm.get('kilometraje')?.touched">
+          <small class="form-error"
+            *ngIf="autoForm.get('kilometraje')?.invalid && autoForm.get('kilometraje')?.touched">
+            <span *ngIf="autoForm.get('kilometraje')?.errors?.['required']">El kilometraje es obligatorio</span>
+          </small>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label>Año *</label>
-          <input type="number" formControlName="anio" [disabled]="isFormDisabled" class="form-control" placeholder="2024">
+          <input type="number" formControlName="anio" [disabled]="isFormDisabled" class="form-control"
+            placeholder="2024" [class.is-invalid]="autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched">
+          <small class="form-error" *ngIf="autoForm.get('anio')?.invalid && autoForm.get('anio')?.touched">El año es
+            obligatorio</small>
         </div>
         <div class="form-group">
           <label>Precio *</label>
-          <input type="number" formControlName="precio" [disabled]="isFormDisabled" class="form-control" placeholder="25000.00" step="0.01">
+          <input type="number" formControlName="precio" [disabled]="isFormDisabled" class="form-control"
+            placeholder="25000.00" step="0.01"
+            [class.is-invalid]="autoForm.get('precio')?.invalid && autoForm.get('precio')?.touched">
+          <small class="form-error" *ngIf="autoForm.get('precio')?.invalid && autoForm.get('precio')?.touched">El precio
+            es obligatorio</small>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label>Color *</label>
-          <input type="text" formControlName="color" [disabled]="isFormDisabled" class="form-control" placeholder="Rojo">
+          <input type="text" formControlName="color" [disabled]="isFormDisabled" class="form-control" placeholder="Rojo"
+            [class.is-invalid]="autoForm.get('color')?.invalid && autoForm.get('color')?.touched">
+          <small class="form-error" *ngIf="autoForm.get('color')?.invalid && autoForm.get('color')?.touched">El color es
+            obligatorio</small>
         </div>
         <div class="form-group">
-          <label>Kilometraje *</label>
-          <input type="number" formControlName="kilometraje" [disabled]="isFormDisabled" class="form-control" placeholder="0">
+          <label>Stock *</label>
+          <input type="number" formControlName="stock" [disabled]="isFormDisabled" class="form-control" placeholder="0"
+            min="0" [class.is-invalid]="autoForm.get('stock')?.invalid && autoForm.get('stock')?.touched">
+          <small class="form-error" *ngIf="autoForm.get('stock')?.invalid && autoForm.get('stock')?.touched">El stock es
+            obligatorio</small>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Stock *</label>
-          <input type="number" formControlName="stock" [disabled]="isFormDisabled" class="form-control" placeholder="0" min="0">
-        </div>
-        <div class="form-group">
-          <!-- Empty for grid layout -->
-        </div>
-      </div>
+
 
       <div class="form-row">
         <div class="form-group">
           <label>Categoría *</label>
-          <select formControlName="categoria" [disabled]="isFormDisabled" class="form-control">
+          <select formControlName="categoria" [disabled]="isFormDisabled" class="form-control"
+            [class.is-invalid]="autoForm.get('categoria')?.invalid && autoForm.get('categoria')?.touched">
             <option value="">Selecciona una categoría</option>
             <option *ngFor="let cat of categorias" [value]="cat.id">{{ cat.nombre }}</option>
           </select>
+          <small class="form-error" *ngIf="autoForm.get('categoria')?.invalid && autoForm.get('categoria')?.touched">La
+            categoría es obligatoria</small>
         </div>
         <div class="form-group">
           <label>Combustible *</label>
-          <select formControlName="combustible" [disabled]="isFormDisabled" class="form-control">
+          <select formControlName="combustible" [disabled]="isFormDisabled" class="form-control"
+            [class.is-invalid]="autoForm.get('combustible')?.invalid && autoForm.get('combustible')?.touched">
             <option value="">Selecciona un combustible</option>
             <option *ngFor="let comb of combustibles" [value]="comb.id">{{ comb.nombre }}</option>
           </select>
+          <small class="form-error"
+            *ngIf="autoForm.get('combustible')?.invalid && autoForm.get('combustible')?.touched">El combustible es
+            obligatorio</small>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label>Transmisión *</label>
-          <select formControlName="transmision" [disabled]="isFormDisabled" class="form-control">
+          <select formControlName="transmision" [disabled]="isFormDisabled" class="form-control"
+            [class.is-invalid]="autoForm.get('transmision')?.invalid && autoForm.get('transmision')?.touched">
             <option value="">Selecciona una transmisión</option>
             <option *ngFor="let trans of transmisiones" [value]="trans.id">{{ trans.nombre }}</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label>Condición *</label>
-          <select formControlName="condicion" [disabled]="isFormDisabled" class="form-control">
-            <option value="">Selecciona la condición</option>
-            <option value="1">Nuevo</option>
-            <option value="2">Usado</option>
-          </select>
+          <small class="form-error"
+            *ngIf="autoForm.get('transmision')?.invalid && autoForm.get('transmision')?.touched">La transmisión es
+            obligatoria</small>
         </div>
       </div>
 
       <div class="form-group">
         <label>Descripción *</label>
-        <textarea formControlName="descripcion" [disabled]="isFormDisabled" class="form-control" placeholder="Descripción del vehículo" rows="4"></textarea>
+        <textarea formControlName="descripcion" [disabled]="isFormDisabled" class="form-control"
+          placeholder="Descripción del vehículo" rows="4"
+          [class.is-invalid]="autoForm.get('descripcion')?.invalid && autoForm.get('descripcion')?.touched"></textarea>
+        <small class="form-error"
+          *ngIf="autoForm.get('descripcion')?.invalid && autoForm.get('descripcion')?.touched">La descripción es
+          obligatoria</small>
       </div>
 
       <!-- Disponible - Checkbox en editar/crear, texto en detalles -->
@@ -334,7 +369,9 @@
             <input type="file" #fileInput (change)="onImageSelected($event)" accept="image/*" style="display: none;">
             <button type="button" class="btn-upload-image" (click)="fileInput.click()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
               Seleccionar Archivo
             </button>
@@ -344,25 +381,19 @@
           <div class="image-input-method">
             <h4 class="method-title">🔗 O Pegar URL</h4>
             <div class="url-input-group">
-              <input 
-                type="text" 
-                #imageUrlInput 
-                placeholder="https://ejemplo.com/imagen.jpg" 
+              <input type="text" #imageUrlInput placeholder="https://ejemplo.com/imagen.jpg"
                 class="form-control url-input"
-                (keyup.enter)="addImageFromUrl(imageUrlInput.value); imageUrlInput.value = ''"
-              />
-              <button 
-                type="button" 
-                class="btn-add-url" 
-                (click)="addImageFromUrl(imageUrlInput.value); imageUrlInput.value = ''"
-              >
+                (keyup.enter)="addImageFromUrl(imageUrlInput.value); imageUrlInput.value = ''" />
+              <button type="button" class="btn-add-url"
+                (click)="addImageFromUrl(imageUrlInput.value); imageUrlInput.value = ''">
                 Agregar
               </button>
             </div>
           </div>
 
           <!-- Galería de imágenes -->
-          <div class="images-list" *ngIf="autoForm.get('imagenes')?.value && autoForm.get('imagenes')?.value.length > 0">
+          <div class="images-list"
+            *ngIf="autoForm.get('imagenes')?.value && autoForm.get('imagenes')?.value.length > 0">
             <div class="image-preview" *ngFor="let img of autoForm.get('imagenes')?.value; let i = index">
               <img [src]="img" [alt]="'Imagen ' + (i+1)" onerror="this.src='assets/placeholder-car.jpg'">
               <button type="button" class="btn-remove-image" (click)="removeImage(i)">
@@ -372,14 +403,16 @@
           </div>
 
           <!-- Mensaje cuando no hay imágenes -->
-          <p class="text-muted" *ngIf="!autoForm.get('imagenes')?.value || autoForm.get('imagenes')?.value.length === 0">
+          <p class="text-muted"
+            *ngIf="!autoForm.get('imagenes')?.value || autoForm.get('imagenes')?.value.length === 0">
             No hay imágenes agregadas (máximo 5)
           </p>
         </div>
       </div>
 
       <!-- Imágenes en detalles - solo lectura -->
-      <div class="form-group" *ngIf="modalMode === 'detalles' && selectedAuto && selectedAuto?.imagenes && selectedAuto.imagenes.length > 0">
+      <div class="form-group"
+        *ngIf="modalMode === 'detalles' && selectedAuto && selectedAuto?.imagenes && selectedAuto.imagenes.length > 0">
         <label>Imágenes</label>
         <div class="images-list">
           <div class="image-preview" *ngFor="let img of selectedAuto?.imagenes || []; let i = index">
@@ -393,7 +426,8 @@
       <button class="btn-cancel" (click)="cerrarModal()">
         {{ modalMode === 'detalles' ? 'Cerrar' : 'Cancelar' }}
       </button>
-      <button class="btn-save" (click)="guardarAuto()" *ngIf="modalMode !== 'detalles'" [disabled]="submitting || autoForm.invalid">
+      <button class="btn-save" (click)="guardarAuto()" *ngIf="modalMode !== 'detalles'"
+        [disabled]="submitting || autoForm.invalid">
         <span *ngIf="!submitting">{{ modalMode === 'crear' ? 'Crear Auto' : 'Guardar Cambios' }}</span>
         <span *ngIf="submitting">Guardando...</span>
       </button>

@@ -1,115 +1,287 @@
-<div class="container">
-  <div class="header">
-    <div class="header-content">
-      <h1>Gestión de Usuarios</h1>
-      <button class="btn btn-secondary" (click)="volver()">← Volver</button>
+<div class="admin-usuarios-container">
+  <!-- Premium Header -->
+  <div class="admin-header-premium">
+    <div class="header-background">
+      <div class="header-shape shape-1"></div>
+      <div class="header-shape shape-2"></div>
+    </div>
+
+    <div class="header-content-wrapper">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="header-text">
+          <h1 class="header-title">Gestión de Usuarios</h1>
+          <p class="header-subtitle">Administra los usuarios del sistema</p>
+          <div class="header-stats">
+            <span class="stat-badge"><strong>{{ getTotalUsuarios() }}</strong> Total</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-add-auto-premium" (click)="registrarNuevoAdministrador()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        <span>Agregar Nuevo Usuario</span>
+      </button>
     </div>
   </div>
 
-  <!-- Estadísticas -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">👥</div>
-      <div class="stat-info">
-        <h3>{{ getTotalUsuarios() }}</h3>
-        <p>Total Usuarios</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon">👑</div>
-      <div class="stat-info">
-        <h3>{{ getTotalAdmins() }}</h3>
-        <p>Administradores</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon">👤</div>
-      <div class="stat-info">
-        <h3>{{ getTotalClientes() }}</h3>
-        <p>Clientes</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Barra de acciones. -->
-  <div class="action-bar">
-    <button class="btn btn-success" (click)="registrarNuevoUsuario()">
-      + Registrar Nuevo Usuario
-    </button>
-  </div>
-
-  <!-- Loading -->
-  <div *ngIf="loading" class="loading">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
     <p>Cargando usuarios...</p>
   </div>
 
-  <!-- Error -->
-  <div *ngIf="error && !loading" class="error">
-    {{ error }}
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <div>
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+    </div>
   </div>
 
-  <!-- Lista de usuarios -->
-  <div *ngIf="!loading && !error" class="users-container">
-    <div *ngIf="usuarios.length === 0" class="empty-state">
-      <h3>No hay usuarios registrados</h3>
-      <p>Comienza registrando el primer usuario.</p>
-      <button class="btn btn-primary" (click)="registrarNuevoUsuario()">
-        Registrar Usuario
-      </button>
-    </div>
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && usuarios.length === 0" class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+    <h3>No hay usuarios registrados</h3>
+    <p>Comienza agregando un nuevo usuario al sistema</p>
+    <button class="btn-add-auto-premium" (click)="registrarNuevoAdministrador()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      Crear Primer Usuario
+    </button>
+  </div>
 
-    <div *ngIf="usuarios.length > 0" class="users-grid">
-      <div *ngFor="let usuario of usuarios" class="user-card">
-        <div class="user-avatar">
+  <!-- Usuarios Grid -->
+  <div *ngIf="!loading && !error && usuarios.length > 0" class="usuarios-grid">
+    <div *ngFor="let usuario of usuarios" class="usuario-card">
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="user-avatar-large">
           {{ getRolIcon(usuario.rol) }}
         </div>
-        
-        <div class="user-info">
-          <h3>{{ usuario.nombre }}</h3>
-          <p class="user-email">{{ usuario.email }}</p>
-          <div class="user-details">
-            <!-- ✅ CORREGIDO: usar getRolNombre() -->
+        <div class="card-actions-top">
+          <button class="action-icon" (click)="editarUsuario(usuario)" title="Editar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body">
+        <h3 class="usuario-name">{{ usuario.nombre }}</h3>
+        <p class="usuario-email">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+            <polyline points="22,6 12,13 2,6" />
+          </svg>
+          {{ usuario.email }}
+        </p>
+
+        <div class="usuario-info">
+          <div class="info-row">
+            <span class="label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Rol:
+            </span>
             <span class="badge" [class]="getRolBadgeClass(usuario.rol)">
               {{ getRolNombre(usuario.rol) }}
             </span>
-            <span class="user-id">ID: {{ usuario.id }}</span>
-            <span class="user-date" *ngIf="usuario.fechaCreacion">
-              📅 {{ formatearFecha(usuario.fechaCreacion) }}
+          </div>
+          <div class="info-row">
+            <span class="label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              ID:
+            </span>
+            <span class="value">{{ usuario.id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              Estado:
+            </span>
+            <span class="status-badge" [class.active]="usuario.activo" [class.inactive]="!usuario.activo">
+              {{ usuario.activo ? '✓ Activo' : '✗ Inactivo' }}
+            </span>
+          </div>
+          <div class="info-row" *ngIf="esUsuarioActual(usuario)">
+            <span class="current-user-tag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              Usuario Actual
             </span>
           </div>
         </div>
+      </div>
 
-        <div class="user-actions">
-          <div class="user-status">
-            <span class="status-dot" [class.active]="usuario.activo" [class.inactive]="!usuario.activo"></span>
-            {{ usuario.activo ? 'Activo' : 'Inactivo' }}
-            <span *ngIf="esUsuarioActual(usuario)" class="current-user-badge">(Tú)</span>
-          </div>
+      <!-- Card Footer -->
+      <div class="card-footer" *ngIf="authService.isAdmin()">
+        <button class="btn-edit" (click)="editarUsuario(usuario)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+          </svg>
+          Editar
+        </button>
+        <button class="btn-toggle" (click)="cambiarEstadoUsuario(usuario)"
+          [title]="usuario.activo ? 'Desactivar' : 'Activar'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+        </button>
+        <button class="btn-delete" (click)="eliminarUsuario(usuario)" [disabled]="esUsuarioActual(usuario)"
+          [title]="esUsuarioActual(usuario) ? 'No puedes eliminar tu propio usuario' : 'Eliminar'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <line x1="10" y1="11" x2="10" y2="17" />
+            <line x1="14" y1="11" x2="14" y2="17" />
+          </svg>
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-          <!-- Botones de admin -->
-          <div class="action-buttons" *ngIf="authService.isAdmin()">
-            <button class="btn btn-warning btn-sm" (click)="editarUsuario(usuario)" title="Editar">
-              ✏️
-            </button>
-            <button 
-              class="btn btn-info btn-sm" 
-              (click)="cambiarEstadoUsuario(usuario)"
-              [title]="usuario.activo ? 'Desactivar' : 'Activar'">
-              {{ usuario.activo ? '🚫' : '✅' }}
-            </button>
-            <button 
-              class="btn btn-danger btn-sm" 
-              (click)="eliminarUsuario(usuario)"
-              [disabled]="esUsuarioActual(usuario)"
-              [title]="esUsuarioActual(usuario) ? 'No puedes eliminar tu propio usuario' : 'Eliminar'">
-              🗑️
-            </button>
-          </div>
+<!-- Modal de Editar Usuario -->
+<div class="modal-overlay" *ngIf="showModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modalMode === 'crear' ? 'Crear Nuevo Usuario' : 'Editar Usuario' }}</h2>
+      <button class="close-btn" (click)="cerrarModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="usuarioForm" class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" formControlName="nombre" class="form-control" placeholder="Nombre"
+            [class.is-invalid]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched">
+          <small class="form-error" *ngIf="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched">
+            El nombre es obligatorio
+          </small>
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input type="text" formControlName="apellido" class="form-control" placeholder="Apellido">
         </div>
       </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" formControlName="email" class="form-control" placeholder="email@ejemplo.com"
+            (blur)="validarEmailDuplicado()"
+            [class.is-invalid]="(usuarioForm.get('email')?.invalid && usuarioForm.get('email')?.touched) || emailDuplicado">
+          <small class="form-error" *ngIf="usuarioForm.get('email')?.invalid && usuarioForm.get('email')?.touched">
+            <span *ngIf="usuarioForm.get('email')?.errors?.['required']">El email es obligatorio</span>
+            <span *ngIf="usuarioForm.get('email')?.errors?.['email']">Email inválido</span>
+          </small>
+          <small class="form-error" *ngIf="emailDuplicado">
+            Este email ya está registrado
+          </small>
+        </div>
+        <div class="form-group">
+          <label>DNI *</label>
+          <input type="text" formControlName="dni" class="form-control" placeholder="12345678" maxlength="8"
+            (blur)="validarDniDuplicado()"
+            [class.is-invalid]="(usuarioForm.get('dni')?.invalid && usuarioForm.get('dni')?.touched) || dniDuplicado">
+          <small class="form-error" *ngIf="usuarioForm.get('dni')?.invalid && usuarioForm.get('dni')?.touched">
+            <span *ngIf="usuarioForm.get('dni')?.errors?.['required']">El DNI es obligatorio</span>
+            <span *ngIf="usuarioForm.get('dni')?.errors?.['pattern']">DNI debe tener exactamente 8 dígitos
+              numéricos</span>
+          </small>
+          <small class="form-error" *ngIf="dniDuplicado">
+            Este DNI ya está registrado
+          </small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" formControlName="telefono" class="form-control" placeholder="987654321" maxlength="9"
+            (blur)="validarTelefonoDuplicado()"
+            [class.is-invalid]="(usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched) || telefonoDuplicado">
+          <small class="form-error"
+            *ngIf="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched">
+            <span *ngIf="usuarioForm.get('telefono')?.errors?.['pattern']">Teléfono debe tener exactamente 9 dígitos
+              numéricos</span>
+          </small>
+          <small class="form-error" *ngIf="telefonoDuplicado">
+            Este teléfono ya está registrado
+          </small>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contraseña {{ modalMode === 'crear' ? '*' : '(opcional)' }}</label>
+          <input type="password" formControlName="password" class="form-control"
+            [placeholder]="modalMode === 'crear' ? 'Mínimo 6 caracteres' : 'Dejar vacío para no cambiar'"
+            [class.is-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched">
+          <small class="form-error"
+            *ngIf="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched">
+            <span *ngIf="usuarioForm.get('password')?.errors?.['required']">La contraseña es obligatoria</span>
+            <span *ngIf="usuarioForm.get('password')?.errors?.['minlength']">Mínimo 6 caracteres</span>
+          </small>
+        </div>
+      </div>
+
+      <div class="form-group checkbox">
+        <input type="checkbox" formControlName="activo" id="activo">
+        <label for="activo">Usuario activo</label>
+      </div>
+    </form>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModal()">
+        Cancelar
+      </button>
+      <button class="btn-save" (click)="guardarUsuario()" [disabled]="submitting || usuarioForm.invalid">
+        <span *ngIf="!submitting">{{ modalMode === 'crear' ? 'Crear Usuario' : 'Guardar Cambios' }}</span>
+        <span *ngIf="submitting">{{ modalMode === 'crear' ? 'Creando...' : 'Guardando...' }}</span>
+      </button>
     </div>
   </div>
 </div>

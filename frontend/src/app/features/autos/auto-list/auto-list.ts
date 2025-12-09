@@ -24,7 +24,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
   ventasPorAuto: Map<number, VentaResponse[]> = new Map();
   loading: boolean = true;
   error: string = '';
-  
+
   vistaActual: 'disponibles' | 'vendidos' | 'todos' = 'disponibles';
   contadores = {
     todos: 0,
@@ -49,6 +49,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
   filtroAnioMin: number | null = null;
   filtroAnioMax: number | null = null;
   filtroKilometrajeMax: number | null = null;
+  searchTerm: string = ''; // Término de búsqueda
 
   // Estado de filtros colapsables
   filtersOpen: any = {
@@ -70,7 +71,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
     public authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cargarOpciones();
@@ -143,7 +144,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
         this.autos = autos;
         this.autosFiltrados = autos;
         this.aplicarFiltros();
-        
+
         if (this.authService.isAdmin()) {
           this.actualizarContadores();
         }
@@ -186,22 +187,22 @@ export class AutoListComponent implements OnInit, OnDestroy {
     if (auto.disponible) {
       return '✅ Disponible';
     }
-    
+
     const ultimaVenta = this.getUltimaVenta(auto);
     if (ultimaVenta) {
-      return ultimaVenta.estado === 'FINALIZADO' ? 
-        '💰 Venta Finalizada' : 
+      return ultimaVenta.estado === 'FINALIZADO' ?
+        '💰 Venta Finalizada' :
         '⏳ Venta Pendiente';
     }
-    
+
     return '❓ Estado Desconocido';
   }
 
   getUltimaVenta(auto: Auto): VentaResponse | null {
     const ventas = this.ventasPorAuto.get(auto.id);
     if (!ventas || ventas.length === 0) return null;
-    
-    return ventas.sort((a, b) => 
+
+    return ventas.sort((a, b) =>
       new Date(b.fechaSolicitud).getTime() - new Date(a.fechaSolicitud).getTime()
     )[0];
   }
@@ -218,7 +219,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
 
   cambiarVista(vista: 'disponibles' | 'vendidos' | 'todos'): void {
     if (!this.authService.isAdmin()) return;
-    
+
     this.vistaActual = vista;
     this.cargarAutos();
   }
@@ -255,8 +256,8 @@ export class AutoListComponent implements OnInit, OnDestroy {
   // ✅ CORREGIDO: Usar propiedades seguras con ?.
   cambiarDisponibilidad(auto: Auto, disponible: boolean): void {
     const accion = disponible ? 'disponible' : 'no disponible';
-    const mensaje = disponible ? 
-      '¿Hacer disponible el auto para venta?' : 
+    const mensaje = disponible ?
+      '¿Hacer disponible el auto para venta?' :
       '¿Marcar el auto como no disponible?';
     const marcaNombre = auto.marca?.nombre || 'Auto';
 
@@ -268,7 +269,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
             this.autos[index] = autoActualizado;
           }
           this.actualizarContadores();
-          
+
           const nuevoEstado = disponible ? 'disponible' : 'no disponible';
           alert(`✅ Auto marcado como ${nuevoEstado} correctamente`);
         },
@@ -297,14 +298,14 @@ export class AutoListComponent implements OnInit, OnDestroy {
     if (auto.disponible) {
       return 'estado-disponible';
     }
-    
+
     const ultimaVenta = this.getUltimaVenta(auto);
     if (ultimaVenta) {
-      return ultimaVenta.estado === 'FINALIZADO' ? 
-        'estado-finalizado' : 
+      return ultimaVenta.estado === 'FINALIZADO' ?
+        'estado-finalizado' :
         'estado-pendiente';
     }
-    
+
     return 'estado-pendiente';
   }
 
@@ -369,7 +370,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
     const nuevoEstado = !auto.disponible;
     const textoEstado = nuevoEstado ? 'Disponible' : 'No Disponible';
     const marcaNombre = auto.marca?.nombre || 'Auto';
-    
+
     if (confirm(`¿Cambiar estado de "${marcaNombre} ${auto.modelo}" a ${textoEstado}?`)) {
       this.autoService.cambiarDisponibilidadAuto(auto.id, nuevoEstado).subscribe({
         next: (autoActualizado) => {
@@ -453,7 +454,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
     const marcaNombre = auto.marca?.nombre || 'Sin marca';
     const combustibleNombre = auto.combustible?.nombre || 'Sin combustible';
     const transmisionNombre = auto.transmision?.nombre || 'Sin transmisión';
-    
+
     const detalles = `
       📋 DETALLES COMPLETOS:
       
@@ -469,7 +470,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
       🖼️ Imágenes: ${auto.imagenes?.length || 0}
       🆔 ID: ${auto.id}
     `;
-    
+
     alert(detalles);
   }
 
@@ -534,6 +535,19 @@ export class AutoListComponent implements OnInit, OnDestroy {
       // Filtro kilometraje
       if (this.filtroKilometrajeMax && (auto.kilometraje || 0) > this.filtroKilometrajeMax) {
         return false;
+      }
+
+      // Filtro de búsqueda textual (searchTerm)
+      if (this.searchTerm) {
+        const term = this.searchTerm.toLowerCase().trim();
+        const marca = auto.marca?.nombre?.toLowerCase() || '';
+        const modelo = auto.modelo?.toLowerCase() || '';
+        const color = auto.color?.toLowerCase() || '';
+
+        // Coincidencia en marca, modelo o color
+        if (!marca.includes(term) && !modelo.includes(term) && !color.includes(term)) {
+          return false;
+        }
       }
 
       return true;
@@ -676,7 +690,7 @@ export class AutoListComponent implements OnInit, OnDestroy {
       'VAN': '/categorias/vans.png',        // El archivo es plural
       'DEPORTIVO': '/categorias/deportivo.png'
     };
-    
+
     const imagePath = imageMap[categoriaNombre] || '/categorias/default.png';
     console.log('Categoría:', categoriaNombre, '-> Imagen:', imagePath);
     return imagePath;
@@ -720,5 +734,5 @@ export class AutoListComponent implements OnInit, OnDestroy {
     });
   }
 
-  
+
 }

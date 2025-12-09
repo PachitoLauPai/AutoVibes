@@ -24,24 +24,36 @@ export class AuthService {
 
   private cargarUsuarioDesdeLocalStorage(): void {
     const userData = localStorage.getItem('currentUser');
+    this.logger.debug('Cargando usuario desde localStorage', { userData });
+
     if (userData) {
       try {
         const user = JSON.parse(userData);
+        this.logger.debug('Usuario parseado', { user, rol: user?.rol });
+
         // Verificar si el usuario antiguo tiene rol como string y convertirlo
         if (user && typeof user.rol === 'string') {
           this.logger.debug('Convirtiendo rol de string a objeto');
           user.rol = { nombre: user.rol } as Rol;
         }
+
         this.currentUserSubject.next(user);
-        
+        this.logger.debug('Usuario cargado en currentUserSubject', {
+          currentValue: this.currentUserSubject.value,
+          rol: this.currentUserSubject.value?.rol
+        });
+
         // ✅ Asegurar que userRole esté en localStorage
         if (user?.rol?.nombre) {
           localStorage.setItem('userRole', user.rol.nombre);
+          this.logger.debug('userRole guardado en localStorage', { userRole: user.rol.nombre });
         }
       } catch (error) {
         this.logger.error('Error cargando usuario desde localStorage', error);
         localStorage.removeItem('currentUser');
       }
+    } else {
+      this.logger.debug('No hay usuario en localStorage');
     }
   }
 
@@ -51,15 +63,15 @@ export class AuthService {
   }
 
 
-    login(credentials: { email: string; password: string }): Observable<User> {
+  login(credentials: { email: string; password: string }): Observable<User> {
     this.logger.debug('Intentando login', { email: credentials.email });
-  
-  return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials, {
+
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap(response => {
         this.logger.info('Login exitoso', { userId: response.id, email: response.email });
-        
+
         const user: User = {
           id: response.id,
           email: response.email,
@@ -68,7 +80,7 @@ export class AuthService {
           activo: response.activo, // ✅ AGREGAR ESTO
           password: credentials.password
         };
-        
+
         this.currentUserSubject.next(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
         // ✅ Guardar también userRole para el guard
@@ -131,13 +143,13 @@ export class AuthService {
   // ✅ ACTUALIZADO: Registro que maneja objeto Rol
   register(registerData: RegisterData): Observable<any> {
     this.logger.debug('Registrando usuario', { email: registerData.email });
-    
+
     return this.http.post<any>(`${this.apiUrl}/auth/registro`, registerData, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap(response => {
         this.logger.info('Registro exitoso', { userId: response.id, email: response.email });
-        
+
         // Si el registro incluye login automático
         if (response.id && response.email) {
           const user: User = {
@@ -148,9 +160,9 @@ export class AuthService {
             activo: response.activo ?? true, // ✅ Objeto Rol del backend
             password: registerData.password
           };
-          
+
           this.logger.debug('Usuario creado para login automático', { userId: user.id });
-          
+
           this.currentUserSubject.next(user);
           localStorage.setItem('currentUser', JSON.stringify(user));
           // ✅ Guardar también userRole para el guard
@@ -170,7 +182,7 @@ export class AuthService {
   getBasicAuthHeader(): string {
     const user = this.currentUser();
     if (!user) throw new Error('Usuario no autenticado');
-    
+
     const password = user.password || '123456';
     const credentials = btoa(`${user.email}:${password}`);
     return `Basic ${credentials}`;
@@ -199,7 +211,7 @@ export class AuthService {
   // ✅ NUEVO: Login para administradores
   loginAdmin(credentials: { email: string; password: string }): Observable<any> {
     this.logger.debug('Intentando login admin', { email: credentials.email });
-  
+
     return this.http.post<any>(`${this.apiUrl}/auth/admin/login`, credentials, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
@@ -208,9 +220,9 @@ export class AuthService {
         if (!response.rol || response.rol.nombre !== 'ADMIN') {
           throw new Error('Solo administradores pueden acceder');
         }
-        
+
         this.logger.info('Login admin exitoso', { userId: response.id, email: response.email });
-        
+
         const user: User = {
           id: response.id,
           email: response.email,
@@ -220,11 +232,11 @@ export class AuthService {
           activo: response.activo ?? true,
           password: credentials.password
         };
-        
+
         // Guardar en localStorage para que el guard pueda verificar
         localStorage.setItem('token', response.token || 'admin-token');
         localStorage.setItem('userRole', response.rol?.nombre || 'ADMIN');
-        
+
         this.currentUserSubject.next(user);
         localStorage.setItem('currentUser', JSON.stringify(user));
       }),
@@ -256,7 +268,7 @@ export class AuthService {
       user: this.currentUser()
     });
   }
-  
+
   // ✅ NUEVO: Cambiar estado de usuario (ADMIN)
   cambiarEstadoUsuario(usuarioId: number, activo: boolean): Observable<User> {
     return this.http.put<User>(
@@ -294,20 +306,37 @@ export class AuthService {
     );
   }
 
-// ✅ NUEVO: Cambiar contraseña del usuario
-cambiarContrasena(usuarioId: number, cambioData: any): Observable<any> {
-  return this.http.put<any>(
-    `${this.apiUrl}/usuarios/${usuarioId}/cambiar-contrasena`,
-    cambioData,
-    { headers: { 'Content-Type': 'application/json' } }
-  ).pipe(
-    tap(response => {
-      this.logger.info('Contraseña cambiada exitosamente', { userId: usuarioId });
-    }),
-    catchError(error => {
-      this.logger.error('Error al cambiar contraseña', error);
-      return throwError(() => new Error('Error al cambiar contraseña'));
-    })
-  );
-}
+  // ✅ NUEVO: Cambiar contraseña del usuario
+  cambiarContrasena(usuarioId: number, cambioData: any): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/usuarios/${usuarioId}/cambiar-contrasena`,
+      cambioData,
+      { headers: { 'Content-Type': 'application/json' } }
+    ).pipe(
+      tap(response => {
+        this.logger.info('Contraseña cambiada exitosamente', { userId: usuarioId });
+      }),
+      catchError(error => {
+        this.logger.error('Error al cambiar contraseña', error);
+        return throwError(() => new Error('Error al cambiar contraseña'));
+      })
+    );
+  }
+
+  // ✅ NUEVO: Registrar nuevo administrador
+  registrarAdmin(adminData: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/usuarios`,
+      adminData,
+      { headers: { 'Content-Type': 'application/json' } }
+    ).pipe(
+      tap(response => {
+        this.logger.info('Administrador registrado exitosamente', { email: adminData.email });
+      }),
+      catchError(error => {
+        this.logger.error('Error al registrar administrador', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }

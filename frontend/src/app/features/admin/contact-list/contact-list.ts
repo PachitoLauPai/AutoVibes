@@ -57,7 +57,7 @@ export class ContactListComponent implements OnInit {
   constructor(
     private router: Router,
     private contactService: ContactService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cargarContactos();
@@ -101,15 +101,15 @@ export class ContactListComponent implements OnInit {
       filtered = filtered.filter(c => c.estado === this.selectedStatus);
     } else {
       // Mostrar solo contactos con estados válidos
-      filtered = filtered.filter(c => 
-        c.estado === 'PENDIENTE' || 
-        c.estado === 'EN_PROCESO' || 
-        c.estado === 'VENTA_FINALIZADA' || 
+      filtered = filtered.filter(c =>
+        c.estado === 'PENDIENTE' ||
+        c.estado === 'EN_PROCESO' ||
+        c.estado === 'VENTA_FINALIZADA' ||
         c.estado === 'CANCELADO'
       );
     }
 
-    return filtered;;
+    return filtered;
   }
 
   marcarLeido(contacto: Contact): void {
@@ -118,7 +118,6 @@ export class ContactListComponent implements OnInit {
     this.contactService.marcarComoLeido(contacto.id).subscribe({
       next: (contactoActualizado) => {
         contacto.estado = contactoActualizado.estado || 'EN_PROCESO';
-        console.log('Contacto actualizado - Leído:', contacto.leido, 'Estado:', contacto.estado);
       },
       error: (err) => {
         console.error('Error marcando como leído:', err);
@@ -137,11 +136,10 @@ export class ContactListComponent implements OnInit {
 
   cambiarEstadoDirecto(contacto: Contact, nuevoEstado: string): void {
     if (!contacto.id) return;
-    
+
     this.contactService.actualizarEstado(contacto.id, nuevoEstado).subscribe({
       next: (contactoActualizado) => {
         contacto.estado = contactoActualizado.estado;
-        console.log('Estado actualizado a:', nuevoEstado);
       },
       error: (err) => {
         console.error('Error actualizando estado:', err);
@@ -175,31 +173,30 @@ export class ContactListComponent implements OnInit {
 
   guardarNuevoEstado(contacto: Contact): void {
     if (!contacto.id) return;
-    
+
     const nuevoEstado = this.newStatus[contacto.id];
     const estadoAnterior = contacto.estado || 'PENDIENTE';
-    
+
     // Usar el nuevo endpoint que maneja stock automáticamente
     this.contactService.cambiarEstadoVenta(contacto.id, nuevoEstado, estadoAnterior).subscribe({
       next: (response) => {
-        console.log('Respuesta del servidor:', response);
-        
+
         // Actualizar el estado del contacto
         contacto.estado = response.estadoNuevo;
         this.editingStatus[contacto.id!] = false;
-        
+
         // Mostrar notificación del stock actualizado
         let mensaje = 'Estado actualizado exitosamente';
         if (response.nuevoStock !== null) {
           if (nuevoEstado === 'VENTA_FINALIZADA' && estadoAnterior !== 'VENTA_FINALIZADA') {
             mensaje += ` - Stock del auto disminuido a: ${response.nuevoStock} unidades`;
-          } else if (nuevoEstado === 'CANCELADO' && estadoAnterior === 'VENTA_FINALIZADA') {
+          } else if (estadoAnterior === 'VENTA_FINALIZADA' && nuevoEstado !== 'VENTA_FINALIZADA') {
             mensaje += ` - Stock del auto recuperado a: ${response.nuevoStock} unidades`;
           }
         }
-        
+
         alert(mensaje);
-        
+
         // Recargar contactos para asegurar que los datos estén sincronizados
         this.cargarContactos();
       },

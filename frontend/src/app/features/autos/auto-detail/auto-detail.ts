@@ -23,15 +23,15 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
   auto: Auto | null = null;
   loading = true;
   error = '';
-  
+
   // ✅ VARIABLES PARA EL CARRUSEL
   currentImageIndex = 0;
-  
+
   // ✅ VARIABLES PARA EL MODAL DE IMÁGENES CON ZOOM
   showImageModal = false;
   modalImageIndex = 0;
   imageZoom = 1;
-  
+
   showContactModal = false;
   contactData: ContactRequest = {
     nombre: '',
@@ -51,9 +51,9 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
     private contactService: ContactService,
     private authService: AuthService,
     private logger: LoggerService
-  ) {}
+  ) { }
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     // Permitir ver el detalle sin login, solo el contacto requiere login
     this.loadAuto();
   }
@@ -66,7 +66,7 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
 
   loadAuto(): void {
     const autoId = this.route.snapshot.paramMap.get('id');
-    
+
     if (!autoId) {
       this.error = 'ID de auto no especificado';
       this.loading = false;
@@ -99,21 +99,21 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
 
   nextImage(): void {
     if (!this.auto || this.auto.imagenes.length <= 1) return;
-    
+
     this.currentImageIndex = (this.currentImageIndex + 1) % this.auto.imagenes.length;
   }
 
   prevImage(): void {
     if (!this.auto || this.auto.imagenes.length <= 1) return;
-    
-    this.currentImageIndex = this.currentImageIndex === 0 
-      ? this.auto.imagenes.length - 1 
+
+    this.currentImageIndex = this.currentImageIndex === 0
+      ? this.auto.imagenes.length - 1
       : this.currentImageIndex - 1;
   }
 
   goToImage(index: number): void {
     if (!this.auto || index < 0 || index >= this.auto.imagenes.length) return;
-    
+
     this.currentImageIndex = index;
   }
 
@@ -129,14 +129,11 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['/autos']);
   }
 
-  viewAllPhotos(): void {
-    // Abrir modal con todas las fotos
-    this.openImageModal(this.currentImageIndex);
-  }
+
 
   openImageModal(index: number): void {
     if (!this.auto || !this.auto.imagenes || this.auto.imagenes.length === 0) return;
-    
+
     this.modalImageIndex = index;
     this.imageZoom = 1;
     this.showImageModal = true;
@@ -164,8 +161,8 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
 
   prevModalImage(): void {
     if (!this.auto || !this.auto.imagenes || this.auto.imagenes.length <= 1) return;
-    this.modalImageIndex = this.modalImageIndex === 0 
-      ? this.auto.imagenes.length - 1 
+    this.modalImageIndex = this.modalImageIndex === 0
+      ? this.auto.imagenes.length - 1
       : this.modalImageIndex - 1;
     this.imageZoom = 1; // Reset zoom al cambiar imagen
   }
@@ -197,7 +194,7 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
 
     // Limpiar el número de teléfono (remover espacios, guiones, etc.)
     let telefono = this.auto.concesionario.telefono.replace(/\s+/g, '').replace(/-/g, '');
-    
+
     // Crear mensaje para WhatsApp
     const mensaje = encodeURIComponent(
       `Hola, estoy interesado en el ${this.auto.marca?.nombre} ${this.auto.modelo} ${this.auto.anio}.\n` +
@@ -224,7 +221,7 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
       this.resetContactForm();
       this.contactData.autoId = this.auto.id;
       this.contactData.asunto = `Consulta sobre ${this.auto.marca?.nombre} ${this.auto.modelo} ${this.auto.anio}`;
-      
+
       // No autocompletar datos - formulario siempre en blanco
       this.showContactModal = true;
     }
@@ -237,7 +234,7 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
 
   enviarContacto(): void {
     this.logger.debug('enviarContacto llamado', { autoId: this.contactData.autoId });
-    
+
     if (!this.isFormValid()) {
       alert('Por favor complete todos los campos obligatorios');
       return;
@@ -265,9 +262,9 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
     this.contactService.enviarContacto(contactoParaGuardar).subscribe({
       next: (response) => {
         this.logger.info('Contacto guardado en BD exitosamente', response);
-        
+
         // Después de guardar, redirigir a WhatsApp
-        const numeroAsesor = '51928770187'; // +51 928770187
+        const numeroAsesor = '51992562392'; // +51 928770187
         const mensaje = encodeURIComponent(
           `Hola, me interesa el ${this.auto?.marca?.nombre} ${this.auto?.modelo} ${this.auto?.anio}.\n\n` +
           `Mis datos:\n` +
@@ -279,7 +276,7 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
 
         const whatsappUrl = `https://wa.me/${numeroAsesor}?text=${mensaje}`;
         window.open(whatsappUrl, '_blank');
-        
+
         this.logger.info('Contacto redirigido a WhatsApp', { autoId: this.contactData.autoId });
         alert('Contacto guardado. ¡Seremos contactados vía WhatsApp pronto!');
         this.closeContactModal();
@@ -330,14 +327,6 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
   }
 
   // ✅ Método para ir al login
-  irALogin(): void {
-    this.router.navigate(['/login']);
-  }
 
-  // ✅ Método para obtener imagen por defecto
-  getDefaultImage(auto: Auto): string {
-    const marcaNombre = auto.marca?.nombre || 'Auto';
-    return `https://via.placeholder.com/600x400/cccccc/969696?text=${marcaNombre}+${auto.modelo}`;
-  }
-  
+
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DashboardService, DashboardStats } from '../../../../core/services/dashboard.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Auto } from '../../../../core/models/auto.model';
 
 @Component({
@@ -16,27 +17,31 @@ export class DashboardComponent implements OnInit {
   autos: Auto[] = [];
   loading = true;
   error = '';
+  adminName = '';
 
   constructor(
     private router: Router,
-    private dashboardService: DashboardService
-  ) {}
+    private dashboardService: DashboardService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
+    const currentUser = this.authService.getCurrentUser();
+    this.adminName = currentUser?.nombre || 'Administrador';
     this.cargarEstadisticas();
   }
 
   cargarEstadisticas(): void {
     this.loading = true;
     this.error = '';
-    
+
     this.dashboardService.obtenerEstadisticas().subscribe({
       next: (stats: DashboardStats) => {
         // Agregar propiedad autosDisponibles si no existe
         if (!stats.autosDisponibles) {
           stats.autosDisponibles = stats.totalAutos;
         }
-        
+
         // Obtener los autos de la respuesta (castear como any para acceder a propiedades dinámicas)
         const statsAny = stats as any;
         if (statsAny.autos && statsAny.autos.length > 0) {
@@ -44,7 +49,7 @@ export class DashboardComponent implements OnInit {
         } else if (statsAny.todosLosAutos && statsAny.todosLosAutos.length > 0) {
           this.autos = statsAny.todosLosAutos as Auto[];
         }
-        
+
         this.stats = stats;
         this.loading = false;
       },

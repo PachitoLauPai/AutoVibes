@@ -62,6 +62,24 @@ export class AdminAutoListComponent implements OnInit {
       disponible: [true],
       imagenes: [[]]
     });
+
+    // Suscribirse a cambios en condición para controlar kilometraje
+    this.autoForm.get('condicion')?.valueChanges.subscribe(condicionId => {
+      const id = Number(condicionId);
+      const condicion = this.condiciones.find(c => c.id === id);
+
+      if (condicion) {
+        const nombreStr = condicion.nombre.trim().toUpperCase();
+        const kmControl = this.autoForm.get('kilometraje');
+
+        if (nombreStr === 'NUEVO') {
+          kmControl?.setValue(0);
+          kmControl?.disable();
+        } else if (nombreStr === 'USADO') {
+          kmControl?.enable();
+        }
+      }
+    });
   }
 
   cargarCatalogos(): void {
@@ -69,12 +87,13 @@ export class AdminAutoListComponent implements OnInit {
     this.autoService.getCategorias().subscribe(categorias => this.categorias = categorias);
     this.autoService.getCombustibles().subscribe(combustibles => this.combustibles = combustibles);
     this.autoService.getTransmisiones().subscribe(transmisiones => this.transmisiones = transmisiones);
+    this.autoService.getCondiciones().subscribe(condiciones => this.condiciones = condiciones);
   }
 
   cargarAutos(): void {
     this.loading = true;
     this.error = '';
-    
+
     this.autoService.getTodosLosAutos().subscribe({
       next: (autos: Auto[]) => {
         this.autos = autos;
@@ -98,10 +117,10 @@ export class AdminAutoListComponent implements OnInit {
 
   get autosFilterados(): Auto[] {
     let filtered = this.autos;
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(auto => 
+      filtered = filtered.filter(auto =>
         (auto.marca?.nombre?.toLowerCase().includes(term) || false) ||
         auto.modelo?.toLowerCase().includes(term) ||
         auto.color?.toLowerCase().includes(term)
@@ -160,12 +179,33 @@ export class AdminAutoListComponent implements OnInit {
 
   guardarAuto(): void {
     if (this.autoForm.invalid) {
-      alert('Por favor completa todos los campos');
+      this.autoForm.markAllAsTouched(); // Marcar todos para mostrar errores
+      alert('Por favor completa todos los campos obligatorios marcados en rojo');
       return;
     }
 
+    // Validación Frontend de Kilometraje vs Condición
+    // Usar getRawValue() para incluir campos deshabilitados (como kilometraje cuando es NUEVO)
+    const formData = this.autoForm.getRawValue();
+    const km = Number(formData.kilometraje || 0);
+    const condicionId = Number(formData.condicion);
+    const condicionSeleccionada = this.condiciones.find(c => c.id === condicionId);
+
+    if (condicionSeleccionada) {
+      const nombreCondicion = condicionSeleccionada.nombre.toUpperCase().trim();
+
+      if (nombreCondicion === 'NUEVO' && km > 0) {
+        alert('Error: Un auto NUEVO no puede tener kilometraje mayor a 0.');
+        return;
+      }
+
+      if (nombreCondicion === 'USADO' && km === 0) {
+        alert('Error: Un auto USADO debe tener kilometraje mayor a 0.');
+        return;
+      }
+    }
+
     this.submitting = true;
-    const formData = this.autoForm.value;
 
     // Asegurar que todos los valores sean enviados correctamente
     const autoRequest = {
@@ -229,12 +269,12 @@ export class AdminAutoListComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       const reader = new FileReader();
-      
+
       reader.onload = (e: ProgressEvent<FileReader>) => {
         if (e.target?.result) {
           const imageUrl = e.target.result as string;
           const currentImages = this.autoForm.get('imagenes')?.value || [];
-          
+
           // Limitar a 5 imágenes
           if (currentImages.length < 5) {
             currentImages.push(imageUrl);
@@ -244,7 +284,7 @@ export class AdminAutoListComponent implements OnInit {
           }
         }
       };
-      
+
       reader.readAsDataURL(file);
     }
   }

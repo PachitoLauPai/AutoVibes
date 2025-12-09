@@ -2,6 +2,7 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
+  position: relative;
 }
 
 /* Header */
@@ -51,16 +52,71 @@
   position: relative;
   z-index: 2;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .dashboard-header-premium .header-left {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  flex: 1;
+  width: 100%;
+}
+
+.dashboard-header-premium .header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  backdrop-filter: blur(10px);
+}
+
+.admin-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-avatar svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.admin-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.admin-label {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.admin-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
 }
 
 .dashboard-header-premium .header-icon {
@@ -142,8 +198,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Loading State */
@@ -213,6 +274,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -284,10 +346,21 @@
   opacity: 0.6;
 }
 
-.stat-card-primary .card-header svg { color: #667eea; }
-.stat-card-success .card-header svg { color: #10b981; }
-.stat-card-warning .card-header svg { color: #f59e0b; }
-.stat-card-info .card-header svg { color: #06b6d4; }
+.stat-card-primary .card-header svg {
+  color: #667eea;
+}
+
+.stat-card-success .card-header svg {
+  color: #10b981;
+}
+
+.stat-card-warning .card-header svg {
+  color: #f59e0b;
+}
+
+.stat-card-info .card-header svg {
+  color: #06b6d4;
+}
 
 .card-body {
   padding: 1.5rem;
@@ -681,4 +754,3 @@
   color: #999;
   font-size: 1rem;
 }
-

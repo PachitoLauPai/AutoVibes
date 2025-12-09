@@ -253,7 +253,15 @@
   max-width: 600px;
   width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  /* Limit height */
+  overflow-y: auto;
+  /* Enable scrolling */
   animation: slideInUp 0.3s ease;
+  position: relative;
+  /* For close button */
+  margin: 20px;
+  /* Add margin to prevent touching edges */
 }
 
 .contact-modal-content h2 {
@@ -403,6 +411,7 @@
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -497,25 +506,39 @@
   }
 
   .navbar-link {
-    padding: 20px 12px;
+    padding: 10px 8px;
+    /* Reduced padding */
     font-size: 13px;
   }
 
-  .btn-admin {
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-
+  /* Modal mobile styles */
   .contact-modal-content,
   .info-modal-content {
-    padding: 30px;
+    padding: 20px;
+    /* Reduced padding */
     width: 95%;
+    margin: 10px;
+    max-height: 85vh;
   }
 
   .contact-modal-content h2,
   .info-modal-content h2 {
     font-size: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    padding-right: 30px;
+    /* Make space for close button */
+  }
+
+  .close-btn {
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
   }
 }
 

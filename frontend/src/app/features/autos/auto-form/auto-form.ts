@@ -48,11 +48,13 @@ export class AutoFormComponent implements OnInit {
   loadingCategorias: boolean = false;
   loadingCondiciones: boolean = false;
 
+  kilometrajeDisabled: boolean = false;
+
   constructor(
     private autoService: AutoService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cargarMarcas();
@@ -62,7 +64,35 @@ export class AutoFormComponent implements OnInit {
     this.cargarCondiciones();
   }
 
+  // ... (keeping existing loading methods)
+
+  onCondicionChange(condicionIdValue?: any): void {
+    // Si viene del evento, usar ese valor, si no, usar el del modelo (pero preferir el argumento)
+    const idToUse = condicionIdValue ? Number(condicionIdValue) : Number(this.auto.condicionId);
+    console.log('Condicion cambiada a:', idToUse);
+
+    // Asegurar que el modelo se actualice si usamos ngModelChange
+    if (condicionIdValue) {
+      this.auto.condicionId = idToUse;
+    }
+
+    const condicion = this.condiciones.find(c => c.id === idToUse);
+
+    if (condicion) {
+      const nombreStr = condicion.nombre.trim().toUpperCase();
+      console.log('Nombre condicion:', nombreStr);
+
+      if (nombreStr === 'NUEVO') {
+        this.auto.kilometraje = 0;
+        this.kilometrajeDisabled = true;
+      } else if (nombreStr === 'USADO') {
+        this.kilometrajeDisabled = false;
+      }
+    }
+  }
+
   cargarMarcas(): void {
+    // ... (method body kept same by replace tool context matching, but for brevity in prompt I show this)
     this.loadingMarcas = true;
     this.autoService.getMarcas().subscribe({
       next: (data) => {
@@ -132,7 +162,6 @@ export class AutoFormComponent implements OnInit {
     });
   }
 
-
   agregarImagen(): void {
     this.auto.imagenes.push('');
   }
@@ -155,6 +184,25 @@ export class AutoFormComponent implements OnInit {
     if (!this.auto.marcaId) {
       this.error = 'Por favor selecciona una marca';
       return;
+    }
+
+    // Validación de Kilometraje vs Condición
+    const condicionId = Number(this.auto.condicionId);
+    const condicion = this.condiciones.find(c => c.id === condicionId);
+    const km = Number(this.auto.kilometraje || 0);
+
+    if (condicion) {
+      const nombreCondicion = condicion.nombre.toUpperCase().trim();
+
+      if (nombreCondicion === 'NUEVO' && km > 0) {
+        this.error = 'Error: Un auto NUEVO no puede tener kilometraje mayor a 0.';
+        return;
+      }
+
+      if (nombreCondicion === 'USADO' && km === 0) {
+        this.error = 'Error: Un auto USADO debe tener kilometraje mayor a 0.';
+        return;
+      }
     }
 
     this.loading = true;

@@ -2,11 +2,26 @@
 <div *ngIf="!authService.isAdmin()" class="autos-page">
   <div class="container-fluid py-4">
     <div class="row">
-      
+
       <!-- SIDEBAR IZQUIERDO - FILTROS -->
       <div class="col-lg-3 col-md-4 filters-sidebar">
         <div class="filters-container">
-          
+
+          <!-- BÚSQUEDA -->
+          <div class="filter-section search-section mb-3">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round" class="text-muted">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </span>
+              <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar auto..."
+                [(ngModel)]="searchTerm" (input)="aplicarFiltros()">
+            </div>
+          </div>
+
           <!-- Filtro Condición -->
           <div class="filter-section">
             <div class="filter-header" (click)="toggleFilter('condicion')">
@@ -16,10 +31,8 @@
             <div class="filter-content" [class.collapsed]="!filtersOpen.condicion">
               <div class="filter-item" *ngFor="let condicion of condiciones">
                 <label class="filter-checkbox">
-                  <input type="checkbox" 
-                         [value]="condicion.id"
-                         [checked]="filtroCondicion === condicion.id.toString()"
-                         (change)="toggleCondicion(condicion.id)">
+                  <input type="checkbox" [value]="condicion.id" [checked]="filtroCondicion === condicion.id.toString()"
+                    (change)="toggleCondicion(condicion.id)">
                   <span>{{ condicion.nombre }}</span>
                   <span class="filter-count">({{ getCountByCondicion(condicion.id) }})</span>
                 </label>
@@ -36,10 +49,8 @@
             <div class="filter-content" [class.collapsed]="!filtersOpen.marca">
               <div class="filter-item" *ngFor="let marca of marcas.slice(0, 10)">
                 <label class="filter-checkbox">
-                  <input type="checkbox" 
-                         [value]="marca.id"
-                         [checked]="filtroMarca === marca.id.toString()"
-                         (change)="toggleMarca(marca.id)">
+                  <input type="checkbox" [value]="marca.id" [checked]="filtroMarca === marca.id.toString()"
+                    (change)="toggleMarca(marca.id)">
                   <span>{{ marca.nombre }}</span>
                   <span class="filter-count">({{ getCountByMarca(marca.id) }})</span>
                 </label>
@@ -93,16 +104,12 @@
               <div class="custom-range mt-3">
                 <div class="row g-2">
                   <div class="col-6">
-                    <input type="number" class="form-control form-control-sm" 
-                           [(ngModel)]="filtroPrecioMin" 
-                           (input)="aplicarFiltros()"
-                           placeholder="Desde">
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="filtroPrecioMin"
+                      (input)="aplicarFiltros()" placeholder="Desde">
                   </div>
                   <div class="col-6">
-                    <input type="number" class="form-control form-control-sm" 
-                           [(ngModel)]="filtroPrecioMax" 
-                           (input)="aplicarFiltros()"
-                           placeholder="Hasta">
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="filtroPrecioMax"
+                      (input)="aplicarFiltros()" placeholder="Hasta">
                   </div>
                 </div>
                 <button class="btn btn-sm btn-primary w-100 mt-2" (click)="aplicarFiltros()">
@@ -143,16 +150,12 @@
               <div class="custom-range mt-3">
                 <div class="row g-2">
                   <div class="col-6">
-                    <input type="number" class="form-control form-control-sm" 
-                           [(ngModel)]="filtroAnioMin" 
-                           (input)="aplicarFiltros()"
-                           placeholder="Desde">
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="filtroAnioMin"
+                      (input)="aplicarFiltros()" placeholder="Desde">
                   </div>
                   <div class="col-6">
-                    <input type="number" class="form-control form-control-sm" 
-                           [(ngModel)]="filtroAnioMax" 
-                           (input)="aplicarFiltros()"
-                           placeholder="Hasta">
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="filtroAnioMax"
+                      (input)="aplicarFiltros()" placeholder="Hasta">
                   </div>
                 </div>
                 <button class="btn btn-sm btn-primary w-100 mt-2" (click)="aplicarFiltros()">
@@ -216,10 +219,9 @@
             <div class="filter-content" [class.collapsed]="!filtersOpen.transmision">
               <div class="filter-item" *ngFor="let transmision of transmisiones">
                 <label class="filter-checkbox">
-                  <input type="checkbox" 
-                         [value]="transmision.id"
-                         [checked]="filtroTransmision === transmision.id.toString()"
-                         (change)="toggleTransmision(transmision.id)">
+                  <input type="checkbox" [value]="transmision.id"
+                    [checked]="filtroTransmision === transmision.id.toString()"
+                    (change)="toggleTransmision(transmision.id)">
                   <span>{{ transmision.nombre }}</span>
                   <span class="filter-count">({{ getCountByTransmision(transmision.id) }})</span>
                 </label>
@@ -235,14 +237,11 @@
             </div>
             <div class="filter-content" [class.collapsed]="!filtersOpen.categoria">
               <div class="category-grid">
-                <div class="category-item" *ngFor="let categoria of categorias" 
-                     (click)="toggleCategoria(categoria.id)"
-                     [class.active]="filtroCategoria === categoria.id.toString()">
+                <div class="category-item" *ngFor="let categoria of categorias" (click)="toggleCategoria(categoria.id)"
+                  [class.active]="filtroCategoria === categoria.id.toString()">
                   <div class="category-icon">
-                    <img [src]="getCategoryImage(categoria.nombre)" 
-                         [alt]="categoria.nombre"
-                         (error)="onCategoryImageError($event, categoria.nombre)"
-                         class="category-image">
+                    <img [src]="getCategoryImage(categoria.nombre)" [alt]="categoria.nombre"
+                      (error)="onCategoryImageError($event, categoria.nombre)" class="category-image">
                   </div>
                   <div class="category-name">{{ categoria.nombre }}</div>
                   <div class="category-count">({{ getCountByCategoria(categoria.id) }})</div>
@@ -256,7 +255,7 @@
 
       <!-- ÁREA PRINCIPAL - CARDS DE AUTOS -->
       <div class="col-lg-9 col-md-8 autos-main">
-        
+
         <!-- Loading -->
         <div *ngIf="loading" class="text-center py-5">
           <div class="spinner-border text-primary" role="status"></div>
@@ -272,18 +271,14 @@
         <div class="autos-grid" *ngIf="!loading && !error">
           <div class="auto-card-item" *ngFor="let auto of autosFiltrados">
             <div class="auto-card">
-              
+
               <!-- Imagen con Badge y Carrusel -->
               <div class="auto-image-wrapper">
-                <img [src]="getCurrentImage(auto)" 
-                     [alt]="auto.modelo"
-                     [attr.data-auto-id]="auto.id"
-                     (error)="onImageError($event, auto)"
-                     class="auto-main-image">
-                
+                <img [src]="getCurrentImage(auto)" [alt]="auto.modelo" [attr.data-auto-id]="auto.id"
+                  (error)="onImageError($event, auto)" class="auto-main-image">
+
                 <!-- Badge de Condición -->
-                <div class="auto-badge" [class.badge-nuevo]="esNuevo(auto)" 
-                     [class.badge-usado]="!esNuevo(auto)">
+                <div class="auto-badge" [class.badge-nuevo]="esNuevo(auto)" [class.badge-usado]="!esNuevo(auto)">
                   {{ auto.condicion?.nombre === 'NUEVO' ? 'NUEVO' : 'USADO' }}
                 </div>
 
@@ -294,13 +289,11 @@
 
                 <!-- Flechas de Navegación (si hay más de 1 imagen) -->
                 <button class="carousel-nav prev" *ngIf="auto.imagenes && auto.imagenes.length > 1"
-                        (click)="prevImage(auto, $event)"
-                        type="button">
+                  (click)="prevImage(auto, $event)" type="button">
                   ‹
                 </button>
                 <button class="carousel-nav next" *ngIf="auto.imagenes && auto.imagenes.length > 1"
-                        (click)="nextImage(auto, $event)"
-                        type="button">
+                  (click)="nextImage(auto, $event)" type="button">
                   ›
                 </button>
               </div>
@@ -308,7 +301,7 @@
               <!-- Información del Auto -->
               <div class="auto-info">
                 <h3 class="auto-title">{{ auto.marca?.nombre }} {{ auto.modelo }} {{ auto.anio }}</h3>
-                
+
                 <div class="auto-specs">
                   <span *ngIf="auto.combustible">{{ auto.combustible.nombre }}</span>
                   <span *ngIf="auto.combustible && auto.transmision"> | </span>
@@ -332,9 +325,8 @@
                 </div>
 
                 <!-- Botón Contactar -->
-                <button class="btn-contactar" 
-                        [routerLink]="['/autos', auto.id]">
-                  CONTACTAR
+                <button class="btn-contactar" [routerLink]="['/autos', auto.id]">
+                  VER DETALLES Y CONTACTAR
                 </button>
               </div>
             </div>
@@ -357,25 +349,19 @@
 <div *ngIf="authService.isAdmin()" class="container-fluid py-4">
   <div class="container">
     <h1 class="h2 fw-bold mb-4">🚗 Gestión de Autos</h1>
-    
+
     <!-- VISTAS (Solo Admin) -->
     <div class="btn-group mb-4" role="group">
-      <button type="button" 
-              class="btn btn-outline-primary" 
-              [class.active]="vistaActual === 'disponibles'"
-              (click)="cambiarVista('disponibles')">
+      <button type="button" class="btn btn-outline-primary" [class.active]="vistaActual === 'disponibles'"
+        (click)="cambiarVista('disponibles')">
         ✅ Disponibles ({{ contadores.disponibles }})
       </button>
-      <button type="button" 
-              class="btn btn-outline-primary" 
-              [class.active]="vistaActual === 'vendidos'"
-              (click)="cambiarVista('vendidos')">
+      <button type="button" class="btn btn-outline-primary" [class.active]="vistaActual === 'vendidos'"
+        (click)="cambiarVista('vendidos')">
         💰 Vendidos ({{ contadores.vendidos }})
       </button>
-      <button type="button" 
-              class="btn btn-outline-primary" 
-              [class.active]="vistaActual === 'todos'"
-              (click)="cambiarVista('todos')">
+      <button type="button" class="btn btn-outline-primary" [class.active]="vistaActual === 'todos'"
+        (click)="cambiarVista('todos')">
         📊 Todos ({{ contadores.todos }})
       </button>
     </div>
@@ -393,14 +379,11 @@
 
     <!-- GRID DE AUTOS ADMIN -->
     <div class="row g-4" *ngIf="!loading && !error">
-        <div *ngFor="let auto of autos" class="col-lg-4 col-md-6">
-          <div class="card h-100 shadow-sm" [class.opacity-75]="!auto.disponible">
-            <img [src]="auto.imagenes?.[0] || getDefaultImage(auto)" 
-                 [alt]="auto.modelo"
-                 (error)="onImageError($event, auto)"
-                 class="card-img-top" 
-                 style="height: 250px; object-fit: cover;">
-            <div class="card-body">
+      <div *ngFor="let auto of autos" class="col-lg-4 col-md-6">
+        <div class="card h-100 shadow-sm" [class.opacity-75]="!auto.disponible">
+          <img [src]="auto.imagenes?.[0] || getDefaultImage(auto)" [alt]="auto.modelo"
+            (error)="onImageError($event, auto)" class="card-img-top" style="height: 250px; object-fit: cover;">
+          <div class="card-body">
             <h5 class="card-title">{{ auto.marca?.nombre }} {{ auto.modelo }}</h5>
             <p class="card-text">Año: {{ auto.anio }} | Precio: S/ {{ auto.precio | number:'1.0-0' }}</p>
             <div class="btn-group w-100">
