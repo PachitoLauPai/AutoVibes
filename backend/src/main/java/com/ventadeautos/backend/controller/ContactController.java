@@ -19,7 +19,7 @@ public class ContactController {
     private final ContactService contactService;
     
     @PostMapping("/enviar")
-    public ResponseEntity<String> enviarContacto(@RequestBody ContactRequest request) {
+    public ResponseEntity<Contact> enviarContacto(@RequestBody ContactRequest request) {
         return contactService.guardarContacto(request);
     }
     
@@ -60,6 +60,34 @@ public class ContactController {
     @PutMapping("/admin/{id}/marcar-respondido")
     public ResponseEntity<Contact> marcarComoRespondido(@PathVariable Long id) {
         Contact contacto = contactService.marcarComoRespondido(id);
+        return ResponseEntity.ok(contacto);
+    }
+    
+    @PutMapping("/admin/{id}/actualizar-estado")
+    public ResponseEntity<Contact> actualizarEstado(@PathVariable Long id, @RequestBody ContactRequest request) {
+        Contact contacto = contactService.actualizarEstado(id, request.getEstado());
+        return ResponseEntity.ok(contacto);
+    }
+
+    @PutMapping("/admin/{id}/cambiar-estado-venta")
+    public ResponseEntity<Map<String, Object>> cambiarEstadoVenta(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String nuevoEstado = request.get("estado");
+        Contact contacto = contactService.actualizarEstado(id, nuevoEstado);
+        
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("mensaje", "Estado actualizado y stock ajustado correctamente");
+        response.put("contactoId", contacto.getId());
+        response.put("estadoAnterior", request.get("estadoAnterior"));
+        response.put("estadoNuevo", contacto.getEstado());
+        response.put("autoId", contacto.getAuto() != null ? contacto.getAuto().getId() : null);
+        response.put("nuevoStock", contacto.getAuto() != null ? contacto.getAuto().getStock() : null);
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PutMapping("/admin/{id}/actualizar-tipo-transaccion")
+    public ResponseEntity<Contact> actualizarTipoTransaccion(@PathVariable Long id, @RequestBody ContactRequest request) {
+        Contact contacto = contactService.actualizarTipoTransaccion(id, request.getTipoTransaccion());
         return ResponseEntity.ok(contacto);
     }
     
