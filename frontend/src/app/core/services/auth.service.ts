@@ -40,7 +40,7 @@ export class AuthService {
    */
   loginAdmin(credentials: LoginRequest): Observable<LoginResponse> {
     console.log('Enviando login admin:', credentials.email);
-    
+
     return this.http.post<LoginResponse>(
       `${this.apiUrl}/auth/admin/login`,
       credentials
@@ -59,7 +59,12 @@ export class AuthService {
             }
           }
           localStorage.setItem('userRole', rolName);
-          localStorage.setItem('currentUser', JSON.stringify({ id: response.id, nombre: response.nombre, email: response.email }));
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: response.id,
+            nombre: response.nombre,
+            email: response.email,
+            rol: response.rol  // ✅ AGREGAR EL ROL COMPLETO
+          }));
           this.userRoleSubject.next(rolName);
           this.isAuthenticatedSubject.next(true);
           console.log('Login exitoso para:', credentials.email, 'con rol:', rolName);
