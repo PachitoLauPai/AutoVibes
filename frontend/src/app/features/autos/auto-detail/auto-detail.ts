@@ -250,22 +250,45 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Redirigir a WhatsApp con el número del asesor en Perú
-    const numeroAsesor = '51928770187'; // +51 928770187
-    const mensaje = encodeURIComponent(
-      `Hola, me interesa el ${this.auto?.marca?.nombre} ${this.auto?.modelo} ${this.auto?.anio}.\n\n` +
-      `Mis datos:\n` +
-      `Nombre: ${this.contactData.nombre}\n` +
-      `Email: ${this.contactData.email}\n` +
-      `Teléfono: +51${telefonoSinFormato}\n` +
-      `Mensaje: ${this.contactData.mensaje}`
-    );
+    // Preparar los datos del contacto para guardar en la BD
+    const contactoParaGuardar = {
+      nombre: this.contactData.nombre,
+      dni: this.contactData.dni,
+      email: this.contactData.email,
+      telefono: '+51' + telefonoSinFormato,
+      asunto: this.contactData.asunto,
+      mensaje: this.contactData.mensaje,
+      autoId: this.contactData.autoId
+    };
 
-    const whatsappUrl = `https://wa.me/${numeroAsesor}?text=${mensaje}`;
-    window.open(whatsappUrl, '_blank');
-    
-    this.logger.info('Contacto redirigido a WhatsApp', { autoId: this.contactData.autoId });
-    this.closeContactModal();
+    // Primero guardar el contacto en la base de datos
+    this.contactService.enviarContacto(contactoParaGuardar).subscribe({
+      next: (response) => {
+        this.logger.info('Contacto guardado en BD exitosamente', response);
+        
+        // Después de guardar, redirigir a WhatsApp
+        const numeroAsesor = '51928770187'; // +51 928770187
+        const mensaje = encodeURIComponent(
+          `Hola, me interesa el ${this.auto?.marca?.nombre} ${this.auto?.modelo} ${this.auto?.anio}.\n\n` +
+          `Mis datos:\n` +
+          `Nombre: ${this.contactData.nombre}\n` +
+          `Email: ${this.contactData.email}\n` +
+          `Teléfono: +51${telefonoSinFormato}\n` +
+          `Mensaje: ${this.contactData.mensaje}`
+        );
+
+        const whatsappUrl = `https://wa.me/${numeroAsesor}?text=${mensaje}`;
+        window.open(whatsappUrl, '_blank');
+        
+        this.logger.info('Contacto redirigido a WhatsApp', { autoId: this.contactData.autoId });
+        alert('Contacto guardado. ¡Seremos contactados vía WhatsApp pronto!');
+        this.closeContactModal();
+      },
+      error: (error) => {
+        this.logger.error('Error al guardar contacto', error);
+        alert('Error al guardar el contacto. Por favor, intenta de nuevo.');
+      }
+    });
   }
 
   private isFormValid(): boolean {
