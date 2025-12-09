@@ -16,6 +16,7 @@ export interface Auto {
   precio: number;
   color: string;
   kilometraje: number;
+  stock: number;  // Stock disponible (solo visible en admin)
   combustible: Combustible;
   transmision: Transmision;
   categoria: CategoriaAuto;
