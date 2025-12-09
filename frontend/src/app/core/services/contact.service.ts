@@ -41,21 +41,17 @@ export class ContactService {
   constructor(
     private http: HttpClient,
     private api: ApiService
-  ) {}
+  ) { }
 
   /**
    * Enviar un nuevo contacto (público - sin autenticación)
    */
   enviarContacto(contactData: ContactRequest): Observable<Contact> {
-    console.log('Enviando contacto:', contactData);
-    
+
     return this.http.post<Contact>(
       `${this.apiUrl}/enviar`,
       contactData
     ).pipe(
-      tap((response: Contact) => {
-        console.log('Contacto enviado exitosamente:', response);
-      }),
       catchError((error) => {
         console.error('Error al enviar contacto:', error);
         return this.handleError(error);
@@ -103,18 +99,18 @@ export class ContactService {
    * Actualizar estado del contacto (la versión anterior)
    */
   actualizarEstado(id: number, nuevoEstado: string): Observable<Contact> {
-    const request: ContactRequest = { 
+    const request: ContactRequest = {
       nombre: '',
       email: '',
       telefono: '',
       asunto: '',
       mensaje: '',
-      estado: nuevoEstado 
+      estado: nuevoEstado
     };
-    
+
     return this.http.put<Contact>(`${this.apiUrl}/admin/${id}/actualizar-estado`, request).pipe(
       tap((response) => {
-        console.log('Estado del contacto actualizado exitosamente:', response);
+        // Log removed
       }),
       catchError(error => {
         console.error('Error actualizando estado del contacto:', error);
@@ -131,10 +127,10 @@ export class ContactService {
       estado: nuevoEstado,
       estadoAnterior: estadoAnterior || ''
     };
-    
+
     return this.http.put<any>(`${this.apiUrl}/admin/${id}/cambiar-estado-venta`, request).pipe(
       tap((response) => {
-        console.log('Estado de venta y stock actualizados:', response);
+        // Log removed
       }),
       catchError(error => {
         console.error('Error al cambiar estado de venta:', error);
@@ -147,18 +143,18 @@ export class ContactService {
    * Actualizar tipo de transacción del contacto (COMPRA/VENTA)
    */
   actualizarTipoTransaccion(id: number, nuevoTipo: string): Observable<Contact> {
-    const request: ContactRequest = { 
+    const request: ContactRequest = {
       nombre: '',
       email: '',
       telefono: '',
       asunto: '',
       mensaje: '',
-      tipoTransaccion: nuevoTipo 
+      tipoTransaccion: nuevoTipo
     };
-    
+
     return this.http.put<Contact>(`${this.apiUrl}/admin/${id}/actualizar-tipo-transaccion`, request).pipe(
       tap((response) => {
-        console.log('Tipo de transacción actualizado exitosamente:', response);
+        // Log removed
       }),
       catchError(error => {
         console.error('Error actualizando tipo de transacción:', error);
