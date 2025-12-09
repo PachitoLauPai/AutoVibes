@@ -53,6 +53,7 @@ export class AdminAutoListComponent implements OnInit {
       precio: ['', Validators.required],
       color: ['', Validators.required],
       kilometraje: ['', Validators.required],
+      stock: ['', Validators.required],  // Stock del vehículo
       categoria: ['', Validators.required],
       combustible: ['', Validators.required],
       transmision: ['', Validators.required],
@@ -146,6 +147,7 @@ export class AdminAutoListComponent implements OnInit {
       precio: auto.precio,
       color: auto.color,
       kilometraje: auto.kilometraje,
+      stock: auto.stock || 0,  // Cargar stock del auto
       categoria: auto.categoria?.id,
       combustible: auto.combustible?.id,
       transmision: auto.transmision?.id,
@@ -173,6 +175,7 @@ export class AdminAutoListComponent implements OnInit {
       precio: formData.precio ? Number(formData.precio) : undefined,
       color: formData.color?.trim() || undefined,
       kilometraje: formData.kilometraje ? Number(formData.kilometraje) : 0,
+      stock: formData.stock ? Number(formData.stock) : 0,  // Incluir stock
       categoriaId: formData.categoria ? Number(formData.categoria) : undefined,
       combustibleId: formData.combustible ? Number(formData.combustible) : undefined,
       transmisionId: formData.transmision ? Number(formData.transmision) : undefined,
