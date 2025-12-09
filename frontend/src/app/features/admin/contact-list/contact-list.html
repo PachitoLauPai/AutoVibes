@@ -67,25 +67,44 @@
     </div>
     <div class="filter-buttons">
       <button 
-        [class.active]="selectedStatus === 'todos'"
-        (click)="selectedStatus = 'todos'"
+        [class.active]="selectedStatus === 'TODOS'"
+        (click)="selectedStatus = 'TODOS'"
         class="filter-btn"
       >
+        <span class="filter-icon">📋</span>
         Todos ({{ contactos.length }})
       </button>
       <button 
-        [class.active]="selectedStatus === 'pendiente'"
-        (click)="selectedStatus = 'pendiente'"
-        class="filter-btn"
+        [class.active]="selectedStatus === 'PENDIENTE'"
+        (click)="selectedStatus = 'PENDIENTE'"
+        class="filter-btn filter-pendiente"
       >
-        Pendientes
+        <span class="filter-icon">⏳</span>
+        No leídos
       </button>
       <button 
-        [class.active]="selectedStatus === 'respondido'"
-        (click)="selectedStatus = 'respondido'"
-        class="filter-btn"
+        [class.active]="selectedStatus === 'EN_PROCESO'"
+        (click)="selectedStatus = 'EN_PROCESO'"
+        class="filter-btn filter-proceso"
       >
-        Respondidos
+        <span class="filter-icon">⚙️</span>
+        En proceso
+      </button>
+      <button 
+        [class.active]="selectedStatus === 'VENTA_FINALIZADA'"
+        (click)="selectedStatus = 'VENTA_FINALIZADA'"
+        class="filter-btn filter-venta"
+      >
+        <span class="filter-icon">✅</span>
+        Venta
+      </button>
+      <button 
+        [class.active]="selectedStatus === 'CANCELADO'"
+        (click)="selectedStatus = 'CANCELADO'"
+        class="filter-btn filter-cancelado"
+      >
+        <span class="filter-icon">❌</span>
+        Cancelado
       </button>
     </div>
   </div>
@@ -110,8 +129,14 @@
         </div>
         <div class="card-badges">
           <span *ngIf="!contacto.leido" class="badge badge-unread">Sin leer</span>
-          <span *ngIf="contacto.estado === 'respondido'" class="badge badge-success">Respondido</span>
-          <span *ngIf="contacto.estado === 'pendiente'" class="badge badge-warning">Pendiente</span>
+          <button 
+            [ngClass]="'badge ' + getEstadoBadgeClass(contacto.estado)"
+            class="badge-estado-btn"
+            (click)="$event.stopPropagation(); verDetalles(contacto)"
+            title="Click para cambiar estado"
+          >
+            {{ getEstadoLabel(contacto.estado) }}
+          </button>
         </div>
       </div>
 
@@ -123,13 +148,20 @@
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
               <polyline points="22 6 12 13 2 6"/>
             </svg>
-            <a [href]="'mailto:' + contacto.correo">{{ contacto.correo }}</a>
+            <a [href]="'mailto:' + (contacto.correo || contacto.email)">{{ contacto.correo || contacto.email }}</a>
           </div>
           <div class="metadata-item" *ngIf="contacto.telefono">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
             {{ contacto.telefono }}
+          </div>
+          <div class="metadata-item" *ngIf="contacto.dni">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            DNI: {{ contacto.dni }}
           </div>
         </div>
 
@@ -139,6 +171,24 @@
 
         <div class="contact-message">
           {{ contacto.mensaje }}
+        </div>
+
+        <!-- Auto Info Card if exists -->
+        <div *ngIf="contacto.auto" class="auto-info-card">
+          <h4>Vehículo de Interés</h4>
+          <div class="auto-detail-mini">
+            <div class="auto-image-mini">
+              <img [src]="getImagenAuto(contacto.auto)" [alt]="contacto.auto.modelo" class="auto-img-small">
+            </div>
+            <div class="auto-specs-mini">
+              <div><strong>{{ contacto.auto.marca?.nombre }} {{ contacto.auto.modelo }}</strong></div>
+              <div>Año: {{ contacto.auto.anio }}</div>
+              <div>Color: {{ contacto.auto.color }}</div>
+              <div>Precio: US$ {{ (contacto.auto.precio | number:'1.2-2') }}</div>
+              <div *ngIf="contacto.auto.combustible">Combustible: {{ contacto.auto.combustible.nombre }}</div>
+              <div *ngIf="contacto.auto.transmision">Transmisión: {{ contacto.auto.transmision.nombre }}</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -177,12 +227,13 @@
     </div>
   </div>
 
-  <!-- Detail Modal -->
+  <!-- Detail Modal - Diseño Elegante -->
   <div *ngIf="showDetail && selectedContact" class="modal-overlay" (click)="cerrarDetalles()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Detalles del Contacto</h2>
-        <button class="btn-close" (click)="cerrarDetalles()">
+    <div class="modal-content-elegant" (click)="$event.stopPropagation()">
+      <!-- Modal Header Premium -->
+      <div class="modal-header-premium">
+        <div class="header-gradient"></div>
+        <button class="btn-close-premium" (click)="cerrarDetalles()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -190,44 +241,185 @@
         </button>
       </div>
 
-      <div class="modal-body">
-        <div class="detail-section">
-          <h3>Información Personal</h3>
-          <div class="detail-row">
-            <span class="label">Nombre:</span>
-            <span class="value">{{ selectedContact.nombre }}</span>
+      <!-- Modal Body -->
+      <div class="modal-body-elegant">
+        <!-- Información Personal Card -->
+        <div class="card-elegant">
+          <div class="card-header-elegant">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Datos del Cliente
+            </h3>
           </div>
-          <div class="detail-row">
-            <span class="label">Correo:</span>
-            <span class="value">{{ selectedContact.correo }}</span>
-          </div>
-          <div class="detail-row" *ngIf="selectedContact.telefono">
-            <span class="label">Teléfono:</span>
-            <span class="value">{{ selectedContact.telefono }}</span>
+          <div class="card-body-elegant">
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Nombre</label>
+                <p>{{ selectedContact.nombre }}</p>
+              </div>
+              <div class="info-item">
+                <label>Email</label>
+                <p>{{ selectedContact.correo || selectedContact.email }}</p>
+              </div>
+              <div class="info-item" *ngIf="selectedContact.dni">
+                <label>DNI</label>
+                <p>{{ selectedContact.dni }}</p>
+              </div>
+              <div class="info-item" *ngIf="selectedContact.telefono">
+                <label>Teléfono</label>
+                <p>{{ selectedContact.telefono }}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="detail-section">
-          <h3>Mensaje</h3>
-          <div class="detail-row">
-            <span class="label">Asunto:</span>
-            <span class="value">{{ selectedContact.asunto }}</span>
+        <!-- Estado Control Card -->
+        <div class="card-elegant">
+          <div class="card-header-elegant">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Estado de la Venta
+            </h3>
           </div>
-          <div class="message-box">
-            {{ selectedContact.mensaje }}
+          <div class="card-body-elegant">
+            <div class="estado-control-elegant">
+              <div *ngIf="!editingStatus[selectedContact.id!]" class="estado-display-elegant">
+                <span [ngClass]="'badge-large ' + getEstadoBadgeClass(selectedContact.estado)">
+                  {{ getEstadoLabel(selectedContact.estado) }}
+                </span>
+                <button (click)="iniciarEdicionEstado(selectedContact)" class="btn-edit-elegante">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Cambiar
+                </button>
+              </div>
+              <div *ngIf="editingStatus[selectedContact.id!]" class="estado-edit-elegant">
+                <select [(ngModel)]="newStatus[selectedContact.id!]" class="select-elegante">
+                  <option value="PENDIENTE">Pendiente</option>
+                  <option value="EN_PROCESO">En Proceso</option>
+                  <option value="VENTA_FINALIZADA">Venta Finalizada</option>
+                  <option value="CANCELADO">Cancelado</option>
+                </select>
+                <div class="button-group">
+                  <button (click)="guardarNuevoEstado(selectedContact)" class="btn-guardar">
+                    Guardar
+                  </button>
+                  <button (click)="cancelarEdicionEstado(selectedContact.id!)" class="btn-cancelar">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje Card -->
+        <div class="card-elegant">
+          <div class="card-header-elegant">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Consulta
+            </h3>
+          </div>
+          <div class="card-body-elegant">
+            <div class="asunto-box">
+              <strong>{{ selectedContact.asunto }}</strong>
+            </div>
+            <div class="mensaje-box">
+              {{ selectedContact.mensaje }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehículo Card -->
+        <div *ngIf="selectedContact.auto" class="card-elegant">
+          <div class="card-header-elegant">
+            <h3 class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5s-5 2.24-5 5v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6-2c1.66 0 3 1.34 3 3v2H9V6c0-1.66 1.34-3 3-3z"/>
+              </svg>
+              Vehículo de Interés
+            </h3>
+          </div>
+          <div class="card-body-elegant">
+            <div class="auto-detail-elegant">
+              <div class="auto-image-elegante">
+                <img [src]="getImagenAuto(selectedContact.auto)" 
+                     [alt]="selectedContact.auto.modelo"
+                     class="auto-img-elegante">
+              </div>
+              <div class="auto-specs-elegante">
+                <div class="spec-title">{{ selectedContact.auto.marca?.nombre }} {{ selectedContact.auto.modelo }}</div>
+                <div class="specs-grid">
+                  <div class="spec-item">
+                    <span class="spec-label">Año:</span>
+                    <span class="spec-value">{{ selectedContact.auto.anio }}</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Color:</span>
+                    <span class="spec-value">{{ selectedContact.auto.color }}</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Precio:</span>
+                    <span class="spec-value price-highlight">US$ {{ (selectedContact.auto.precio | number:'1.2-2') }}</span>
+                  </div>
+                  <div class="spec-item" *ngIf="selectedContact.auto.combustible">
+                    <span class="spec-label">Combustible:</span>
+                    <span class="spec-value">{{ selectedContact.auto.combustible.nombre }}</span>
+                  </div>
+                  <div class="spec-item" *ngIf="selectedContact.auto.transmision">
+                    <span class="spec-label">Transmisión:</span>
+                    <span class="spec-value">{{ selectedContact.auto.transmision.nombre }}</span>
+                  </div>
+                  <div class="spec-item" *ngIf="selectedContact.auto.categoria">
+                    <span class="spec-label">Categoría:</span>
+                    <span class="spec-value">{{ selectedContact.auto.categoria.nombre }}</span>
+                  </div>
+                  <div class="spec-item" *ngIf="selectedContact.auto.condicion">
+                    <span class="spec-label">Condición:</span>
+                    <span class="spec-value">{{ selectedContact.auto.condicion.nombre }}</span>
+                  </div>
+                  <div class="spec-item" *ngIf="selectedContact.auto.kilometraje !== null && selectedContact.auto.kilometraje !== undefined">
+                    <span class="spec-label">Kilometraje:</span>
+                    <span class="spec-value">{{ selectedContact.auto.kilometraje | number }} km</span>
+                  </div>
+                  <div class="spec-item" *ngIf="selectedContact.auto.stock !== null && selectedContact.auto.stock !== undefined">
+                    <span class="spec-label">Stock Disponible:</span>
+                    <span class="spec-value stock-badge" [ngClass]="{'stock-high': selectedContact.auto.stock > 5, 'stock-medium': selectedContact.auto.stock >= 2 && selectedContact.auto.stock <= 5, 'stock-low': selectedContact.auto.stock < 2}">
+                      {{ selectedContact.auto.stock }} unidades
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!selectedContact.auto" class="card-elegant">
+          <div class="card-body-elegant">
+            <div class="no-auto-message">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 9v2m0 4v2m7.07-6.93A10 10 0 1 1 4.93 4.93a10 10 0 0 1 14.14 14.14z"/>
+              </svg>
+              <p>Este contacto no está asociado a un vehículo específico</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button (click)="enviarRespuesta(selectedContact)" class="btn-primary">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>
-          </svg>
-          Responder
-        </button>
-        <button (click)="cerrarDetalles()" class="btn-secondary">
+      <!-- Modal Footer -->
+      <div class="modal-footer-elegant">
+        <button (click)="cerrarDetalles()" class="btn-footer-secondary">
           Cerrar
         </button>
       </div>
