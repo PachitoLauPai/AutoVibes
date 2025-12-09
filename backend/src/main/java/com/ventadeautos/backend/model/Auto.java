@@ -59,6 +59,7 @@ public class Auto {
 
     private String descripcion;
     private Boolean disponible = true;
+    private Integer stock = 0;  // Stock disponible del vehículo
 
     @ElementCollection
     @CollectionTable(name = "auto_imagenes", joinColumns = @JoinColumn(name = "auto_id"))
