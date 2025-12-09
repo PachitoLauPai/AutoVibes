@@ -485,6 +485,29 @@
   font-weight: 600;
 }
 
+.info-row .stock-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.stock-badge.low-stock {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.stock-badge.medium-stock {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.stock-badge.high-stock {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
 .price-section {
   margin-bottom: 1rem;
 }
