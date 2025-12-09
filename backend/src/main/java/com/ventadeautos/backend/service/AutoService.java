@@ -146,6 +146,13 @@ public class AutoService {
             auto.setImagenes(request.getImagenes());
         }
         
+        // ✅ Stock - se actualiza solo si se proporciona
+        if (request.getStock() != null) {
+            auto.setStock(request.getStock());
+        } else {
+            auto.setStock(0); // Default a 0 si no se proporciona
+        }
+        
         return autoRepository.save(auto);
     }
     
@@ -212,6 +219,11 @@ public class AutoService {
         
         if (request.getImagenes() != null) {
             auto.setImagenes(request.getImagenes());
+        }
+        
+        // ✅ Stock - se actualiza solo si se proporciona
+        if (request.getStock() != null) {
+            auto.setStock(request.getStock());
         }
         
         return autoRepository.save(auto);
