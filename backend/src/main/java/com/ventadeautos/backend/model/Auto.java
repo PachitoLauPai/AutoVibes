@@ -78,5 +78,10 @@ public class Auto {
         if (this.kilometraje == null) {
             this.kilometraje = 0;
         }
+        
+        // ✅ Asegurar que si stock = 0, no sea disponible
+        if (this.stock != null && this.stock == 0) {
+            this.disponible = false;
+        }
     }
 }
