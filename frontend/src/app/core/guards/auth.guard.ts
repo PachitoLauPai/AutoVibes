@@ -6,7 +6,7 @@ export const protectedAdminGuard: CanActivateFn = (route, state) => {
   const userRole = localStorage.getItem('userRole');
   const router = inject(Router);
 
-  // Verificar autenticación y rol ADMIN
+
   if (token && userRole === 'ADMIN') {
     return true;
   }
