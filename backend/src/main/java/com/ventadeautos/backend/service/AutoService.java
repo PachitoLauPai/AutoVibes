@@ -143,7 +143,6 @@ public class AutoService {
         auto.setColor(request.getColor());
         auto.setKilometraje(request.getKilometraje() != null ? request.getKilometraje() : 0);
         auto.setDescripcion(request.getDescripcion());
-        auto.setDisponible(true);
 
         // Relaciones opcionales
         if (request.getCombustibleId() != null) {
@@ -168,6 +167,9 @@ public class AutoService {
         } else {
             auto.setStock(0); // Default a 0 si no se proporciona
         }
+
+        // ✅ Disponibilidad: solo disponible si stock > 0
+        auto.setDisponible(auto.getStock() > 0);
 
         return autoRepository.save(auto);
     }
@@ -258,6 +260,12 @@ public class AutoService {
             // ✅ Stock - se actualiza solo si se proporciona
             if (request.getStock() != null) {
                 auto.setStock(request.getStock());
+                
+                // ✅ SI STOCK = 0 → AUTOMÁTICAMENTE NO DISPONIBLE
+                if (request.getStock() == 0 && auto.getDisponible()) {
+                    auto.setDisponible(false);
+                    log.info("Auto ID: {} - Stock actualizado a 0, marcado como NO DISPONIBLE", auto.getId());
+                }
             }
 
             return autoRepository.save(auto);
