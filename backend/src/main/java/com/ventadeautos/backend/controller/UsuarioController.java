@@ -79,6 +79,7 @@ public class UsuarioController {
 
     // Endpoint para cambiar el estado activo/inactivo de un usuario
     @PatchMapping("/{id}/estado")
+    @CrossOrigin(origins = "http://localhost:4200")
     public com.ventadeautos.backend.model.Administrador cambiarEstadoUsuario(
             @PathVariable Long id,
             @RequestBody java.util.Map<String, Boolean> request) {
