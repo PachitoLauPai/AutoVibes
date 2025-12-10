@@ -10,9 +10,6 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene las opciones HTTP comunes para peticiones autenticadas
-   */
   getHttpOptions() {
     const token = localStorage.getItem('token');
     let headers = new HttpHeaders({
