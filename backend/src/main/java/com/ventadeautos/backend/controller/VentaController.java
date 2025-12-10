@@ -72,7 +72,7 @@ public class VentaController {
         }
     }
     
-    // Endpoints para ADMIN - CORREGIDOS
+    // Endpoints para ADMIN
     
     @GetMapping("/admin/todas")
     public ResponseEntity<?> obtenerTodasLasVentas() {
