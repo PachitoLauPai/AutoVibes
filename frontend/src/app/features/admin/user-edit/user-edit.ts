@@ -18,11 +18,15 @@ export class UserEditComponent implements OnInit {
   saving: boolean = false;
   error: string = '';
   success: string = '';
+  mostrarPassword: boolean = false;
+  mostrarPasswordNueva: boolean = false;
 
   usuarioEditado: any = {
     nombre: '',
     email: '',
-    rol: 'CLIENTE'
+    rol: 'CLIENTE',
+    passwordActual: '',
+    password: ''
   };
 
   roles = [
@@ -59,7 +63,9 @@ export class UserEditComponent implements OnInit {
           this.usuarioEditado = {
             nombre: usuarioEncontrado.nombre,
             email: usuarioEncontrado.email,
-            rol: usuarioEncontrado.rol
+            rol: usuarioEncontrado.rol,
+            passwordActual: usuarioEncontrado.password || '••••••••••',
+            password: ''
           };
         } else {
           this.error = 'Usuario no encontrado';
