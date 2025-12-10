@@ -111,12 +111,6 @@ public class AdministradorService {
             throw new RuntimeException("El correo electrónico ya está registrado");
         }
 
-        // Validar que no exista el DNI
-        if (administradorRepository.findByDni(request.getDni()).isPresent()) {
-            log.warn("El DNI ya está registrado: {}", request.getDni());
-            throw new RuntimeException("El DNI ya está registrado");
-        }
-
         // Obtener el rol ADMIN
         Rol rolAdmin = rolRepository.findByNombre("ADMIN")
                 .orElseThrow(() -> new RuntimeException("Rol ADMIN no encontrado en la base de datos"));
@@ -124,8 +118,8 @@ public class AdministradorService {
         // Crear el nuevo administrador
         Administrador nuevoAdmin = new Administrador();
         nuevoAdmin.setNombre(request.getNombre());
-        nuevoAdmin.setApellido(request.getApellido());
-        nuevoAdmin.setDni(request.getDni());
+        nuevoAdmin.setApellido(request.getApellido() != null ? request.getApellido() : "S/A");
+        nuevoAdmin.setDni(null); // Dejar nulo para admins creados por UI
         nuevoAdmin.setCorreo(request.getCorreo());
         nuevoAdmin.setPassword(request.getPassword());
         nuevoAdmin.setRol(rolAdmin);
@@ -220,6 +214,11 @@ public class AdministradorService {
     public void eliminarAdmin(Long id) {
         log.info("Eliminando administrador con ID: {}", id);
 
+        // Proteger el admin principal (ID 1)
+        if (id == 1) {
+            throw new RuntimeException("No se puede eliminar el administrador principal");
+        }
+
         if (!administradorRepository.existsById(id)) {
             throw new RuntimeException("Administrador no encontrado con ID: " + id);
         }
@@ -233,6 +232,11 @@ public class AdministradorService {
      */
     public Administrador cambiarEstadoAdmin(Long id, Boolean nuevoEstado) {
         log.info("Cambiando estado del administrador con ID: {} a {}", id, nuevoEstado);
+
+        // Proteger el admin principal (ID 1)
+        if (id == 1) {
+            throw new RuntimeException("No se puede cambiar el estado del administrador principal");
+        }
 
         Administrador admin = administradorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Administrador no encontrado con ID: " + id));
