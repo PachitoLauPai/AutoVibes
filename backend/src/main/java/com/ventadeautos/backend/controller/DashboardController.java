@@ -26,7 +26,6 @@ public class DashboardController {
         try {
             Map<String, Object> stats = new HashMap<>();
             
-            // Obtener autos con toda la información
             List<Auto> autosDisponibles = autoService.obtenerAutosDisponibles();
             List<Auto> todosLosAutos = autoService.obtenerTodos();
             
