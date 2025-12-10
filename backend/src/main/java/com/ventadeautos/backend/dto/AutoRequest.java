@@ -12,7 +12,7 @@ public class AutoRequest {
     private BigDecimal precio;
     private String color;
     private Integer kilometraje;
-    private Integer stock;  // Stock del vehículo
+    private Integer stock;  
     
     // ✅ CAMBIADO: Ahora son IDs
     private Long combustibleId;
