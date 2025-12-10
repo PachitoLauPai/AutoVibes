@@ -37,14 +37,14 @@ public interface AutoRepository extends JpaRepository<Auto, Long> {
            "(:condicionId IS NULL OR a.condicion.id = :condicionId) AND " +
            "(:combustibleId IS NULL OR a.combustible.id = :combustibleId) AND " +
            "(:transmisionId IS NULL OR a.transmision.id = :transmisionId) AND " +
-           "a.disponible = true")
+           "a.disponible = true AND a.stock > 0")
     List<Auto> findByFiltros(@Param("marcaId") Long marcaId,
                             @Param("categoriaId") Long categoriaId,
                             @Param("condicionId") Long condicionId,
                             @Param("combustibleId") Long combustibleId,
                             @Param("transmisionId") Long transmisionId);
     
-    @Query("SELECT a FROM Auto a WHERE a.disponible = true AND " +
+    @Query("SELECT a FROM Auto a WHERE a.disponible = true AND a.stock > 0 AND " +
            "NOT EXISTS (SELECT v FROM Venta v WHERE v.auto = a AND v.estado.nombre = 'PENDIENTE')")
     List<Auto> findAutosDisponiblesSinVentasPendientes();
     
