@@ -49,9 +49,7 @@ export class ApiService {
     return this.http.get<T>(url, this.getHttpOptions());
   }
 
-  /**
-   * Realiza una petición POST
-   */
+  
   post<T>(endpoint: string, data: any): Observable<T> {
     const url = `${ApiService.API_BASE_URL}/${endpoint}`;
     return this.http.post<T>(url, data, this.getHttpOptions());
