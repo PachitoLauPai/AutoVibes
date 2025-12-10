@@ -120,9 +120,14 @@ export class AuthService {
     }
 
     const authHeader = this.getBasicAuthHeader();
-    return this.http.get<User[]>(`${this.apiUrl}/usuarios`, {
+    return this.http.get<any[]>(`${this.apiUrl}/usuarios`, {
       headers: { 'Authorization': authHeader }
-    });
+    }).pipe(
+      map(usuarios => usuarios.map(usuario => ({
+        ...usuario,
+        email: usuario.correo || usuario.email  // Mapear correo a email
+      })))
+    );
   }
 
   // ✅ ACTUALIZADO: Actualizar usuario
@@ -271,7 +276,7 @@ export class AuthService {
 
   // ✅ NUEVO: Cambiar estado de usuario (ADMIN)
   cambiarEstadoUsuario(usuarioId: number, activo: boolean): Observable<User> {
-    return this.http.put<User>(
+    return this.http.patch<User>(
       `${this.apiUrl}/usuarios/${usuarioId}/estado`,
       { activo: activo },
       { headers: { 'Content-Type': 'application/json' } }
