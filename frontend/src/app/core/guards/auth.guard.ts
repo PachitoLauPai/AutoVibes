@@ -1,10 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 
-/**
- * Guard para proteger rutas admin
- 
- */
 export const protectedAdminGuard: CanActivateFn = (route, state) => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
