@@ -13,7 +13,7 @@
         <div class="hero-content">
           <h1 class="hero-title">Encuentra el Auto de Tus Sueños</h1>
           <p class="hero-subtitle">La mejor selección de vehículos nuevos y seminuevos en AutoVibes</p>
-          <a href="#buscar" class="hero-cta">Explorar Catálogo</a>
+          <button (click)="irAlCatalogo()" class="hero-cta">Explorar Catálogo</button>
         </div>
       </div>
     </div>
@@ -24,7 +24,7 @@
         <div class="hero-content">
           <h1 class="hero-title">Calidad Garantizada</h1>
           <p class="hero-subtitle">Todos nuestros vehículos pasan rigurosas inspecciones</p>
-          <a href="#buscar" class="hero-cta">Ver Vehículos</a>
+          <button (click)="irAlCatalogo()" class="hero-cta">Ver Vehículos</button>
         </div>
       </div>
     </div>
@@ -35,7 +35,7 @@
         <div class="hero-content">
           <h1 class="hero-title">Financiamiento Flexible</h1>
           <p class="hero-subtitle">Opciones de pago adaptadas a tu presupuesto</p>
-          <a href="#buscar" class="hero-cta">Consultar Ahora</a>
+          <button (click)="abrirContacto()" class="hero-cta">Consultar Ahora</button>
         </div>
       </div>
     </div>
@@ -81,7 +81,6 @@
                   {{ condicion.nombre | titlecase }}
                 </option>
               </select>
-              <small class="text-muted">{{ condiciones.length }} opciones disponibles</small>
             </div>
 
             <div class="col-md-6">
@@ -92,13 +91,12 @@
                   {{ marca.nombre }}
                 </option>
               </select>
-              <small class="text-muted">{{ marcas.length }} opciones disponibles</small>
             </div>
           </div>
 
           <div class="text-center mt-4">
             <button class="btn btn-primary btn-lg px-5" (click)="irAVehiculos()">
-              🚗 Ver Vehículos Disponibles
+               Ver Vehículos Disponibles
             </button>
           </div>
         </div>
