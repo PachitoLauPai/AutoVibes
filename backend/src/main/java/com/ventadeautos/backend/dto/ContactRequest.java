@@ -11,6 +11,6 @@ public class ContactRequest {
     private String asunto;
     private String mensaje;
     private Long autoId;  
-    private String estado;  // Nuevo: para cambios de estado por admin (PENDIENTE, EN_PROCESO, VENTA_FINALIZADA, CANCELADO)
+    private String estado;  
     private String tipoTransaccion;  
 }
