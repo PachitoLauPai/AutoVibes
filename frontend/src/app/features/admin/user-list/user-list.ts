@@ -24,6 +24,8 @@ export class UserListComponent implements OnInit {
   selectedUsuario: User | null = null;
   usuarioForm!: FormGroup;
   submitting: boolean = false;
+  showPassword: boolean = false;
+  passwordActual: string = ''; // Contraseña actual para mostrar
 
   // Validation errors
   emailDuplicado: boolean = false;
@@ -51,20 +53,8 @@ export class UserListComponent implements OnInit {
   initForm(): void {
     this.usuarioForm = this.fb.group({
       nombre: ['', Validators.required],
-      apellido: [''],
       email: ['', [Validators.required, Validators.email]],
-      dni: ['', [
-        Validators.required,
-        Validators.pattern(/^[0-9]{8}$/), // Exactamente 8 dígitos numéricos
-        Validators.minLength(8),
-        Validators.maxLength(8)
-      ]],
-      telefono: ['', [
-        Validators.pattern(/^[0-9]{9}$/), // Exactamente 9 dígitos numéricos
-        Validators.minLength(9),
-        Validators.maxLength(9)
-      ]],
-      password: [''], // Contraseña opcional para editar, requerida para crear
+      password: [''], // Contraseña requerida al crear, opcional al editar
       activo: [true]
     });
   }
@@ -128,6 +118,7 @@ export class UserListComponent implements OnInit {
   abrirModalCrear(): void {
     this.selectedUsuario = null;
     this.modalMode = 'crear';
+    this.showPassword = false;
     this.usuarioForm.reset({
       activo: true
     });
@@ -138,16 +129,16 @@ export class UserListComponent implements OnInit {
   }
 
   abrirModalEditar(usuario: User): void {
+    // Permitir editar al admin principal solo ciertos campos
     this.selectedUsuario = usuario;
     this.modalMode = 'editar';
+    this.showPassword = false; // Ocultar contraseña al abrir
+    this.passwordActual = usuario.password || '••••••••••'; // Guardar contraseña actual
     this.usuarioForm.patchValue({
-      nombre: usuario.nombre,
-      apellido: usuario.apellido || '',
-      email: usuario.email,
-      dni: usuario.dni || '',
-      telefono: usuario.telefono || '',
+      nombre: usuario.nombre || '',
+      email: usuario.email || '',
       password: '', // Dejar vacío, solo se actualiza si se ingresa
-      activo: usuario.activo
+      activo: usuario.activo !== false
     });
     // Hacer contraseña opcional al editar
     this.usuarioForm.get('password')?.clearValidators();
@@ -157,6 +148,8 @@ export class UserListComponent implements OnInit {
 
   cerrarModal(): void {
     this.showModal = false;
+    this.showPassword = false;
+    this.passwordActual = ''; // Limpiar contraseña actual
     this.selectedUsuario = null;
     this.usuarioForm.reset();
     // Reset validation errors
@@ -213,26 +206,14 @@ export class UserListComponent implements OnInit {
       return;
     }
 
-    // Validar duplicados
-    this.validarEmailDuplicado();
-    this.validarDniDuplicado();
-    this.validarTelefonoDuplicado();
-
-    if (this.emailDuplicado || this.dniDuplicado || this.telefonoDuplicado) {
-      return; // No continuar si hay duplicados
-    }
-
     this.submitting = true;
     const formData = this.usuarioForm.value;
 
     if (this.modalMode === 'crear') {
-      // Crear nuevo usuario
+      // Crear nuevo usuario - solo nombre, email y contraseña
       const nuevoUsuario = {
         nombre: formData.nombre,
-        apellido: formData.apellido,
-        dni: formData.dni,
-        correo: formData.email, // Mapear email a correo para el backend
-        telefono: formData.telefono,
+        correo: formData.email,
         password: formData.password,
         rolId: 1 // Por defecto crear como admin
       };
@@ -257,10 +238,22 @@ export class UserListComponent implements OnInit {
         return;
       }
 
-      const usuarioActualizado = {
-        ...this.selectedUsuario,
-        ...formData
+      // Para admin principal, no incluir el campo activo
+      const usuarioActualizado: any = {
+        nombre: formData.nombre,
+        correo: formData.email,  // Enviar como "correo" para que coincida con el backend
+        email: formData.email     // Pero también enviamos email por compatibilidad
       };
+
+      // Solo incluir password si se cambió
+      if (formData.password) {
+        usuarioActualizado.password = formData.password;
+      }
+
+      // Solo incluir activo si NO es el admin principal
+      if (this.selectedUsuario.id !== 1) {
+        usuarioActualizado.activo = formData.activo;
+      }
 
       this.authService.actualizarUsuario(this.selectedUsuario.id, usuarioActualizado).subscribe({
         next: (response) => {
@@ -283,21 +276,23 @@ export class UserListComponent implements OnInit {
   }
 
   eliminarUsuario(usuario: User): void {
+    // Proteger admin principal (ID 1)
+    if (usuario.id === 1) {
+      alert('❌ El administrador principal no puede ser eliminado');
+      return;
+    }
+
     if (usuario.id === this.authService.getCurrentUser()?.id) {
       alert('❌ No puedes eliminar tu propio usuario');
       return;
     }
 
-    if (confirm(`¿Estás seguro de eliminar al usuario ${usuario.nombre} (${usuario.email})?\\n\\nEsta acción no se puede deshacer.`)) {
+    if (confirm(`¿Estás seguro de eliminar al usuario ${usuario.nombre} (${usuario.email})?\n\nEsta acción no se puede deshacer.`)) {
       this.authService.eliminarUsuario(usuario.id).subscribe({
         next: (response: any) => {
-          if (response.eliminado || response.mensaje) {
-            alert(`✅ ${response.mensaje || 'Usuario eliminado correctamente'}`);
-            this.cargarUsuarios();
-          } else {
-            alert('✅ Usuario eliminado correctamente');
-            this.cargarUsuarios();
-          }
+          // Eliminar del array local inmediatamente
+          this.usuarios = this.usuarios.filter(u => u.id !== usuario.id);
+          alert(`✅ ${response.mensaje || 'Usuario eliminado correctamente'}`);
         },
         error: (error) => {
           console.error('Error completo:', error);
@@ -311,7 +306,6 @@ export class UserListComponent implements OnInit {
             mensajeError = 'Usuario no encontrado';
           }
 
-          this.error = mensajeError;
           alert(`❌ ${mensajeError}`);
         }
       });
@@ -319,12 +313,19 @@ export class UserListComponent implements OnInit {
   }
 
   cambiarEstadoUsuario(usuario: User): void {
+    // Proteger admin principal (ID 1)
+    if (usuario.id === 1) {
+      alert('❌ El administrador principal no puede ser desactivado');
+      return;
+    }
+
     const nuevoEstado = !usuario.activo;
     const accion = nuevoEstado ? 'activar' : 'desactivar';
 
     if (confirm(`¿${accion.toUpperCase()} al usuario ${usuario.nombre}?`)) {
       this.authService.cambiarEstadoUsuario(usuario.id, nuevoEstado).subscribe({
         next: (userActualizado) => {
+          // Actualizar el estado inmediatamente en el array
           usuario.activo = nuevoEstado;
           alert(`✅ Usuario ${accion}do correctamente`);
         },
