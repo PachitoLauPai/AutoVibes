@@ -91,9 +91,7 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
-  /**
-   * Verificar si el usuario está logueado
-   */
+
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
