@@ -57,9 +57,7 @@ export class ContactService {
     );
   }
 
-  /**
-   * Obtener todos los contactos (admin)
-   */
+
   obtenerContactos(): Observable<Contact[]> {
     return this.http.get<Contact[]>(`${this.apiUrl}/admin/todos`).pipe(
       catchError(error => {
