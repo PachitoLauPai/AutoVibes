@@ -35,9 +35,7 @@ export class AuthService {
     this.userRoleSubject.next(localStorage.getItem('userRole'));
   }
 
-  /**
-   * Login de administrador
-   */
+
   loginAdmin(credentials: LoginRequest): Observable<LoginResponse> {
     console.log('Enviando login admin:', credentials.email);
 
