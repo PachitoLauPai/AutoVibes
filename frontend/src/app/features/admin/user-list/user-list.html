@@ -80,7 +80,9 @@
           {{ getRolIcon(usuario.rol) }}
         </div>
         <div class="card-actions-top">
-          <button class="action-icon" (click)="editarUsuario(usuario)" title="Editar">
+          <button class="action-icon" (click)="editarUsuario(usuario)" 
+            [title]="'Editar usuario'"
+            [class.disabled]="false">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
             </svg>
@@ -148,14 +150,17 @@
 
       <!-- Card Footer -->
       <div class="card-footer" *ngIf="authService.isAdmin()">
-        <button class="btn-edit" (click)="editarUsuario(usuario)">
+        <button class="btn-edit" (click)="editarUsuario(usuario)"
+          [disabled]="false"
+          [title]="'Editar'">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
           </svg>
           Editar
         </button>
         <button class="btn-toggle" (click)="cambiarEstadoUsuario(usuario)"
-          [title]="usuario.activo ? 'Desactivar' : 'Activar'">
+          [disabled]="usuario.id === 1"
+          [title]="usuario.id === 1 ? '❌ Admin principal no puede cambiar estado' : (usuario.activo ? 'Desactivar' : 'Activar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
@@ -163,8 +168,9 @@
           </svg>
           {{ usuario.activo ? 'Desactivar' : 'Activar' }}
         </button>
-        <button class="btn-delete" (click)="eliminarUsuario(usuario)" [disabled]="esUsuarioActual(usuario)"
-          [title]="esUsuarioActual(usuario) ? 'No puedes eliminar tu propio usuario' : 'Eliminar'">
+        <button class="btn-delete" (click)="eliminarUsuario(usuario)" 
+          [disabled]="usuario.id === 1 || esUsuarioActual(usuario)"
+          [title]="usuario.id === 1 ? '❌ Admin principal no puede eliminarse' : (esUsuarioActual(usuario) ? 'No puedes eliminar tu propio usuario' : 'Eliminar')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6" />
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -193,7 +199,7 @@
 
     <form [formGroup]="usuarioForm" class="modal-body">
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group full-width">
           <label>Nombre *</label>
           <input type="text" formControlName="nombre" class="form-control" placeholder="Nombre"
             [class.is-invalid]="usuarioForm.get('nombre')?.invalid && usuarioForm.get('nombre')?.touched">
@@ -201,65 +207,64 @@
             El nombre es obligatorio
           </small>
         </div>
-        <div class="form-group">
-          <label>Apellido</label>
-          <input type="text" formControlName="apellido" class="form-control" placeholder="Apellido">
-        </div>
       </div>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group full-width">
           <label>Email *</label>
           <input type="email" formControlName="email" class="form-control" placeholder="email@ejemplo.com"
-            (blur)="validarEmailDuplicado()"
-            [class.is-invalid]="(usuarioForm.get('email')?.invalid && usuarioForm.get('email')?.touched) || emailDuplicado">
+            [class.is-invalid]="usuarioForm.get('email')?.invalid && usuarioForm.get('email')?.touched">
           <small class="form-error" *ngIf="usuarioForm.get('email')?.invalid && usuarioForm.get('email')?.touched">
             <span *ngIf="usuarioForm.get('email')?.errors?.['required']">El email es obligatorio</span>
             <span *ngIf="usuarioForm.get('email')?.errors?.['email']">Email inválido</span>
           </small>
-          <small class="form-error" *ngIf="emailDuplicado">
-            Este email ya está registrado
-          </small>
-        </div>
-        <div class="form-group">
-          <label>DNI *</label>
-          <input type="text" formControlName="dni" class="form-control" placeholder="12345678" maxlength="8"
-            (blur)="validarDniDuplicado()"
-            [class.is-invalid]="(usuarioForm.get('dni')?.invalid && usuarioForm.get('dni')?.touched) || dniDuplicado">
-          <small class="form-error" *ngIf="usuarioForm.get('dni')?.invalid && usuarioForm.get('dni')?.touched">
-            <span *ngIf="usuarioForm.get('dni')?.errors?.['required']">El DNI es obligatorio</span>
-            <span *ngIf="usuarioForm.get('dni')?.errors?.['pattern']">DNI debe tener exactamente 8 dígitos
-              numéricos</span>
-          </small>
-          <small class="form-error" *ngIf="dniDuplicado">
-            Este DNI ya está registrado
-          </small>
         </div>
       </div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label>Teléfono</label>
-          <input type="text" formControlName="telefono" class="form-control" placeholder="987654321" maxlength="9"
-            (blur)="validarTelefonoDuplicado()"
-            [class.is-invalid]="(usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched) || telefonoDuplicado">
-          <small class="form-error"
-            *ngIf="usuarioForm.get('telefono')?.invalid && usuarioForm.get('telefono')?.touched">
-            <span *ngIf="usuarioForm.get('telefono')?.errors?.['pattern']">Teléfono debe tener exactamente 9 dígitos
-              numéricos</span>
-          </small>
-          <small class="form-error" *ngIf="telefonoDuplicado">
-            Este teléfono ya está registrado
-          </small>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
+        <div class="form-group full-width">
           <label>Contraseña {{ modalMode === 'crear' ? '*' : '(opcional)' }}</label>
-          <input type="password" formControlName="password" class="form-control"
-            [placeholder]="modalMode === 'crear' ? 'Mínimo 6 caracteres' : 'Dejar vacío para no cambiar'"
-            [class.is-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched">
+          
+          <!-- Mostrar contraseña actual solo en modo editar -->
+          <div class="password-display" *ngIf="modalMode === 'editar'">
+            <span class="password-label">Contraseña actual:</span>
+            <div class="password-display-box">
+              <span class="password-value">{{ passwordActual }}</span>
+              <button 
+                type="button" 
+                class="toggle-password-display" 
+                (click)="showPassword = !showPassword" 
+                tabindex="-1"
+                title="Ver/Ocultar contraseña">
+                <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Campo para nueva contraseña -->
+          <label *ngIf="modalMode === 'editar'" class="new-password-label">Nueva contraseña:</label>
+          <div class="password-input-wrapper">
+            <input [type]="showPassword ? 'text' : 'password'" formControlName="password" class="form-control"
+              [placeholder]="modalMode === 'crear' ? 'Mínimo 6 caracteres' : 'Dejar vacío para no cambiar'"
+              [class.is-invalid]="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched">
+            <button type="button" class="toggle-password" (click)="showPassword = !showPassword" tabindex="-1">
+              <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            </button>
+          </div>
           <small class="form-error"
             *ngIf="usuarioForm.get('password')?.invalid && usuarioForm.get('password')?.touched">
             <span *ngIf="usuarioForm.get('password')?.errors?.['required']">La contraseña es obligatoria</span>
@@ -268,7 +273,7 @@
         </div>
       </div>
 
-      <div class="form-group checkbox">
+      <div class="form-group checkbox" *ngIf="modalMode === 'editar' && selectedUsuario?.id !== 1">
         <input type="checkbox" formControlName="activo" id="activo">
         <label for="activo">Usuario activo</label>
       </div>
