@@ -80,6 +80,16 @@ public class VentaService {
         Auto auto = autoRepository.findById((Long)autoId)
             .orElseThrow(() -> new ResourceNotFoundException("Auto", autoId));
         
+        // ✅ SI STOCK = 0 → AUTOMÁTICAMENTE NO DISPONIBLE
+        if (auto.getStock() != null && auto.getStock() == 0) {
+            if (auto.getDisponible()) {
+                auto.setDisponible(false);
+                autoRepository.save(auto);
+                log.info("Auto ID: {} - Marcado como NO DISPONIBLE (Stock = 0)", autoId);
+            }
+            return;
+        }
+        
         // Obtener estados
         EstadoVenta estadoPendiente = estadoVentaService.obtenerPorNombre("PENDIENTE")
             .orElseThrow(() -> new ResourceNotFoundException("Estado", "PENDIENTE"));
