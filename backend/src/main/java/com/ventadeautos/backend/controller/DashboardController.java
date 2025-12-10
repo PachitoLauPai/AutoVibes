@@ -49,7 +49,6 @@ public class DashboardController {
             stats.put("totalContactos", totalContactos);
             stats.put("contactosHoy", contactosHoy);
             
-            // Incluir los autos disponibles con toda su información
             stats.put("autos", autosDisponibles);
             stats.put("todosLosAutos", todosLosAutos);
             
