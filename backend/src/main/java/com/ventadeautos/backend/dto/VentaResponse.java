@@ -18,7 +18,7 @@ public class VentaResponse {
     // Información del auto
     private Long autoId;
     
-    // ✅ Información de la marca
+ 
     private String autoMarca;      // Nombre de la marca
     private Long marcaId;          // ID de la marca
     
