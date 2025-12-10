@@ -23,9 +23,7 @@ export class ApiService {
     return { headers };
   }
 
-  /**
-   * Obtiene el token de autenticación
-   */
+  
   getToken(): string | null {
     return localStorage.getItem('token');
   }
