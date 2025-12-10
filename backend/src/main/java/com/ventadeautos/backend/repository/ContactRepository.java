@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ContactRepository extends JpaRepository<Contact, Long> {
     
-    // Obtener contactos no leídos con auto cargado
+ 
     @Query("SELECT c FROM Contact c LEFT JOIN FETCH c.auto WHERE c.leido = false ORDER BY c.fechaCreacion DESC")
     List<Contact> findByLeidoFalse();
     
