@@ -28,9 +28,7 @@ export class ApiService {
     return localStorage.getItem('token');
   }
 
-  /**
-   * Guarda el token de autenticación
-   */
+
   setToken(token: string): void {
     localStorage.setItem('token', token);
   }
