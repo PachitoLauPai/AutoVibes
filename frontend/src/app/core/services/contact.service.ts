@@ -43,9 +43,7 @@ export class ContactService {
     private api: ApiService
   ) { }
 
-  /**
-   * Enviar un nuevo contacto (público - sin autenticación)
-   */
+
   enviarContacto(contactData: ContactRequest): Observable<Contact> {
 
     return this.http.post<Contact>(
