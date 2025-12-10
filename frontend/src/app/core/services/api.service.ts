@@ -33,9 +33,7 @@ export class ApiService {
     localStorage.setItem('token', token);
   }
 
-  /**
-   * Elimina el token de autenticación
-   */
+  
   removeToken(): void {
     localStorage.removeItem('token');
   }
