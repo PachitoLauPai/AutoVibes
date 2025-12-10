@@ -264,7 +264,7 @@ export class AutoDetailComponent implements OnInit, OnDestroy {
         this.logger.info('Contacto guardado en BD exitosamente', response);
 
         // Después de guardar, redirigir a WhatsApp
-        const numeroAsesor = '51992562392'; // +51 928770187
+        const numeroAsesor = '51928770187'; // +51 928770187
         const mensaje = encodeURIComponent(
           `Hola, me interesa el ${this.auto?.marca?.nombre} ${this.auto?.modelo} ${this.auto?.anio}.\n\n` +
           `Mis datos:\n` +
