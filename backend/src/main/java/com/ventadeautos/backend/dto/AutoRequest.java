@@ -14,7 +14,7 @@ public class AutoRequest {
     private Integer kilometraje;
     private Integer stock;  
     
-    // ✅ CAMBIADO: Ahora son IDs
+  
     private Long combustibleId;
     private Long transmisionId;
     private Long categoriaId;
