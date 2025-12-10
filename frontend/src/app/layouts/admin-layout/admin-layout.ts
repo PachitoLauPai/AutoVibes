@@ -38,7 +38,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   logout(): void {
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
       this.authService.logout();
-      this.router.navigate(['/auth/admin-login']);
+      this.router.navigate(['/admin/login']);
     }
   }
 
