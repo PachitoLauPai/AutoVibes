@@ -39,7 +39,7 @@ public class DashboardController {
             try {
                 contactosHoy = contactService.obtenerContactosHoy();
             } catch (Exception e) {
-                // Si hay error, usar 0
+               
                 contactosHoy = 0;
             }
             
