@@ -79,7 +79,15 @@
 
       <div class="form-group">
         <label>Asunto *</label>
-        <input type="text" class="form-control" formControlName="asunto" placeholder="¿En qué podemos ayudarte?" required>
+        <select class="form-control" formControlName="asunto" required>
+          <option value="">Selecciona un asunto</option>
+          <option value="Cotización de vehículo">Cotización de vehículo</option>
+          <option value="Información de financiamiento">Información de financiamiento</option>
+          <option value="Solicitud de prueba de manejo">Solicitud de prueba de manejo</option>
+          <option value="Consulta sobre garantía">Consulta sobre garantía</option>
+          <option value="Información de servicios">Información de servicios</option>
+          <option value="Otro">Otro</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -109,23 +117,25 @@
     <h2>Sobre AutoVibes</h2>
     
     <div class="info-item">
-      <h4>🚗 Quiénes Somos</h4>
-      <p>AutoVibes es tu concesionario de confianza con más de 10 años de experiencia en el mercado automotriz. Nos especializamos en vehículos nuevos y seminuevos de las mejores marcas.</p>
+      <h4>Quiénes Somos</h4>
+      <p>AutoVibes es tu concesionario de confianza con más de 10 años de experiencia en el mercado automotriz. Nos especializamos en la comercialización de vehículos nuevos y seminuevos de las mejores marcas, garantizando calidad, transparencia y excelencia en cada transacción.</p>
     </div>
 
     <div class="info-item">
-      <h4>✨ Nuestra Misión</h4>
-      <p>Proporcionar a nuestros clientes vehículos de calidad con los mejores precios y un servicio excepcional.</p>
+      <h4>Nuestra Misión</h4>
+      <p>Proporcionar a nuestros clientes vehículos de calidad con los mejores precios y un servicio excepcional, facilitando el acceso a la movilidad que desean y necesitan.</p>
     </div>
 
     <div class="info-item">
-      <h4>🎯 Nuestra Visión</h4>
-      <p>Ser el concesionario preferido del país, reconocido por nuestra integridad, calidad y atención al cliente.</p>
-    </div>    <div class="info-item">
-      <h4>📞 Contáctanos</h4>
-      <p><strong>Teléfono:</strong> +51 999 999 999</p>
+      <h4>Nuestra Visión</h4>
+      <p>Ser el concesionario preferido del país, reconocido por nuestra integridad, calidad superior, innovación constante y atención al cliente de clase mundial.</p>
+    </div>
+
+    <div class="info-item">
+      <h4>Contacto</h4>
+      <p><strong>Teléfono:</strong> +51 928 770 187</p>
       <p><strong>Email:</strong> contacto@autovibes.com</p>
-      <p><strong>Dirección:</strong> Av. Principal 123, Lima - Perú</p>
+      <p><strong>Dirección:</strong> Av. Javier Prado Este 4200, Santiago de Surco </p>
     </div>
   </div>
 </div>
@@ -133,32 +143,36 @@
 <!-- MODAL DE SERVICIOS -->
 <div class="info-modal" *ngIf="showServicios" (click)="cerrarServicios()" [class.show]="showServicios">
   <div class="info-modal-content" (click)="$event.stopPropagation()">
-    <button class="close-btn" (click)="cerrarServicios()">✕</button>
+    <button class="close-btn" (click)="cerrarServicios()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
     <h2>Nuestros Servicios</h2>
     
     <div class="info-item">
-      <h4>🔍 Asesoría Personalizada</h4>
-      <p>Nuestro equipo de expertos te ayudará a encontrar el vehículo perfecto según tus necesidades y presupuesto.</p>
+      <h4>Asesoría Personalizada</h4>
+      <p>Nuestro equipo de expertos te proporcionará una asesoría integral para encontrar el vehículo perfecto que se adapte a tus necesidades, presupuesto y estilo de vida.</p>
     </div>
 
     <div class="info-item">
-      <h4>💰 Financiamiento</h4>
-      <p>Ofrecemos opciones de financiamiento flexible con tasas competitivas para facilitar tu compra.</p>
+      <h4>Financiamiento</h4>
+      <p>Ofrecemos opciones de financiamiento flexible con tasas competitivas y plazos adaptados a tu capacidad, facilitando y haciendo más accesible tu compra.</p>
     </div>
 
     <div class="info-item">
-      <h4>🛠️ Mantenimiento</h4>
-      <p>Servicio de mantenimiento y reparación con repuestos originales y garantía.</p>
+      <h4>Mantenimiento y Reparación</h4>
+      <p>Contamos con un taller especializado que ofrece servicio de mantenimiento preventivo y reparación con repuestos originales y garantía en todas nuestras intervenciones.</p>
     </div>
 
     <div class="info-item">
-      <h4>🔐 Garantía</h4>
-      <p>Todos nuestros vehículos incluyen garantía de fábrica o garantía extendida según corresponda.</p>
+      <h4>Garantía Integral</h4>
+      <p>Todos nuestros vehículos incluyen garantía de fábrica o garantía extendida según corresponda, brindándote tranquilidad y confianza en tu inversión.</p>
     </div>
 
     <div class="info-item">
-      <h4>📋 Trámites</h4>
-      <p>Nos encargamos de todos los trámites legales y documentación necesaria para tu compra.</p>
+      <h4>Trámites Legales</h4>
+      <p>Nos encargamos de toda la documentación y trámites legales necesarios para tu compra, asegurando que el proceso sea transparente y sin complicaciones.</p>
     </div>
   </div>
 </div>
