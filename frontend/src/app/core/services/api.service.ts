@@ -43,9 +43,7 @@ export class ApiService {
     return !!this.getToken();
   }
 
-  /**
-   * Realiza una petición GET
-   */
+  
   get<T>(endpoint: string): Observable<T> {
     const url = `${ApiService.API_BASE_URL}/${endpoint}`;
     return this.http.get<T>(url, this.getHttpOptions());
