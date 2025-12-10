@@ -38,9 +38,7 @@ export class ApiService {
     localStorage.removeItem('token');
   }
 
-  /**
-   * Verifica si hay un token válido
-   */
+  
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
