@@ -32,7 +32,7 @@ public class AutoController {
     
     // =============================================
     // ENDPOINTS PRINCIPALES Y CRUD
-    // =============================================
+
     
     @GetMapping
     public List<Auto> obtenerAutos(@RequestParam(required = false) Boolean disponibles,
