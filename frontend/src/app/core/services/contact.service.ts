@@ -110,9 +110,7 @@ export class ContactService {
     );
   }
 
-  /**
-   * Cambiar estado de venta y ajustar stock automáticamente
-   */
+
   cambiarEstadoVenta(id: number, nuevoEstado: string, estadoAnterior?: string): Observable<any> {
     const request = {
       estado: nuevoEstado,
