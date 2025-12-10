@@ -20,10 +20,10 @@ public class Administrador {
     @Column(nullable = false)
     private String nombre;
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String apellido;
     
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String dni;
     
     @Column(nullable = false, unique = true)
