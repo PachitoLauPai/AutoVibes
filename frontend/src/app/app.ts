@@ -24,9 +24,34 @@ export class App implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    // Detectar si estamos en una ruta admin
+    // Al iniciar la app, limpiar localStorage para evitar conflictos entre cuentas Google
+    // SOLO mantener token si estamos accediendo a ruta admin protegida
+    const currentUrl = this.router.url;
+    const esRutaAdminProtegida = currentUrl.startsWith('/admin') && !currentUrl.startsWith('/admin/login');
+    
+    if (!esRutaAdminProtegida) {
+      console.log('🔄 Limpiando datos de sesión anterior al iniciar (ruta pública):', currentUrl);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('currentUser');
+    }
+    
+    // Detectar cambios de ruta
     this.router.events.subscribe(() => {
       this.isAdminRoute = this.router.url.startsWith('/admin');
+      const esLogin = this.router.url === '/admin/login';
+      const esRutaAdmin = this.router.url.startsWith('/admin') && !esLogin;
+      
+      // Si no es admin y no es login, limpiar sesión
+      if (!esRutaAdmin && !esLogin) {
+        const tieneToken = !!localStorage.getItem('token');
+        if (tieneToken) {
+          console.log('🔄 Limpiando sesión en ruta pública:', this.router.url);
+          localStorage.removeItem('token');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('currentUser');
+        }
+      }
     });
   }
 }
