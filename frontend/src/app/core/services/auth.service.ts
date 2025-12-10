@@ -30,7 +30,7 @@ export class AuthService {
   public userRole$ = this.userRoleSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Verificar si hay token al inicializar
+    
     this.isAuthenticatedSubject.next(!!localStorage.getItem('token'));
     this.userRoleSubject.next(localStorage.getItem('userRole'));
   }
