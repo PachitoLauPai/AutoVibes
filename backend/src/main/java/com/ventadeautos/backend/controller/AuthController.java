@@ -1,4 +1,4 @@
-// AuthController.java
+
 package com.ventadeautos.backend.controller;
 
 import com.ventadeautos.backend.dto.LoginRequest;
