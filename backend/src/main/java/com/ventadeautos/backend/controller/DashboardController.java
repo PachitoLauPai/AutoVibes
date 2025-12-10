@@ -33,7 +33,6 @@ public class DashboardController {
             long contactosNoLeidos = contactService.contarNoLeidos();
             long totalContactos = contactService.obtenerTodosLosContactos().size();
             
-            // Contar contactos de hoy
             long contactosHoy = 0;
             try {
                 contactosHoy = contactService.obtenerContactosHoy();
