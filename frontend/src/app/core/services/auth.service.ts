@@ -86,9 +86,7 @@ export class AuthService {
     console.log('Usuario desconectado');
   }
 
-  /**
-   * Obtener el estado de autenticación
-   */
+  
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   }
