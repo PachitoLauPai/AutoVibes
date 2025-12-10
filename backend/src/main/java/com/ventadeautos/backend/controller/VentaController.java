@@ -72,8 +72,6 @@ public class VentaController {
         }
     }
     
-    // Endpoints para ADMIN
-    
     @GetMapping("/admin/todas")
     public ResponseEntity<?> obtenerTodasLasVentas() {
         try {
@@ -91,7 +89,7 @@ public class VentaController {
     @GetMapping("/admin/estado/{estadoNombre}")
     public ResponseEntity<?> obtenerVentasPorEstado(@PathVariable String estadoNombre) {
         try {
-            // CORREGIDO: Buscar por nombre en la base de datos
+        
             EstadoVenta estadoVenta = estadoVentaService.obtenerPorNombre(estadoNombre)
                     .orElseThrow(() -> new RuntimeException("Estado no encontrado: " + estadoNombre));
             
@@ -114,7 +112,7 @@ public class VentaController {
         log.info("Actualizando venta ID: {} a estado: {}", id, update.getEstado());
         
         try {
-            // ✅ VERIFICAR que el estado existe y está activo
+        
             EstadoVenta nuevoEstado = estadoVentaService.obtenerPorNombre(update.getEstado())
                     .orElseThrow(() -> {
                         log.error("Estado no encontrado: {}", update.getEstado());
