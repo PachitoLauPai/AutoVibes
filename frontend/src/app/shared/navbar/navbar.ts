@@ -48,6 +48,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Escuchar evento para abrir el modal de contacto desde otros componentes
+    window.addEventListener('abrirModalContacto', () => {
+      this.abrirContacto();
+      // Desplazarse al navbar
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        setTimeout(() => {
+          navbar.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    });
     console.log('NavbarComponent inicializado');
     
     // Escuchar evento del footer para abrir el modal de contacto
