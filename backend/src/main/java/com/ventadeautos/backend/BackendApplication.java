@@ -28,7 +28,6 @@ public class BackendApplication {
             log.info("=========================================");
 
         } catch (Exception e) {
-            // Verificar si es SilentExitException de DevTools (reinicio automático)
             // Esta excepción es parte del mecanismo de reinicio automático de Spring Boot DevTools
             // No es un error real, simplemente reinicia la aplicación en modo desarrollo
             if (e.getClass().getName().contains("SilentExitException")) {
