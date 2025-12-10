@@ -16,7 +16,6 @@ public interface AutoRepository extends JpaRepository<Auto, Long> {
     List<Auto> findByMarcaIdAndDisponibleTrue(Long marcaId);
     List<Auto> findByMarcaNombreContainingIgnoreCaseAndDisponibleTrue(String marcaNombre);
     
-    // ✅ ACTUALIZADO: Ahora por IDs
     List<Auto> findByCategoriaIdAndDisponibleTrue(Long categoriaId);
     List<Auto> findByCondicionIdAndDisponibleTrue(Long condicionId);
     List<Auto> findByCombustibleIdAndDisponibleTrue(Long combustibleId);
