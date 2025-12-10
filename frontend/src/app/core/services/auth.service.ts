@@ -96,9 +96,6 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
-  /**
-   * Verificar si es administrador
-   */
   isAdmin(): boolean {
     const role = localStorage.getItem('userRole');
     return role === 'ADMIN';
