@@ -88,9 +88,7 @@ export class ContactService {
     );
   }
 
-  /**
-   * Actualizar estado del contacto (la versión anterior)
-   */
+
   actualizarEstado(id: number, nuevoEstado: string): Observable<Contact> {
     const request: ContactRequest = {
       nombre: '',
