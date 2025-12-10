@@ -29,7 +29,6 @@ public class DashboardController {
             List<Auto> autosDisponibles = autoService.obtenerAutosDisponibles();
             List<Auto> todosLosAutos = autoService.obtenerTodos();
             
-            // Contar contactos nuevos (no leídos)
             long contactosNoLeidos = contactService.contarNoLeidos();
             long totalContactos = contactService.obtenerTodosLosContactos().size();
             
