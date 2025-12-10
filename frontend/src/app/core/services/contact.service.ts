@@ -128,9 +128,7 @@ export class ContactService {
     );
   }
 
-  /**
-   * Actualizar tipo de transacción del contacto (COMPRA/VENTA)
-   */
+
   actualizarTipoTransaccion(id: number, nuevoTipo: string): Observable<Contact> {
     const request: ContactRequest = {
       nombre: '',
