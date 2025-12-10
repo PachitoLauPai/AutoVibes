@@ -37,7 +37,7 @@ public class AutoController {
     @GetMapping
     public List<Auto> obtenerAutos(@RequestParam(required = false) Boolean disponibles,
                                    @RequestParam(required = false) Boolean admin) {
-        // Si es admin, mostrar TODOS los autos
+        
         if (admin != null && admin) {
             return autoService.obtenerTodos();
         }
