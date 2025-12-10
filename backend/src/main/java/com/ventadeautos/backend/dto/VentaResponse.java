@@ -9,7 +9,7 @@ import java.util.List;
 public class VentaResponse {
     private Long id;
     
-    // Información del contacto
+
     private String clienteNombre;
     private String clienteDni;
     private String clienteEmail;
