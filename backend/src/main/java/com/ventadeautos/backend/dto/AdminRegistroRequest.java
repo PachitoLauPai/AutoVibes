@@ -9,5 +9,5 @@ public class AdminRegistroRequest {
     private String dni;
     private String correo;
     private String password;
-    private Long rolId; // ID del rol (generalmente será el rol ADMIN)
+    private Long rolId; 
 }
