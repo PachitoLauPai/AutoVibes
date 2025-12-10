@@ -41,6 +41,44 @@
             placeholder="usuario@ejemplo.com">
         </div>
       </div>
+
+      <!-- Contraseña Actual -->
+      <div class="form-group">
+        <label for="passwordActual">Contraseña Actual</label>
+        <div class="password-display">
+          <span class="password-value">{{ usuarioEditado.passwordActual || '••••••••••' }}</span>
+          <button 
+            type="button"
+            class="btn-toggle-password"
+            (click)="mostrarPassword = !mostrarPassword"
+            tabindex="-1">
+            <span *ngIf="!mostrarPassword">👁️ Ver</span>
+            <span *ngIf="mostrarPassword">👁️‍🗨️ Ocultar</span>
+          </button>
+        </div>
+        <small class="help-text">Usa el campo a continuación para cambiarla</small>
+      </div>
+
+      <!-- Nueva Contraseña (Opcional) -->
+      <div class="form-group">
+        <label for="password">Nueva Contraseña (Opcional)</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="mostrarPasswordNueva ? 'text' : 'password'"
+            id="password" 
+            name="password" 
+            [(ngModel)]="usuarioEditado.password"
+            placeholder="Dejar vacío para no cambiar">
+          <button 
+            type="button"
+            class="btn-toggle-password"
+            (click)="mostrarPasswordNueva = !mostrarPasswordNueva"
+            tabindex="-1">
+            <span *ngIf="!mostrarPasswordNueva">👁️ Ver</span>
+            <span *ngIf="mostrarPasswordNueva">👁️‍🗨️ Ocultar</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Tipo de Usuario -->
