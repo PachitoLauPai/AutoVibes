@@ -26,14 +26,25 @@
       <!-- Contraseña -->
       <div class="form-group">
         <label for="password">Contraseña</label>
-        <input
-          type="password"
-          id="password"
-          class="form-control"
-          formControlName="password"
-          placeholder="••••••••"
-          [class.is-invalid]="isFieldInvalid('password')"
-        />
+        <div class="password-input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="••••••••"
+            [class.is-invalid]="isFieldInvalid('password')"
+          />
+          <button
+            type="button"
+            class="btn-toggle-password"
+            (click)="showPassword = !showPassword"
+            tabindex="-1"
+          >
+            <span *ngIf="!showPassword">👁️ Ver</span>
+            <span *ngIf="showPassword">👁️‍🗨️ Ocultar</span>
+          </button>
+        </div>
         <div class="error-message" *ngIf="isFieldInvalid('password')">
           Contraseña es requerida
         </div>
