@@ -67,9 +67,6 @@ export class ContactService {
     );
   }
 
-  /**
-   * Eliminar un contacto
-   */
   eliminarContacto(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/admin/${id}`).pipe(
       catchError(error => {
