@@ -20,7 +20,7 @@ public class AuthController {
         return administradorService.loginAdmin(request);
     }
     
-    // ✅ NUEVO: Alias para que el frontend pueda hacer login de admin
+ 
     @PostMapping("/admin/login")
     public LoginResponse adminLogin(@RequestBody LoginRequest request) {
         return administradorService.loginAdmin(request);
