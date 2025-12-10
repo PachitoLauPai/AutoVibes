@@ -101,6 +101,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/autos'], { queryParams });
   }
 
+  irAlCatalogo(): void {
+    this.router.navigate(['/autos']);
+  }
+
+  abrirContacto(): void {
+    // Emitir evento para que el navbar abra el formulario de contacto
+    window.dispatchEvent(new CustomEvent('abrirModalContacto'));
+  }
+
   irACategoria(categoriaId: number): void {
     this.router.navigate(['/autos'], { queryParams: { categoria: categoriaId } });
   }
