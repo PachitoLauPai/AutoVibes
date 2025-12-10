@@ -3,7 +3,7 @@ import { Router, CanActivateFn } from '@angular/router';
 
 /**
  * Guard para proteger rutas admin
- * Verifica que el usuario esté autenticado Y sea ADMIN
+ 
  */
 export const protectedAdminGuard: CanActivateFn = (route, state) => {
   const token = localStorage.getItem('token');
